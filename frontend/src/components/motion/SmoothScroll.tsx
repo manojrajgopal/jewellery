@@ -35,7 +35,9 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
     };
 
     const start = () => {
-      if (running) return;
+      // Restart unconditionally: a cancelled frame must not leave `running`
+      // latched true, which would dead-lock wheel scrolling for the session.
+      cancelAnimationFrame(raf);
       running = true;
       raf = requestAnimationFrame(loop);
     };
@@ -45,7 +47,7 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
       if (e.ctrlKey || e.metaKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
 
       // Respect anything with its own scrollbar (modals, code blocks, tab rails).
-      let node = e.target as HTMLElement | null;
+      let node = e.target instanceof HTMLElement ? e.target : null;
       while (node && node !== document.body) {
         const style = getComputedStyle(node);
         const scrollable = /(auto|scroll|overlay)/.test(style.overflowY);
@@ -71,6 +73,7 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
     window.addEventListener('resize', resync);
     window.addEventListener('keydown', resync);
     window.addEventListener('touchstart', resync, { passive: true });
+    window.addEventListener('scroll', resync, { passive: true });
 
     return () => {
       cancelAnimationFrame(raf);
@@ -79,6 +82,7 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
       window.removeEventListener('resize', resync);
       window.removeEventListener('keydown', resync);
       window.removeEventListener('touchstart', resync);
+      window.removeEventListener('scroll', resync);
     };
   }, [strength]);
 
