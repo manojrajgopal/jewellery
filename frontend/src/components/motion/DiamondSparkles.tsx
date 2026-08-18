@@ -6,33 +6,44 @@ interface DiamondSparklesProps {
   density?: number;
   className?: string;
   color?: string;
+  /** Sparkles drift away from the pointer and brighten near it. */
+  interactive?: boolean;
+  /** Draw four-point stars instead of round motes. */
+  shape?: 'star' | 'dot' | 'mixed';
 }
 
 interface Particle {
   x: number;
   y: number;
   size: number;
-  opacity: number;
-  speedY: number;
-  speedX: number;
+  baseOpacity: number;
+  vx: number;
+  vy: number;
   phase: number;
-  color: string;
+  twinkle: number;
+  star: boolean;
+  hue: string;
 }
 
+const PALETTE = ['#FDF2D3', '#EFCE78', '#FFFBF0', '#D6BA8F', '#ECF4FF'];
+
+/**
+ * Canvas field of drifting, twinkling facets. Four-point stars catch the light
+ * the way a brilliant cut does; the pointer pushes them gently aside.
+ */
 export default function DiamondSparkles({
   density = 40,
   className = '',
-  color = '#fdf3d7' // gold-100
+  color,
+  interactive = true,
+  shape = 'mixed',
 }: DiamondSparklesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
-    // Disable on mobile or reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isMobile = window.innerWidth < 768;
-    if (prefersReducedMotion || isMobile) {
-      setIsDisabled(true);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setDisabled(true);
       return;
     }
 
@@ -41,85 +52,157 @@ export default function DiamondSparkles({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let particles: Particle[] = [];
-    let width = canvas.width;
-    let height = canvas.height;
+    // Scale the field down on small screens rather than dropping it entirely.
+    const isSmall = window.innerWidth < 768;
+    const count = Math.round(density * (isSmall ? 0.45 : 1));
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    const resize = () => {
-      if (!canvas.parentElement) return;
-      const rect = canvas.parentElement.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
-      canvas.width = width;
-      canvas.height = height;
-      initParticles();
+    let raf = 0;
+    let width = 0;
+    let height = 0;
+    let particles: Particle[] = [];
+    const pointer = { x: -9999, y: -9999, active: false };
+
+    const seed = (p: Partial<Particle> = {}): Particle => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 2.2 + 0.8,
+      baseOpacity: Math.random() * 0.55 + 0.2,
+      vx: (Math.random() - 0.5) * 0.28,
+      vy: (Math.random() - 0.5) * 0.28,
+      phase: Math.random() * Math.PI * 2,
+      twinkle: 0.012 + Math.random() * 0.028,
+      star: shape === 'star' ? true : shape === 'dot' ? false : Math.random() > 0.55,
+      hue: color ?? PALETTE[Math.floor(Math.random() * PALETTE.length)],
+      ...p,
+    });
+
+    const build = () => {
+      particles = Array.from({ length: count }, () => seed());
     };
 
-    const initParticles = () => {
-      particles = [];
-      for (let i = 0; i < density; i++) {
-        particles.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          size: Math.random() * 2 + 1,
-          opacity: Math.random() * 0.6 + 0.2,
-          speedY: (Math.random() - 0.5) * 0.5,
-          speedX: (Math.random() - 0.5) * 0.5,
-          phase: Math.random() * Math.PI * 2,
-          color: color
-        });
-      }
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      build();
+    };
+
+    const drawStar = (p: Particle, alpha: number) => {
+      const r = p.size * 3.2;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.phase * 0.35);
+      ctx.beginPath();
+      ctx.moveTo(0, -r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.quadraticCurveTo(0, 0, 0, r);
+      ctx.quadraticCurveTo(0, 0, -r, 0);
+      ctx.quadraticCurveTo(0, 0, 0, -r);
+      ctx.closePath();
+      ctx.fillStyle = p.hue;
+      ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.hue;
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawDot = (p: Particle, alpha: number) => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.hue;
+      ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = '#ffffff';
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, width, height);
-      
-      particles.forEach((p) => {
-        p.y += p.speedY;
-        p.x += p.speedX;
-        p.phase += 0.02;
-        
-        // Wrap around
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
 
-        const currentOpacity = p.opacity + Math.sin(p.phase) * 0.2;
-        
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, currentOpacity);
-        
-        // Subtle prismatic glow
-        ctx.shadowBlur = 4;
-        ctx.shadowColor = '#ffffff';
-        ctx.fill();
-        ctx.globalAlpha = 1;
-        ctx.shadowBlur = 0;
-      });
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.phase += p.twinkle;
 
-      animationFrameId = requestAnimationFrame(draw);
+        if (interactive && pointer.active) {
+          const dx = p.x - pointer.x;
+          const dy = p.y - pointer.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 140 && dist > 0.01) {
+            const push = (140 - dist) / 140;
+            p.x += (dx / dist) * push * 1.6;
+            p.y += (dy / dist) * push * 1.6;
+          }
+        }
+
+        if (p.x < -10) p.x = width + 10;
+        if (p.x > width + 10) p.x = -10;
+        if (p.y < -10) p.y = height + 10;
+        if (p.y > height + 10) p.y = -10;
+
+        let alpha = p.baseOpacity + Math.sin(p.phase) * 0.35;
+
+        if (interactive && pointer.active) {
+          const near = Math.hypot(p.x - pointer.x, p.y - pointer.y);
+          if (near < 180) alpha += (1 - near / 180) * 0.5;
+        }
+
+        alpha = Math.max(0, Math.min(1, alpha));
+        if (p.star) drawStar(p, alpha);
+        else drawDot(p, alpha);
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      raf = requestAnimationFrame(draw);
     };
 
-    window.addEventListener('resize', resize);
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - rect.left;
+      pointer.y = e.clientY - rect.top;
+      pointer.active = true;
+    };
+    const onPointerLeave = () => {
+      pointer.active = false;
+    };
+
+    const observer = new ResizeObserver(resize);
+    if (canvas.parentElement) observer.observe(canvas.parentElement);
+
     resize();
     draw();
 
-    return () => {
-      window.removeEventListener('resize', resize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [density, color]);
+    if (interactive) {
+      window.addEventListener('pointermove', onPointerMove, { passive: true });
+      window.addEventListener('pointerleave', onPointerLeave);
+    }
 
-  if (isDisabled) return null;
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerleave', onPointerLeave);
+    };
+  }, [density, color, interactive, shape]);
+
+  if (disabled) return null;
 
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none z-10 ${className}`}
+      className={`pointer-events-none absolute inset-0 ${className}`}
       aria-hidden="true"
     />
   );

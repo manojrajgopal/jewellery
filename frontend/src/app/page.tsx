@@ -8,6 +8,7 @@ import TestimonialsSection from '@/app/_sections/home/TestimonialsSection';
 import ServicesSection from '@/app/_sections/home/ServicesSection';
 import AppointmentSection from '@/app/_sections/home/AppointmentSection';
 import CTASection from '@/app/_sections/home/CTASection';
+import GoldDivider from '@/components/ui/GoldDivider';
 
 export default function Home() {
   return (
@@ -15,16 +16,14 @@ export default function Home() {
       <HeroSection />
       <TrustStrip />
       <CollectionsSection />
-      
-      {/* Subtle Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
-      
+
+      <GoldDivider variant="wide" className="px-6" />
+
       <SignaturePieces />
       <CraftsmanshipSection />
-      
-      {/* Subtle Divider */}
-      <div className="w-full h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" />
-      
+
+      <GoldDivider variant="wide" className="px-6" />
+
       <HeritageSection />
       <TestimonialsSection />
       <ServicesSection />

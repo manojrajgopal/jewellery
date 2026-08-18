@@ -1,32 +1,58 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import SectionHeading from '@/components/ui/SectionHeading';
-import MotionCard from '@/components/motion/MotionCard';
-import RevealImage from '@/components/motion/RevealImage';
-import Badge from '@/components/ui/Badge';
+import ProductCard from '@/components/ui/ProductCard';
+import QuickViewModal from '@/components/ui/QuickViewModal';
+import CTAButton from '@/components/ui/CTAButton';
 import GradientOrb from '@/components/ui/GradientOrb';
 import { products } from '@/data/products';
+import type { Product } from '@/types';
 
-const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Bracelets', 'Earrings'];
+/**
+ * Values match Product['category'] exactly; the labels are what the tabs show.
+ * The previous version compared 'Necklaces' against 'necklaces', so every
+ * filter except "All" came back empty.
+ */
+const CATEGORIES = [
+  { value: 'all', label: 'All' },
+  { value: 'necklaces', label: 'Necklaces' },
+  { value: 'rings', label: 'Rings' },
+  { value: 'bracelets', label: 'Bracelets' },
+  { value: 'earrings', label: 'Earrings' },
+  { value: 'sets', label: 'Sets' },
+] as const;
 
 export default function SignaturePieces() {
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [active, setActive] = useState<string>('all');
+  const [quickView, setQuickView] = useState<Product | null>(null);
 
-  const filteredProducts = products.filter(product => 
-    activeCategory === 'All' ? true : product.category === activeCategory
-  ).slice(0, 8); // show up to 8
+  const filtered = useMemo(
+    () =>
+      products
+        .filter((p) => (active === 'all' ? true : p.category === active))
+        .slice(0, 8),
+    [active]
+  );
+
+  // Only offer a tab if something is actually behind it.
+  const availableCategories = useMemo(
+    () =>
+      CATEGORIES.filter(
+        (c) => c.value === 'all' || products.some((p) => p.category === c.value)
+      ),
+    []
+  );
 
   return (
-    <section id="pieces" className="py-24 bg-ink-950 relative overflow-hidden">
-      <GradientOrb color="gold-700" size="xl" position="right" blur="3xl" className="opacity-10" />
-      
-      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+    <section id="pieces" className="relative overflow-hidden bg-canvas py-24 md:py-32">
+      <GradientOrb color="gold" size="xl" position="right" blur="3xl" intensity={0.14} />
+      <GradientOrb color="amethyst" size="lg" position="bottom-left" blur="3xl" intensity={0.1} />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeading
-          eyebrow="THE VAULT"
+          eyebrow="The Vault"
           title="Signature Pieces"
           highlightWords={['Signature']}
           subtitle="Handpicked masterworks representing the pinnacle of our artisanal heritage."
@@ -34,81 +60,73 @@ export default function SignaturePieces() {
           className="mb-12"
         />
 
-        {/* Category Tabs */}
-        <div className="flex justify-start md:justify-center overflow-x-auto pb-4 mb-12 scrollbar-hide space-x-2 md:space-x-4">
-          {CATEGORIES.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`relative px-6 py-2 rounded-full font-accent text-sm tracking-widest uppercase whitespace-nowrap transition-colors duration-300 ${
-                activeCategory === category ? 'text-ink-950' : 'text-white/60 hover:text-white'
-              }`}
-            >
-              {activeCategory === category && (
-                <motion.div
-                  layoutId="product-tab"
-                  className="absolute inset-0 bg-gold-500 rounded-full"
-                  transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              <span className="relative z-10">{category}</span>
-            </button>
-          ))}
+        {/* Filter rail with a shared sliding pill */}
+        <div className="scrollbar-hide mb-14 flex justify-start gap-2 overflow-x-auto pb-3 md:justify-center md:gap-3">
+          {availableCategories.map((category) => {
+            const isActive = active === category.value;
+            return (
+              <button
+                key={category.value}
+                onClick={() => setActive(category.value)}
+                aria-pressed={isActive}
+                className={`relative whitespace-nowrap rounded-full px-6 py-2.5 font-accent text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
+                  isActive ? 'text-onaccent' : 'text-muted hover:text-primary'
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="signature-tab"
+                    transition={{ type: 'spring', bounce: 0.18, duration: 0.6 }}
+                    className="absolute inset-0 rounded-full bg-accent shadow-gold"
+                  />
+                )}
+                <span className="relative z-10">{category.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Product Grid */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+        {/* Grid */}
+        <motion.div
+          layout
+          className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4"
+        >
           <AnimatePresence mode="popLayout">
-            {filteredProducts.map((product, idx) => (
+            {filtered.map((product, idx) => (
               <motion.div
                 key={product.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ duration: 0.5, delay: idx * 0.05 }}
+                initial={{ opacity: 0, scale: 0.92, y: 28, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.92, y: 20, filter: 'blur(6px)' }}
+                transition={{ duration: 0.5, delay: idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
               >
-                <MotionCard className="group h-full flex flex-col">
-                  <Link href={`/products/${product.id}`} className="block relative aspect-square rounded-xl overflow-hidden mb-4 bg-ink-900/50">
-                    <RevealImage
-                      src={product.image || '/images/products/ring.jpg'}
-                      alt={product.name}
-                      aspectRatio="square"
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
-                      {product.isNew && <Badge variant="gold" className="text-[10px]">New Arrival</Badge>}
-                      {product.isBestseller && <Badge variant="default" className="text-[10px]">Bestseller</Badge>}
-                    </div>
-                  </Link>
-                  
-                  <div className="flex flex-col flex-grow">
-                    <span className="font-accent text-xs tracking-widest text-gold-500 uppercase mb-1">
-                      {product.collection}
-                    </span>
-                    <Link href={`/products/${product.id}`}>
-                      <h3 className="font-display text-xl text-white group-hover:text-gold-300 transition-colors mb-2">
-                        {product.name}
-                      </h3>
-                    </Link>
-                    <div className="mt-auto flex items-center justify-between pt-4">
-                      <span className="font-body text-white/80 font-medium">
-                        ${product.price?.toLocaleString()}
-                      </span>
-                      <Link 
-                        href={`/products/${product.id}`}
-                        className="flex items-center gap-2 text-sm font-accent tracking-widest uppercase text-gold-500 group-hover:text-gold-300 transition-colors"
-                      >
-                        View <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </div>
-                  </div>
-                </MotionCard>
+                <ProductCard product={product} index={idx} onQuickView={setQuickView} />
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
+
+        {filtered.length === 0 && (
+          <p className="py-16 text-center font-sans text-sm text-muted">
+            No pieces in this category yet — the atelier is at work.
+          </p>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="mt-16 flex justify-center"
+        >
+          <CTAButton variant="secondary" size="lg" href="/collections" showArrow>
+            View The Full Portfolio
+          </CTAButton>
+        </motion.div>
       </div>
+
+      <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
     </section>
   );
 }

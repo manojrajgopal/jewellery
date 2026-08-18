@@ -1,10 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
-import { Menu, X, Sun, Moon } from 'lucide-react';
-import CTAButton from '@/components/ui/CTAButton';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  AnimatePresence,
+  motion,
+  useMotionValueEvent,
+  useScroll,
+} from 'framer-motion';
+import { Menu, X, Search, Heart } from 'lucide-react';
+import CTAButton from '@/components/ui/CTAButton';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+import SearchPalette from '@/components/ui/SearchPalette';
+import { useWishlist } from '@/hooks/useWishlist';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -17,198 +26,248 @@ const navLinks = [
 ];
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState('Home');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  const pathname = usePathname();
+  const { count } = useWishlist();
   const { scrollY } = useScroll();
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
+  // Condense on scroll; hide entirely when descending fast, reveal on the way up.
+  useMotionValueEvent(scrollY, 'change', (latest) => {
+    const previous = scrollY.getPrevious() ?? 0;
+    setScrolled(latest > 40);
+    setHidden(latest > previous && latest > 320 && !menuOpen);
   });
 
-  const handleNavClick = (name: string) => {
-    setActiveLink(name);
-    setMobileMenuOpen(false);
-  };
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
-
-  // Lock body scroll when mobile menu is open
+  // Cmd/Ctrl-K opens search from anywhere.
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+      if (e.key === 'Escape') setMenuOpen(false);
     };
-  }, [mobileMenuOpen]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuOpen]);
+
+  // Close the drawer whenever the route actually changes.
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
     <>
       <motion.header
-        className={`fixed top-0 left-0 right-0 z-50 flex justify-center px-4 transition-all duration-500 ${
-          isScrolled ? 'pt-2' : 'pt-6'
+        initial={{ y: -110, opacity: 0 }}
+        animate={{ y: hidden ? -140 : 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className={`fixed inset-x-0 top-0 z-[100] flex justify-center px-4 transition-[padding] duration-500 ${
+          scrolled ? 'pt-2' : 'pt-5'
         }`}
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div 
-          className={`flex items-center justify-between w-full max-w-7xl mx-auto rounded-full border transition-all duration-500 ${
-            isScrolled 
-              ? 'bg-ink-950/90 backdrop-blur-2xl border-white/10 py-2 px-6' 
-              : 'bg-ink-950/70 backdrop-blur-xl border-white/5 py-4 px-8'
+        <motion.div
+          layout
+          className={`mx-auto flex w-full max-w-7xl items-center justify-between rounded-full border transition-all duration-500 ${
+            scrolled
+              ? 'border-hairline bg-canvas/85 px-5 py-2 shadow-lift backdrop-blur-2xl'
+              : 'border-transparent bg-canvas/45 px-7 py-3.5 backdrop-blur-xl'
           }`}
         >
-          {/* Logo */}
-          <Link href="/" className="flex items-center flex-shrink-0" onClick={() => handleNavClick('Home')}>
-            <span className="font-accent text-gold-500 uppercase tracking-[0.25em] text-xl font-bold">
-              AURUM
+          {/* Wordmark */}
+          <Link href="/" className="group flex flex-shrink-0 items-center gap-2.5">
+            <motion.span
+              whileHover={{ rotate: 135, scale: 1.15 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+              aria-hidden="true"
+              className="block h-2.5 w-2.5 rotate-45 bg-accent shadow-[0_0_10px_2px_rgb(var(--gold-500)/0.5)]"
+            />
+            <span className="font-accent text-lg uppercase tracking-luxer text-gradient-static">
+              Aurum
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                onClick={() => handleNavClick(link.name)}
-                className="relative text-sm uppercase tracking-widest text-cream-50/80 hover:text-gold-300 transition-colors py-2 group"
-              >
-                {link.name}
-                <span 
-                  className={`absolute bottom-0 left-0 w-full h-[1px] bg-gold-500 origin-left transition-transform duration-300 ease-out ${
-                    activeLink === link.name ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+          {/* Desktop navigation with a shared sliding pill */}
+          <nav
+            className="hidden items-center gap-1 lg:flex"
+            onMouseLeave={() => setHovered(null)}
+          >
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  onMouseEnter={() => setHovered(link.name)}
+                  className={`relative px-3.5 py-2 font-accent text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
+                    active ? 'text-accent' : 'text-secondary hover:text-primary'
                   }`}
-                />
-              </Link>
-            ))}
+                >
+                  {hovered === link.name && (
+                    <motion.span
+                      layoutId="nav-hover"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      className="absolute inset-0 -z-10 rounded-full bg-gold-500/10"
+                    />
+                  )}
+                  {link.name}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active"
+                      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      className="absolute inset-x-3.5 -bottom-0.5 h-px bg-gradient-to-r from-transparent via-accent to-transparent"
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
-          {/* Right Section */}
-          <div className="hidden lg:flex items-center gap-6">
+          {/* Utilities */}
+          <div className="hidden items-center gap-2 lg:flex">
             <button
-              onClick={toggleTheme}
-              className="text-cream-50/80 hover:text-gold-300 transition-colors w-8 h-8 flex items-center justify-center relative overflow-hidden rounded-full"
-              aria-label="Toggle Theme"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search collections"
+              className="group flex h-9 items-center gap-2 rounded-full border border-hairline px-3 text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
             >
-              <AnimatePresence mode="wait">
-                {theme === 'dark' ? (
-                  <motion.div
-                    key="sun"
-                    initial={{ y: 30, opacity: 0, rotate: -45 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    exit={{ y: -30, opacity: 0, rotate: 45 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute"
-                  >
-                    <Sun size={18} />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="moon"
-                    initial={{ y: 30, opacity: 0, rotate: -45 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    exit={{ y: -30, opacity: 0, rotate: 45 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute"
-                  >
-                    <Moon size={18} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <Search size={15} strokeWidth={1.7} />
+              <kbd className="font-sans text-[10px] tracking-widest text-faint">⌘K</kbd>
             </button>
 
-            <CTAButton variant="primary" size="sm" href="#appointment">
+            <Link
+              href="/collections"
+              aria-label={`Wishlist, ${count} saved`}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
+            >
+              <Heart size={15} strokeWidth={1.7} />
+              <AnimatePresence>
+                {count > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-sans text-[9px] font-medium text-onaccent"
+                  >
+                    {count}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+
+            <ThemeToggle />
+
+            <CTAButton variant="primary" size="sm" href="/contact" className="ml-1">
               Book Appointment
             </CTAButton>
           </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="lg:hidden flex items-center">
+          {/* Mobile utilities */}
+          <div className="flex items-center gap-1 lg:hidden">
             <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="text-cream-50 hover:text-gold-300 transition-colors p-2"
-              aria-label="Open Menu"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-secondary transition-colors hover:text-accent"
             >
-              <Menu size={24} />
+              <Search size={18} strokeWidth={1.7} />
+            </button>
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={menuOpen}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-primary transition-colors hover:text-accent"
+            >
+              <Menu size={22} strokeWidth={1.7} />
             </button>
           </div>
-        </div>
+        </motion.div>
       </motion.header>
 
-      {/* Mobile Full-Screen Menu Overlay */}
+      {/* Full-screen mobile drawer */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {menuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-[60] bg-ink-950/95 backdrop-blur-3xl flex flex-col"
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-[120] flex flex-col bg-canvas/97 backdrop-blur-3xl"
           >
-            <div className="flex items-center justify-between px-8 py-6">
-              <span className="font-accent text-gold-500 uppercase tracking-[0.25em] text-xl font-bold">
-                AURUM
+            {/* Ambient wash */}
+            <div className="pointer-events-none absolute inset-0 bg-gold-mesh opacity-60" />
+
+            <div className="relative flex items-center justify-between px-7 py-5">
+              <span className="font-accent text-lg uppercase tracking-luxer text-gradient-static">
+                Aurum
               </span>
               <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-cream-50 hover:text-gold-300 transition-colors p-2"
-                aria-label="Close Menu"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline text-primary transition-colors hover:border-gold-500/40 hover:text-accent"
               >
-                <X size={28} />
+                <X size={22} strokeWidth={1.7} />
               </button>
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center px-8">
-              <nav className="flex flex-col items-center w-full max-w-md">
-                {navLinks.map((link, i) => (
-                  <motion.div
-                    key={link.name}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.4, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-full flex flex-col items-center"
+            <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 px-8">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  key={link.name}
+                  initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: 16 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.08 + i * 0.06,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  className="w-full max-w-sm"
+                >
+                  <Link
+                    href={link.href}
+                    className={`group flex items-baseline justify-between border-b border-hairline py-4 font-display text-3xl transition-colors sm:text-4xl ${
+                      isActive(link.href) ? 'text-accent' : 'text-primary hover:text-accent'
+                    }`}
                   >
-                    <Link
-                      href={link.href}
-                      onClick={() => handleNavClick(link.name)}
-                      className={`font-display text-3xl sm:text-4xl py-6 tracking-wide transition-colors ${
-                        activeLink === link.name ? 'text-gold-500' : 'text-cream-50 hover:text-gold-300'
-                      }`}
-                    >
-                      {link.name}
-                    </Link>
-                    {i !== navLinks.length - 1 && (
-                      <div className="w-12 h-[1px] bg-gold-500/30" />
-                    )}
-                  </motion.div>
-                ))}
-              </nav>
+                    <span>{link.name}</span>
+                    <span className="font-sans text-[10px] tracking-luxe text-faint">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.4, delay: navLinks.length * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-12"
+                transition={{ duration: 0.5, delay: 0.1 + navLinks.length * 0.06 }}
+                className="mt-10"
               >
-                <CTAButton variant="primary" size="lg" href="#appointment" onClick={() => setMobileMenuOpen(false)}>
+                <CTAButton variant="primary" size="lg" href="/contact" showArrow>
                   Book Appointment
                 </CTAButton>
               </motion.div>
-            </div>
+            </nav>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

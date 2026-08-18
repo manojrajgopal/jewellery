@@ -2,47 +2,51 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ChevronRight, Home } from 'lucide-react';
 
 interface BreadcrumbItem {
   label: string;
   href?: string;
 }
 
-interface BreadcrumbsProps {
+export default function Breadcrumbs({
+  items,
+  className = '',
+}: {
   items: BreadcrumbItem[];
   className?: string;
-}
-
-export default function Breadcrumbs({ items, className = '' }: BreadcrumbsProps) {
+}) {
   return (
     <motion.nav
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={{ duration: 0.6, delay: 0.15 }}
       aria-label="Breadcrumb"
-      className={`flex items-center gap-2 text-sm font-sans ${className}`}
+      className={`flex flex-wrap items-center gap-2 font-sans text-sm ${className}`}
     >
       <Link
         href="/"
-        className="text-ink-400 hover:text-gold-500 transition-colors duration-300 flex items-center gap-1"
+        className="link-underline flex items-center gap-1.5 text-muted transition-colors duration-300 hover:text-accent"
       >
-        <Home size={14} />
+        <Home size={13} strokeWidth={1.8} />
         <span>Home</span>
       </Link>
+
       {items.map((item, index) => (
-        <React.Fragment key={index}>
-          <ChevronRight size={14} className="text-ink-600" />
+        <React.Fragment key={`${item.label}-${index}`}>
+          <ChevronRight size={13} className="text-faint" aria-hidden="true" />
           {item.href ? (
             <Link
               href={item.href}
-              className="text-ink-400 hover:text-gold-500 transition-colors duration-300"
+              className="link-underline text-muted transition-colors duration-300 hover:text-accent"
             >
               {item.label}
             </Link>
           ) : (
-            <span className="text-gold-500">{item.label}</span>
+            <span className="text-accent" aria-current="page">
+              {item.label}
+            </span>
           )}
         </React.Fragment>
       ))}

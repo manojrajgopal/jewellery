@@ -1,146 +1,248 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import SectionHeading from '@/components/ui/SectionHeading';
 import GradientOrb from '@/components/ui/GradientOrb';
-import { Star } from 'lucide-react';
 import { testimonials } from '@/data/testimonials';
 
-// Fallback data if needed
-const defaultTestimonials = [
-  { id: 1, name: "Eleanor V.", location: "New York", product: "Bespoke Diamond Ring", quote: "The craftsmanship is unparalleled. They didn't just make a ring; they captured our story in platinum and diamonds.", rating: 5, initials: "EV", color: "bg-burgundy-900" },
-  { id: 2, name: "James C.", location: "London", product: "Heritage Timepiece", quote: "A truly remarkable experience from consultation to delivery. The piece exceeded every expectation.", rating: 5, initials: "JC", color: "bg-ink-800" },
-  { id: 3, name: "Sophia M.", location: "Paris", product: "Sapphire Pendant", quote: "AURUM's attention to detail is astonishing. The sapphire reflects light in ways I never thought possible.", rating: 5, initials: "SM", color: "bg-gold-900" },
-  { id: 4, name: "William T.", location: "Geneva", product: "Classic Gold Bangles", quote: "An heirloom that will stay in our family for generations. The quality speaks for itself.", rating: 5, initials: "WT", color: "bg-burgundy-900" },
-  { id: 5, name: "Olivia R.", location: "Milan", product: "Diamond Tennis Bracelet", quote: "Every time I wear it, I feel an extraordinary sense of elegance. True artistry.", rating: 5, initials: "OR", color: "bg-ink-800" },
-  { id: 6, name: "Alexander K.", location: "Dubai", product: "Emerald Earrings", quote: "The design is bold yet timeless. AURUM has set a new standard for luxury.", rating: 5, initials: "AK", color: "bg-gold-900" }
+const ROTATE_MS = 7000;
+
+/** Two initials from a full name — the data has no `initials` field. */
+const initialsOf = (name: string) =>
+  name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+
+/** Deterministic jewel tint per patron so the orbit reads as varied. */
+const TINTS = [
+  'bg-burgundy-700',
+  'bg-jade-700',
+  'bg-amethyst-700',
+  'bg-ink-700',
+  'bg-gold-800',
 ];
 
 export default function TestimonialsSection() {
-  const data = testimonials?.length ? testimonials : defaultTestimonials;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const data = testimonials;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [direction, setDirection] = useState(1);
+
+  const go = useCallback(
+    (next: number) => {
+      setDirection(next > index ? 1 : -1);
+      setIndex(((next % data.length) + data.length) % data.length);
+    },
+    [index, data.length]
+  );
 
   useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % data.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [data.length, isPaused]);
+    if (paused || data.length < 2) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setIndex((prev) => (prev + 1) % data.length);
+    }, ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [paused, data.length]);
 
-  const activeTestimonial = data[activeIndex];
+  const active = data[index];
+  if (!active) return null;
 
   return (
-    <section id="testimonials" className="relative w-full py-24 bg-ink-950 overflow-hidden">
-      <GradientOrb color="gold" size="lg" position="bottom-right" className="opacity-20" />
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section
+      id="testimonials"
+      className="relative w-full overflow-hidden bg-canvas py-24 md:py-32"
+    >
+      <GradientOrb color="burgundy" size="lg" position="bottom-right" intensity={0.2} />
+      <GradientOrb color="gold" size="md" position="top-left" intensity={0.14} />
+
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="VOICES OF ELEGANCE"
+          eyebrow="Voices of Elegance"
           title="What Our Patrons Say"
           highlightWords={['Patrons']}
           align="center"
           className="mb-16"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          
-          {/* Left Column - Orbital UI */}
-          <div 
-            className="relative w-full aspect-square max-w-[500px] mx-auto flex items-center justify-center"
-            onMouseEnter={() => setIsPaused(true)}
-            onMouseLeave={() => setIsPaused(false)}
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+          {/* Orbit selector */}
+          <div
+            className="relative mx-auto flex aspect-square w-full max-w-[460px] items-center justify-center"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
           >
-            {/* Orbit Rings */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="absolute w-[60%] h-[60%] rounded-full border border-gold-500/15" />
-              <div className="absolute w-[90%] h-[90%] rounded-full border border-gold-500/15" />
+            {/* Rings */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <span className="absolute h-[58%] w-[58%] rounded-full border border-gold-500/15" />
+              <span className="absolute h-[88%] w-[88%] rounded-full border border-gold-500/12" />
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 34, repeat: Infinity, ease: 'linear' }}
+                className="absolute h-[88%] w-[88%] rounded-full border border-dashed border-gold-500/20"
+              />
             </div>
 
-            {/* Active Center Avatar */}
-            <div className="relative z-20 w-24 h-24 rounded-full border-2 border-gold-500 p-1 bg-ink-950 flex items-center justify-center shadow-[0_0_30px_rgba(212,168,67,0.2)]">
+            {/* Active avatar */}
+            <div className="relative z-20 flex h-28 w-28 items-center justify-center rounded-full border border-gold-400/70 bg-canvas p-1 shadow-[0_0_40px_-8px_rgb(var(--gold-500)/0.55)]">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={activeIndex}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.3 }}
-                  className={`w-full h-full rounded-full flex items-center justify-center text-2xl font-display text-gold-100 ${activeTestimonial.color || 'bg-burgundy-900'}`}
+                  key={active.id}
+                  initial={{ opacity: 0, scale: 0.7, rotate: -20 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                  exit={{ opacity: 0, scale: 0.7, rotate: 20 }}
+                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className={`flex h-full w-full items-center justify-center rounded-full font-display text-3xl text-gold-100 ${
+                    TINTS[index % TINTS.length]
+                  }`}
                 >
-                  {activeTestimonial.initials || activeTestimonial.name.charAt(0)}
+                  {initialsOf(active.name)}
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Orbiting Avatars */}
-            <div className="absolute inset-0 animate-[spin_40s_linear_infinite] hover:[animation-play-state:paused]">
+            {/* Orbiting patrons */}
+            <motion.div
+              animate={{ rotate: paused ? undefined : 360 }}
+              transition={{ duration: 48, repeat: Infinity, ease: 'linear' }}
+              className="absolute inset-0"
+            >
               {data.map((t, i) => {
                 const angle = (i / data.length) * 360;
-                const radius = i % 2 === 0 ? '45%' : '30%'; 
-                
+                const radius = i % 2 === 0 ? 44 : 29;
+
                 return (
                   <div
                     key={t.id}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius})`,
-                      width: '100%',
-                      height: '100%'
-                    }}
+                    className="absolute left-1/2 top-1/2 h-0 w-0"
+                    style={{ transform: `rotate(${angle}deg) translateY(-${radius}%)` }}
                   >
-                    <button
-                      onClick={() => setActiveIndex(i)}
-                      className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-gold-500/30 p-0.5 hover:border-gold-500 transition-colors z-30 animate-[spin_40s_linear_infinite_reverse]"
+                    <motion.button
+                      onClick={() => go(i)}
+                      whileHover={{ scale: 1.18 }}
+                      whileTap={{ scale: 0.9 }}
+                      style={{ transform: `rotate(-${angle}deg)` }}
+                      aria-label={`Read the review from ${t.name}`}
+                      className={`flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border p-0.5 transition-colors duration-300 ${
+                        i === index
+                          ? 'border-gold-400 shadow-[0_0_18px_-2px_rgb(var(--gold-400)/0.8)]'
+                          : 'border-gold-500/25 hover:border-gold-400/70'
+                      }`}
                     >
-                      <div className={`w-full h-full rounded-full flex items-center justify-center text-sm font-display text-gold-100 ${t.color || 'bg-ink-800'}`}>
-                        {t.initials || t.name.charAt(0)}
-                      </div>
-                    </button>
+                      <span
+                        className={`flex h-full w-full items-center justify-center rounded-full font-display text-sm text-gold-100 ${
+                          TINTS[i % TINTS.length]
+                        }`}
+                      >
+                        {initialsOf(t.name)}
+                      </span>
+                    </motion.button>
                   </div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
 
-          {/* Right Column - Content */}
-          <div className="flex flex-col justify-center min-h-[300px]">
-            <span className="font-display text-8xl text-gold-500/20 leading-none h-16">&ldquo;</span>
-            
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeIndex}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
+          {/* Quote panel */}
+          <div className="flex min-h-[340px] flex-col justify-center">
+            <Quote
+              className="mb-4 h-10 w-10 rotate-180 text-accent/25"
+              strokeWidth={1.2}
+              aria-hidden="true"
+            />
+
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.blockquote
+                key={active.id}
+                custom={direction}
+                initial={{ opacity: 0, y: 28, filter: 'blur(6px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, y: -20, filter: 'blur(6px)' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="flex flex-col"
               >
-                <p className="font-display text-2xl md:text-3xl italic text-cream-50 leading-relaxed mb-8">
-                  {activeTestimonial.quote}
+                <p className="mb-8 font-display text-2xl italic leading-relaxed text-primary md:text-3xl">
+                  {active.quote}
                 </p>
-                
-                <div className="flex space-x-1 mb-6">
+
+                <div className="mb-6 flex gap-1" aria-label={`Rated ${active.rating} out of 5`}>
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
+                    <motion.span
                       key={i}
-                      className={`w-5 h-5 ${i < (activeTestimonial.rating || 5) ? 'fill-gold-500 text-gold-500' : 'text-ink-700'}`}
-                    />
+                      initial={{ opacity: 0, scale: 0.4, rotate: -40 }}
+                      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.15 + i * 0.07, type: 'spring', stiffness: 320 }}
+                    >
+                      <Star
+                        className={`${
+                          i < (active.rating ?? 5)
+                            ? 'fill-gold-400 text-gold-400'
+                            : 'text-line-strong'
+                        }`}
+                        size={18}
+                      />
+                    </motion.span>
                   ))}
                 </div>
-                
-                <div>
-                  <h4 className="font-display text-xl text-gold-300">{activeTestimonial.name}</h4>
-                  <p className="text-ink-400 text-sm mt-1">
-                    {activeTestimonial.location} &bull; <span className="text-gold-700">{activeTestimonial.product}</span>
-                  </p>
-                </div>
-              </motion.div>
+
+                <footer>
+                  <cite className="not-italic">
+                    <span className="block font-display text-xl text-accent-soft">
+                      {active.name}
+                    </span>
+                    <span className="mt-1 block font-sans text-sm text-muted">
+                      {active.location}
+                      {active.product && (
+                        <>
+                          {' · '}
+                          <span className="text-accent-deep">{active.product}</span>
+                        </>
+                      )}
+                    </span>
+                  </cite>
+                </footer>
+              </motion.blockquote>
             </AnimatePresence>
+
+            {/* Controls */}
+            <div className="mt-10 flex items-center gap-4">
+              <button
+                onClick={() => go(index - 1)}
+                aria-label="Previous review"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={() => go(index + 1)}
+                aria-label="Next review"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
+              >
+                <ChevronRight size={18} />
+              </button>
+
+              {/* Auto-rotate progress */}
+              <div className="ml-2 h-px flex-1 overflow-hidden bg-line">
+                <motion.div
+                  key={`${index}-${paused}`}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: paused ? 0 : 1 }}
+                  transition={{ duration: ROTATE_MS / 1000, ease: 'linear' }}
+                  className="h-full origin-left bg-gradient-to-r from-gold-700 to-gold-300"
+                />
+              </div>
+
+              <span className="font-sans text-xs tabular-nums tracking-luxe text-faint">
+                {String(index + 1).padStart(2, '0')} / {String(data.length).padStart(2, '0')}
+              </span>
+            </div>
           </div>
-          
         </div>
       </div>
     </section>

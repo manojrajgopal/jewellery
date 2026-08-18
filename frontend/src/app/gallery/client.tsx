@@ -1,104 +1,120 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Expand } from 'lucide-react';
 import PageBanner from '@/components/ui/PageBanner';
 import Lightbox from '@/components/ui/Lightbox';
-import { motion, AnimatePresence } from 'framer-motion';
-import { StaggerContainer } from '@/components/animations/Reveal';
-import Image from 'next/image';
 
-const categories = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
+const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
-const galleryImages = [
-  { src: '/images/hero/hero-main.jpg', alt: 'Aurum Hero', category: 'Collections' },
-  { src: '/images/products/ring.jpg', alt: 'Diamond Ring', category: 'Rings' },
-  { src: '/images/collections/bridal.jpg', alt: 'Bridal Collection', category: 'Collections' },
-  { src: '/images/products/necklace.jpg', alt: 'Gold Necklace', category: 'Necklaces' },
-  { src: '/images/products/earrings.jpg', alt: 'Pearl Earrings', category: 'Earrings' },
-  { src: '/images/collections/heritage.jpg', alt: 'Heritage Collection', category: 'Collections' },
-  { src: '/images/products/bracelet.jpg', alt: 'Tennis Bracelet', category: 'Bracelets' },
-  { src: '/images/collections/statement.jpg', alt: 'Statement Piece', category: 'Collections' },
-  { src: '/images/hero/craftsmanship.jpg', alt: 'Craftsmanship', category: 'Collections' },
-  { src: '/images/collections/everyday.jpg', alt: 'Everyday Elegance', category: 'Collections' },
-  { src: '/images/collections/gemstone.jpg', alt: 'Gemstone Ring', category: 'Rings' },
-  { src: '/images/collections/mens.jpg', alt: 'Mens Collection', category: 'Collections' },
+const GALLERY = [
+  { src: '/images/hero/hero-main.jpg', alt: 'The AURUM signature gold suite', category: 'Collections' },
+  { src: '/images/products/ring.jpg', alt: 'Solitaire diamond ring', category: 'Rings' },
+  { src: '/images/collections/bridal.jpg', alt: 'Bridal kundan set', category: 'Collections' },
+  { src: '/images/products/necklace.jpg', alt: 'Handwoven gold necklace', category: 'Necklaces' },
+  { src: '/images/products/earrings.jpg', alt: 'Pearl drop earrings', category: 'Earrings' },
+  { src: '/images/collections/heritage.jpg', alt: 'Heritage collection centrepiece', category: 'Collections' },
+  { src: '/images/products/bracelet.jpg', alt: 'Diamond tennis bracelet', category: 'Bracelets' },
+  { src: '/images/collections/statement.jpg', alt: 'Statement emerald piece', category: 'Collections' },
+  { src: '/images/hero/craftsmanship.jpg', alt: 'An artisan at the bench', category: 'Collections' },
+  { src: '/images/collections/everyday.jpg', alt: 'Everyday luxe stack', category: 'Collections' },
+  { src: '/images/collections/gemstone.jpg', alt: 'Gemstone cocktail ring', category: 'Rings' },
+  { src: '/images/collections/mens.jpg', alt: "Men's signet collection", category: 'Collections' },
 ];
 
 export default function GalleryClient() {
   const [activeTab, setActiveTab] = useState('All');
   const [lightboxIndex, setLightboxIndex] = useState(-1);
 
-  const filteredImages = activeTab === 'All' 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === activeTab);
+  const filtered = useMemo(
+    () => (activeTab === 'All' ? GALLERY : GALLERY.filter((g) => g.category === activeTab)),
+    [activeTab]
+  );
 
   return (
-    <main className="min-h-screen bg-[#060504] text-gold-100">
+    <main className="min-h-screen bg-canvas">
       <PageBanner
         title="Gallery"
         subtitle="A visual journey through our finest creations"
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Gallery' }]}
+        breadcrumbs={[{ label: 'Gallery' }]}
       />
 
-      <section className="py-16 px-6 md:px-12 lg:px-24 max-w-[1600px] mx-auto">
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-16">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveTab(category)}
-              className={`relative px-6 py-2 rounded-full font-body text-sm tracking-widest uppercase transition-colors duration-300 ${
-                activeTab === category ? 'text-ink-950' : 'text-gold-100 hover:text-gold-300'
-              }`}
-            >
-              {activeTab === category && (
-                <motion.div
-                  layoutId="pill"
-                  className="absolute inset-0 bg-gold-500 rounded-full -z-10"
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
-              {category}
-            </button>
-          ))}
+      <section className="mx-auto max-w-[1600px] px-6 py-16 md:px-12 lg:px-24">
+        {/* Filter rail */}
+        <div className="mb-16 flex flex-wrap justify-center gap-3">
+          {CATEGORIES.map((category) => {
+            const isActive = activeTab === category;
+            return (
+              <button
+                key={category}
+                onClick={() => setActiveTab(category)}
+                aria-pressed={isActive}
+                className={`relative rounded-full px-6 py-2.5 font-accent text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
+                  isActive ? 'text-onaccent' : 'text-muted hover:text-accent'
+                }`}
+              >
+                {isActive && (
+                  <motion.span
+                    layoutId="gallery-pill"
+                    className="absolute inset-0 -z-10 rounded-full bg-accent shadow-gold"
+                    transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+                  />
+                )}
+                {category}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Masonry Grid */}
-        <StaggerContainer className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
+        {/* Masonry */}
+        <div className="columns-1 gap-6 space-y-6 sm:columns-2 lg:columns-3 xl:columns-4">
           <AnimatePresence mode="popLayout">
-            {filteredImages.map((image) => (
-              <motion.div
+            {filtered.map((image, i) => (
+              <motion.button
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.5 }}
-                key={image.src + activeTab} // forces re-render for clean exit animations
-                className="relative group rounded-xl overflow-hidden cursor-pointer inline-block w-full break-inside-avoid"
-                onClick={() => setLightboxIndex(galleryImages.findIndex(img => img.src === image.src))}
+                key={image.src}
+                initial={{ opacity: 0, scale: 0.92, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.55, delay: (i % 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                onClick={() =>
+                  setLightboxIndex(GALLERY.findIndex((g) => g.src === image.src))
+                }
+                data-cursor="View"
+                aria-label={`Open ${image.alt}`}
+                className="group relative mb-6 block w-full break-inside-avoid overflow-hidden rounded-xl border border-hairline"
               >
-                <div className="aspect-w-3 aspect-h-4 relative w-full h-[300px] sm:h-auto">
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    width={600}
-                    height={800}
-                    className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-ink-950/0 group-hover:bg-ink-950/40 transition-colors duration-500 flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 font-display text-2xl text-gold-100 tracking-wider transform translate-y-4 group-hover:translate-y-0">
-                      View
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  width={800}
+                  height={1000}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="h-auto w-full object-cover transition-transform duration-[1100ms] ease-luxury group-hover:scale-110"
+                />
+
+                {/* Hover veil */}
+                <span className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-canvas/0 transition-colors duration-500 group-hover:bg-canvas/55">
+                  <span className="flex h-12 w-12 translate-y-4 items-center justify-center rounded-full border border-gold-400/60 text-accent opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100">
+                    <Expand size={17} />
+                  </span>
+                  <span className="translate-y-4 px-4 text-center font-accent text-[10px] uppercase tracking-luxe text-gold-100 opacity-0 transition-all duration-500 delay-75 group-hover:translate-y-0 group-hover:opacity-100">
+                    {image.alt}
+                  </span>
+                </span>
+
+                {/* Hairline frame that draws in */}
+                <span className="pointer-events-none absolute inset-3 border border-gold-400/0 transition-colors duration-700 group-hover:border-gold-400/45" />
+              </motion.button>
             ))}
           </AnimatePresence>
-        </StaggerContainer>
+        </div>
       </section>
 
       <Lightbox
-        images={galleryImages}
+        images={GALLERY}
         initialIndex={lightboxIndex === -1 ? 0 : lightboxIndex}
         isOpen={lightboxIndex !== -1}
         onClose={() => setLightboxIndex(-1)}

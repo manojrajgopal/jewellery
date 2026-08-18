@@ -1,10 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Breadcrumbs from './Breadcrumbs';
+import SplitText from '@/components/motion/SplitText';
 import DiamondSparkles from '@/components/motion/DiamondSparkles';
+import AuroraBackground from '@/components/motion/AuroraBackground';
 
 interface BreadcrumbItem {
   label: string;
@@ -20,6 +22,10 @@ interface PageBannerProps {
   compact?: boolean;
 }
 
+/**
+ * Shared page header: parallaxed photograph, jewel-tone wash, split-character
+ * title, and a gold rule that draws across the base.
+ */
 export default function PageBanner({
   title,
   subtitle,
@@ -28,56 +34,74 @@ export default function PageBanner({
   className = '',
   compact = false,
 }: PageBannerProps) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start start', 'end start'],
+  });
+
+  const imageY = useTransform(scrollYProgress, [0, 1], ['0%', '28%']);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.15]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '38%']);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
+
   return (
     <section
-      className={`relative overflow-hidden ${compact ? 'pt-32 pb-16 md:pt-40 md:pb-20' : 'pt-36 pb-20 md:pt-44 md:pb-28'} ${className}`}
+      ref={ref}
+      className={`relative overflow-hidden ${
+        compact ? 'pb-16 pt-32 md:pb-20 md:pt-40' : 'pb-20 pt-36 md:pb-28 md:pt-44'
+      } ${className}`}
     >
-      {/* Background Image */}
-      <div className="absolute inset-0">
+      {/* Backdrop */}
+      <motion.div style={{ y: imageY, scale: imageScale }} className="absolute inset-0">
         <Image
           src={backgroundImage}
           alt=""
           fill
           className="object-cover object-center"
           priority
+          sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink-950/90 via-ink-950/80 to-ink-950" />
-      </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-ink-950/92 via-ink-950/78 to-canvas" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/30 to-amethyst-900/25 mix-blend-overlay" />
+      </motion.div>
 
-      {/* Diamond Sparkles */}
-      <DiamondSparkles density={15} className="absolute inset-0 z-[1]" />
+      <AuroraBackground intensity="subtle" parallax={false} className="z-[1]" />
+      <DiamondSparkles density={20} className="z-[2]" />
 
       {/* Content */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <Breadcrumbs items={breadcrumbs} className="mb-6" />
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8"
+      >
+        <Breadcrumbs items={breadcrumbs} className="mb-7" />
 
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-4xl md:text-5xl lg:text-6xl font-light text-cream-50 mb-4"
-        >
-          {title}
-        </motion.h1>
+        <SplitText
+          text={title}
+          as="h1"
+          mode="chars"
+          delay={0.15}
+          className="mb-4 font-display text-4xl font-light leading-[1.05] text-cream-50 md:text-5xl lg:text-6xl"
+        />
 
         {subtitle && (
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-lg md:text-xl text-ink-400 max-w-2xl font-sans"
+            initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl font-sans text-lg font-light text-ink-300 md:text-xl"
           >
             {subtitle}
           </motion.p>
         )}
-      </div>
+      </motion.div>
 
-      {/* Bottom Gold Line */}
+      {/* Base rule */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
-        transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/50 to-transparent"
+        transition={{ duration: 1.2, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-500/60 to-transparent"
       />
     </section>
   );

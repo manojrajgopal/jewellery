@@ -1,77 +1,100 @@
 'use client';
 
 import React from 'react';
-import SectionHeading from '@/components/ui/SectionHeading';
-import GlassPanel from '@/components/ui/GlassPanel';
-import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
-import { Gem, Wrench, ShieldCheck, Sparkles, ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, Check, Gem, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
+import SectionHeading from '@/components/ui/SectionHeading';
+import SpotlightCard from '@/components/motion/SpotlightCard';
+import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { services } from '@/data/services';
 
-const fallbackServices = [
-  { id: 1, title: 'Bespoke Design', description: 'Collaborate with our master artisans to create a unique piece that tells your personal story.', features: ['Private consultation', '3D rendering', 'Material selection'], icon: 'Gem', link: '/services/bespoke' },
-  { id: 2, title: 'Restoration', description: 'Breathe new life into family heirlooms with our meticulous restoration and polishing services.', features: ['Expert cleaning', 'Prong retipping', 'Stone replacement'], icon: 'Wrench', link: '/services/restoration' },
-  { id: 3, title: 'Authentication', description: 'Comprehensive valuation and certification for your fine jewelry and luxury timepieces.', features: ['GIA certified gemologists', 'Detailed documentation', 'Insurance appraisal'], icon: 'ShieldCheck', link: '/services/authentication' },
-  { id: 4, title: 'Concierge Care', description: 'Complimentary lifetime maintenance for all AURUM creations to ensure enduring brilliance.', features: ['Annual inspection', 'Ultrasonic cleaning', 'Secure shipping'], icon: 'Sparkles', link: '/services/care' }
-];
-
-const iconMap: Record<string, React.ElementType> = {
+const ICONS: Record<string, React.ElementType> = {
   Gem,
   Wrench,
   ShieldCheck,
-  Sparkles
+  Sparkles,
 };
 
 export default function ServicesSection() {
-  const data = services?.length ? services : fallbackServices;
-
   return (
-    <section id="services" className="relative w-full py-24 bg-ink-950">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="services" className="relative w-full bg-canvas py-24 md:py-32">
+      {/* Hairline grid wash */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-grid-hairline bg-grid [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
+      />
+
+      <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="BEYOND THE SHOWCASE"
+          eyebrow="Beyond the Showcase"
           title="Our Services"
           highlightWords={['Services']}
+          subtitle="From a first sketch to a lifetime of care — the work does not end when a piece leaves the atelier."
           align="center"
           className="mb-16"
         />
 
-        <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {data.map((service) => {
-            const IconComponent = iconMap[service.icon] || Gem;
+        <StaggerContainer
+          staggerChildren={0.11}
+          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+        >
+          {services.map((service, idx) => {
+            const Icon = ICONS[service.icon] ?? Gem;
 
             return (
-              <StaggerItem key={service.id}>
-                <GlassPanel 
-                  variant="default" 
-                  className="h-full group hover:-translate-y-2 transition-transform duration-500 hover:shadow-[0_0_30px_rgba(212,168,67,0.15)] flex flex-col"
-                >
-                  <div className="mb-6 inline-flex p-4 rounded-xl bg-gold-500/10 text-gold-500">
-                    <IconComponent className="w-8 h-8" strokeWidth={1.5} />
+              <StaggerItem key={service.id} className="h-full">
+                <SpotlightCard className="h-full border border-hairline bg-surface-raised/60 backdrop-blur-xl">
+                  <div className="group flex h-full flex-col p-7">
+                    {/* Index watermark */}
+                    <span className="absolute right-5 top-4 font-display text-5xl leading-none text-accent/10 transition-colors duration-500 group-hover:text-accent/20">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+
+                    <motion.div
+                      whileHover={{ rotate: -8, scale: 1.08 }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 16 }}
+                      className="mb-6 inline-flex w-fit rounded-xl border border-gold-500/20 bg-gold-500/10 p-4 text-accent"
+                    >
+                      <Icon className="h-7 w-7" strokeWidth={1.4} />
+                    </motion.div>
+
+                    <h3 className="mb-3 font-display text-2xl text-primary transition-colors duration-300 group-hover:text-accent">
+                      {service.title}
+                    </h3>
+
+                    <p className="mb-6 flex-grow font-sans text-sm font-light leading-relaxed text-muted">
+                      {service.description}
+                    </p>
+
+                    <ul className="mb-8 space-y-2.5">
+                      {service.features.map((feature, i) => (
+                        <motion.li
+                          key={feature}
+                          initial={{ opacity: 0, x: -8 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.2 + i * 0.06, duration: 0.4 }}
+                          className="flex items-start gap-2.5 font-sans text-xs text-secondary"
+                        >
+                          <Check
+                            className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
+                            strokeWidth={2.2}
+                          />
+                          <span>{feature}</span>
+                        </motion.li>
+                      ))}
+                    </ul>
+
+                    <Link
+                      href={service.link ?? '/services'}
+                      className="mt-auto inline-flex items-center gap-2 font-accent text-[10px] uppercase tracking-luxe text-accent transition-colors hover:text-accent-soft"
+                    >
+                      Learn More
+                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+                    </Link>
                   </div>
-                  
-                  <h3 className="font-display text-2xl text-cream-50 mb-3">{service.title}</h3>
-                  <p className="text-ink-400 text-sm leading-relaxed mb-6 flex-grow">
-                    {service.description}
-                  </p>
-                  
-                  <ul className="space-y-2 mb-8">
-                    {service.features.map((feature: string, idx: number) => (
-                      <li key={idx} className="flex items-center text-sm text-ink-300">
-                        <Check className="w-4 h-4 text-gold-500 mr-2 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Link 
-                    href={service.link || '#'} 
-                    className="inline-flex items-center text-gold-500 hover:text-gold-300 text-sm uppercase tracking-wider font-medium transition-colors mt-auto"
-                  >
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </GlassPanel>
+                </SpotlightCard>
               </StaggerItem>
             );
           })}

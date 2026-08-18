@@ -1,72 +1,92 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface GoldBorderTraceProps {
   children: React.ReactNode;
   className?: string;
   borderRadius?: number | string;
+  /** Trace continuously instead of only on hover. */
+  always?: boolean;
+  duration?: number;
 }
 
+/**
+ * A gold hairline that draws itself around the element's perimeter on hover,
+ * plus corner ticks that flare at the same moment.
+ *
+ * The gradient gets a unique id per instance — a shared id meant every card on
+ * a page reused the first one's gradient.
+ */
 export default function GoldBorderTrace({
   children,
   className = '',
-  borderRadius = 0
+  borderRadius = 0,
+  always = false,
+  duration = 1.4,
 }: GoldBorderTraceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [{ width, height }, setSize] = useState({ width: 0, height: 0 });
+  const gradientId = `gold-trace-${useId().replace(/:/g, '')}`;
 
   useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight
-        });
-      }
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setSize({ width: el.offsetWidth, height: el.offsetHeight });
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
-  const perimeter = 2 * (dimensions.width + dimensions.height);
+  const perimeter = 2 * (width + height) || 1;
 
   return (
-    <div
-      ref={containerRef}
-      className={`relative group ${className}`}
-    >
+    <div ref={containerRef} className={`group relative ${className}`}>
       <svg
-        className="absolute inset-0 w-full h-full pointer-events-none"
+        className="pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible"
         xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
         <defs>
-          <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fdf3d7" />
-            <stop offset="50%" stopColor="#d4a843" />
-            <stop offset="100%" stopColor="#a37c2c" />
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="rgb(var(--gold-100))" />
+            <stop offset="45%" stopColor="rgb(var(--gold-400))" />
+            <stop offset="100%" stopColor="rgb(var(--gold-700))" />
           </linearGradient>
         </defs>
         <motion.rect
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
+          x="1"
+          y="1"
+          width={Math.max(0, width - 2)}
+          height={Math.max(0, height - 2)}
           rx={borderRadius}
           ry={borderRadius}
           fill="none"
-          stroke="url(#goldGradient)"
-          strokeWidth="2"
+          stroke={`url(#${gradientId})`}
+          strokeWidth="1.5"
           strokeDasharray={perimeter}
-          strokeDashoffset={perimeter}
           initial={{ strokeDashoffset: perimeter }}
-          whileHover={{ strokeDashoffset: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          animate={always ? { strokeDashoffset: 0 } : undefined}
+          whileHover={always ? undefined : { strokeDashoffset: 0 }}
+          transition={{ duration, ease: [0.22, 1, 0.36, 1] }}
+          style={{ strokeDashoffset: perimeter }}
+          className="[transition:stroke-dashoffset_1.4s_cubic-bezier(0.22,1,0.36,1)] group-hover:[stroke-dashoffset:0]"
         />
       </svg>
+
+      {/* Corner ticks */}
+      {(['left-2 top-2', 'right-2 top-2', 'left-2 bottom-2', 'right-2 bottom-2'] as const).map(
+        (pos) => (
+          <span
+            key={pos}
+            aria-hidden="true"
+            className={`pointer-events-none absolute ${pos} z-20 h-1.5 w-1.5 rotate-45 bg-gold-400 opacity-0 transition-all duration-500 group-hover:opacity-90`}
+          />
+        )
+      )}
+
       {children}
     </div>
   );

@@ -1,37 +1,87 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Image from 'next/image';
-import { ShieldCheck, Gem, Crown } from 'lucide-react';
+import { motion, useScroll, useSpring } from 'framer-motion';
+import { Crown, Gem, Leaf, ShieldCheck } from 'lucide-react';
 import PageBanner from '@/components/ui/PageBanner';
 import CTAButton from '@/components/ui/CTAButton';
-import GlassPanel from '@/components/ui/GlassPanel';
+import SectionHeading from '@/components/ui/SectionHeading';
+import GoldDivider from '@/components/ui/GoldDivider';
+import GradientOrb from '@/components/ui/GradientOrb';
+import SpotlightCard from '@/components/motion/SpotlightCard';
+import CurtainReveal from '@/components/motion/CurtainReveal';
 import Parallax from '@/components/motion/Parallax';
 import CountUp from '@/components/motion/CountUp';
 import FadeInOnView from '@/components/animations/FadeInOnView';
 import { brandData } from '@/data/brand';
 
-const milestones = [
-  { year: '1892', title: 'Founded by Master Goldsmith', description: 'Our first boutique opens in the heart of the city, establishing a tradition of excellence.' },
-  { year: '1940', title: 'Second Generation', description: 'Expanding our craft to include rare gemstones and complex settings, gaining royal patronage.' },
-  { year: '1978', title: 'Third Generation', description: 'International recognition and the establishment of our signature diamond cut.' },
-  { year: '2010', title: 'Fourth Generation', description: 'Embracing digital innovation while preserving our ancestral crafting techniques.' }
+const MILESTONES = [
+  {
+    year: '1892',
+    title: 'Founded by a Master Goldsmith',
+    description:
+      'Our first boutique opens in the heart of the city, establishing a tradition of excellence that would outlast its founder by more than a century.',
+  },
+  {
+    year: '1940',
+    title: 'The Second Generation',
+    description:
+      'The craft expands into rare gemstones and complex settings, earning the house its first royal patronage.',
+  },
+  {
+    year: '1978',
+    title: 'The Third Generation',
+    description:
+      'International recognition arrives alongside the establishment of our signature diamond cut.',
+  },
+  {
+    year: '2010',
+    title: 'The Fourth Generation',
+    description:
+      'Digital innovation joins ancestral technique — CAD modelling beside the same hand tools used in 1892.',
+  },
 ];
 
-const values = [
-  { icon: ShieldCheck, title: 'Integrity', description: 'Uncompromising ethical standards in sourcing and creating every piece.' },
-  { icon: Gem, title: 'Artistry', description: 'A relentless pursuit of perfection in design and execution.' },
-  { icon: Crown, title: 'Legacy', description: 'Crafting heirlooms designed to be passed down through generations.' }
+const VALUES = [
+  {
+    icon: ShieldCheck,
+    title: 'Integrity',
+    description: 'Uncompromising ethical standards in sourcing and creating every single piece.',
+  },
+  {
+    icon: Gem,
+    title: 'Artistry',
+    description: 'A relentless pursuit of perfection in both design and execution.',
+  },
+  {
+    icon: Crown,
+    title: 'Legacy',
+    description: 'Crafting heirlooms designed to be passed down through generations.',
+  },
+  {
+    icon: Leaf,
+    title: 'Responsibility',
+    description: 'Recycled metals, traceable stones, and a workshop that gives more than it takes.',
+  },
 ];
 
-const stats = [
+const STATS = [
   { label: 'Years of Heritage', value: 130, suffix: '+' },
   { label: 'Master Artisans', value: 45, suffix: '' },
   { label: 'Awards Won', value: 120, suffix: '+' },
-  { label: 'Unique Designs', value: 5000, suffix: '+' }
+  { label: 'Unique Designs', value: 5000, suffix: '+' },
 ];
 
 export default function AboutClient() {
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: timelineRef,
+    offset: ['start 65%', 'end 60%'],
+  });
+  // The vertical rail fills as the reader descends the timeline.
+  const railScale = useSpring(scrollYProgress, { stiffness: 90, damping: 30 });
+
   return (
     <>
       <PageBanner
@@ -41,74 +91,155 @@ export default function AboutClient() {
         backgroundImage="/images/hero/craftsmanship.jpg"
       />
 
-      <div className="bg-ink-950 text-ink-50 overflow-hidden">
-        {/* Brand Story */}
-        <section className="py-24 px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <Parallax speed={0.1} className="relative aspect-[3/4] rounded-2xl overflow-hidden">
-              {/* Using a standard img since RevealImage doesn't play well with Parallax directly sometimes, or just use RevealImage */}
-              <Image src="/images/hero/craftsmanship.jpg" alt="Master craftsman at work" fill className="object-cover" />
-              <div className="absolute inset-0 border border-gold-500/20 m-6 rounded-xl pointer-events-none" />
-            </Parallax>
-            
-            <FadeInOnView direction="left">
-              <h2 className="font-serif text-4xl lg:text-5xl text-gold-300 mb-8">A Legacy of Light</h2>
-              <div className="space-y-6 text-ink-300 text-lg leading-relaxed">
-                <p>{brandData.description || 'For over a century, AURUM has been synonymous with the pinnacle of luxury jewellery.'}</p>
-                <p>Every gemstone we select tells a story of the earth, and every setting we craft is a testament to human ingenuity. Our artisans spend thousands of hours perfecting techniques passed down through generations.</p>
-                <p>We are more than jewelers; we are custodians of legacy, capturing your most precious moments in eternal brilliance.</p>
-              </div>
-            </FadeInOnView>
+      <div className="overflow-hidden bg-canvas">
+        {/* Story */}
+        <section className="relative mx-auto max-w-7xl px-6 py-24 md:px-12 lg:px-24">
+          <GradientOrb color="gold" size="lg" position="top-right" intensity={0.1} />
+
+          <div className="relative z-10 grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            <CurtainReveal
+              direction="up"
+              className="relative aspect-[3/4] overflow-hidden rounded-2xl"
+            >
+              <Parallax speed={0.28} scaleRange={[1, 1.1]} className="h-full w-full">
+                <Image
+                  src="/images/hero/craftsmanship.jpg"
+                  alt="A master craftsman at the bench"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                />
+              </Parallax>
+              <span className="pointer-events-none absolute inset-6 rounded-xl border border-gold-500/25" />
+            </CurtainReveal>
+
+            <div>
+              <SectionHeading
+                eyebrow="The House"
+                title="A Legacy of Light"
+                highlightWords={['Light']}
+                align="left"
+                ornament={false}
+                className="mb-8"
+              />
+
+              <FadeInOnView direction="up" delay={0.25}>
+                <div className="space-y-6 font-sans text-base font-light leading-relaxed text-muted lg:text-lg">
+                  <p>{brandData.description}</p>
+                  <p>
+                    Every gemstone we select tells a story of the earth, and every setting we craft
+                    is a testament to human ingenuity. Our artisans spend thousands of hours
+                    perfecting techniques passed down through generations.
+                  </p>
+                  <p>
+                    We are more than jewellers; we are custodians of legacy, capturing your most
+                    precious moments in enduring brilliance.
+                  </p>
+                </div>
+              </FadeInOnView>
+            </div>
           </div>
         </section>
 
+        <GoldDivider variant="jewel" />
+
         {/* Timeline */}
-        <section className="py-24 bg-ink-900 border-y border-ink-800">
-          <div className="max-w-4xl mx-auto px-6">
-            <h2 className="font-serif text-4xl text-center text-gold-100 mb-20">The Journey</h2>
-            <div className="relative">
-              {/* Vertical Line */}
-              <div className="absolute left-[27px] md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-700/50 to-transparent" />
-              
+        <section className="border-y border-hairline bg-surface-raised/40 py-24">
+          <div className="mx-auto max-w-4xl px-6">
+            <SectionHeading
+              eyebrow="Milestones"
+              title="The Journey"
+              highlightWords={['Journey']}
+              align="center"
+              className="mb-20"
+            />
+
+            <div ref={timelineRef} className="relative">
+              {/* Track + progress rail */}
+              <div className="absolute bottom-0 left-[27px] top-0 w-px bg-line md:left-1/2" />
+              <motion.div
+                style={{ scaleY: railScale }}
+                className="absolute bottom-0 left-[27px] top-0 w-px origin-top bg-gradient-to-b from-gold-300 via-gold-500 to-gold-700 md:left-1/2"
+              />
+
               <div className="space-y-24">
-                {milestones.map((milestone, index) => (
-                  <FadeInOnView key={milestone.year} delay={index * 0.1} className="relative flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-0">
-                    <div className={`md:w-1/2 flex ${index % 2 === 0 ? 'md:justify-end md:pr-16' : 'md:order-last md:pl-16'} pl-20 md:pl-0`}>
-                      <div className={`text-left ${index % 2 === 0 ? 'md:text-right' : ''}`}>
-                        <h3 className="font-serif text-2xl text-gold-300 mb-2">{milestone.title}</h3>
-                        <p className="text-ink-400">{milestone.description}</p>
+                {MILESTONES.map((milestone, index) => {
+                  const flipped = index % 2 !== 0;
+
+                  return (
+                    <FadeInOnView
+                      key={milestone.year}
+                      delay={index * 0.1}
+                      className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:gap-0"
+                    >
+                      {/* The year marker is absolutely positioned, so it does not
+                          occupy a flex slot. Without this spacer the copy has no
+                          sibling to be ordered against and every entry stacks on
+                          the left instead of alternating. */}
+                      {flipped && <div className="hidden md:block md:w-1/2" aria-hidden="true" />}
+
+                      <div
+                        className={`flex pl-20 md:w-1/2 md:pl-0 ${
+                          flipped ? 'md:justify-start md:pl-16' : 'md:justify-end md:pr-16'
+                        }`}
+                      >
+                        <div className={`text-left ${flipped ? '' : 'md:text-right'}`}>
+                          <h3 className="mb-2 font-display text-2xl text-accent-soft">
+                            {milestone.title}
+                          </h3>
+                          <p className="font-sans text-sm font-light leading-relaxed text-muted">
+                            {milestone.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="absolute left-0 md:left-1/2 w-14 h-14 -translate-x-0 md:-translate-x-1/2 rounded-full bg-ink-950 border border-gold-500/50 flex items-center justify-center z-10 text-gold-100 font-serif text-sm shadow-[0_0_15px_rgba(212,168,67,0.2)]">
-                      {milestone.year}
-                    </div>
-                  </FadeInOnView>
-                ))}
+
+                      <motion.div
+                        whileHover={{ scale: 1.09 }}
+                        className="absolute left-0 z-10 flex h-14 w-14 items-center justify-center rounded-full border border-gold-500/50 bg-canvas font-display text-sm text-gold-100 shadow-[0_0_20px_-4px_rgb(var(--gold-500)/0.45)] md:left-1/2 md:-translate-x-1/2"
+                      >
+                        {milestone.year}
+                        <span className="absolute inset-0 animate-scale-pulse rounded-full border border-gold-500/30" />
+                      </motion.div>
+                    </FadeInOnView>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
         {/* Values */}
-        <section className="py-24 px-6 max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="font-serif text-4xl text-gold-100 mb-4">Our Core Values</h2>
-            <p className="text-ink-300 max-w-2xl mx-auto">The principles that guide every decision we make and every piece we create.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {values.map((value, index) => {
+        <section className="mx-auto max-w-7xl px-6 py-24">
+          <SectionHeading
+            eyebrow="What Guides Us"
+            title="Our Core Values"
+            highlightWords={['Core']}
+            subtitle="The principles behind every decision we make and every piece we create."
+            align="center"
+            className="mb-16"
+          />
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {VALUES.map((value, index) => {
               const Icon = value.icon;
               return (
-                <FadeInOnView key={value.title} delay={index * 0.2}>
-                  <GlassPanel variant="strong" className="p-8 text-center h-full group hover:-translate-y-2 transition-transform duration-500 cursor-default">
-                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gold-900/20 border border-gold-500/30 flex items-center justify-center text-gold-300 group-hover:scale-110 group-hover:bg-gold-900/40 transition-all duration-500">
-                      <Icon size={32} strokeWidth={1.5} />
+                <FadeInOnView key={value.title} delay={index * 0.12} className="h-full">
+                  <SpotlightCard className="h-full border border-hairline bg-surface-raised/60 backdrop-blur-xl">
+                    <div className="group flex h-full flex-col items-center p-8 text-center">
+                      <motion.div
+                        whileHover={{ rotate: 10, scale: 1.1 }}
+                        transition={{ type: 'spring', stiffness: 250, damping: 15 }}
+                        className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-gold-500/30 bg-gold-900/25 text-accent-soft"
+                      >
+                        <Icon size={28} strokeWidth={1.4} />
+                      </motion.div>
+                      <h3 className="mb-3 font-display text-2xl text-primary">{value.title}</h3>
+                      <p className="font-sans text-sm font-light leading-relaxed text-muted">
+                        {value.description}
+                      </p>
                     </div>
-                    <h3 className="font-serif text-2xl text-gold-100 mb-4">{value.title}</h3>
-                    <p className="text-ink-400 text-sm leading-relaxed">{value.description}</p>
-                  </GlassPanel>
+                  </SpotlightCard>
                 </FadeInOnView>
               );
             })}
@@ -116,15 +247,20 @@ export default function AboutClient() {
         </section>
 
         {/* Stats */}
-        <section className="py-20 bg-ink-900/50 border-t border-ink-800">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 text-center">
-              {stats.map((stat, index) => (
+        <section className="border-y border-hairline bg-surface-raised/40 py-20">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="grid grid-cols-2 gap-8 text-center md:grid-cols-4 md:gap-4">
+              {STATS.map((stat, index) => (
                 <FadeInOnView key={stat.label} delay={index * 0.1}>
-                  <div className="font-serif text-4xl md:text-5xl text-gold-300 mb-2 flex items-center justify-center">
-                    <CountUp end={stat.value} duration={2.5} suffix={stat.suffix} />
+                  <div className="group flex flex-col items-center">
+                    <div className="mb-2 flex items-center justify-center font-display text-4xl text-accent md:text-5xl">
+                      <CountUp end={stat.value} duration={2.5} suffix={stat.suffix} />
+                    </div>
+                    <span className="mb-2 block h-px w-8 bg-accent/40 transition-all duration-500 group-hover:w-16" />
+                    <div className="font-accent text-[10px] uppercase tracking-luxe text-muted">
+                      {stat.label}
+                    </div>
                   </div>
-                  <div className="text-sm uppercase tracking-widest text-ink-400">{stat.label}</div>
                 </FadeInOnView>
               ))}
             </div>
@@ -132,13 +268,16 @@ export default function AboutClient() {
         </section>
 
         {/* CTA */}
-        <section className="py-32 px-6 text-center">
-          <h2 className="font-serif text-4xl text-gold-100 mb-6">Experience Our Boutique</h2>
-          <p className="text-ink-300 max-w-xl mx-auto mb-10 text-lg">
-            Step into our world and discover the artistry behind every piece firsthand. 
-            Our expert advisors await to guide your journey.
-          </p>
-          <CTAButton variant="primary" size="lg" href="/boutiques" showArrow>
+        <section className="px-6 py-32 text-center">
+          <SectionHeading
+            eyebrow="Come and See"
+            title="Experience Our Boutique"
+            highlightWords={['Boutique']}
+            subtitle="Step into our world and discover the artistry behind every piece firsthand. Our expert advisors await to guide your journey."
+            align="center"
+            className="mb-10"
+          />
+          <CTAButton variant="primary" size="lg" href="/contact" showArrow>
             Find a Boutique
           </CTAButton>
         </section>

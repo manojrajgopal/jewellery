@@ -2,242 +2,466 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   AURUM DESIGN SYSTEM v2 — "Obsidian & Aurum"
+   Colours are stored as raw RGB triplets so Tailwind can compose alpha.
+   ========================================================================== */
+
 :root {
-  /* Colors - RGB components for alpha compositing */
-  --ink-50: 250 248 245; /* #faf8f5 */
-  --ink-100: 240 236 229; /* #f0ece5 */
-  --ink-200: 224 216 204; /* #e0d8cc */
-  --ink-300: 200 188 170; /* #c8bcaa */
-  --ink-400: 168 152 128; /* #a89880 */
-  --ink-500: 138 122 98; /* #8a7a62 */
-  --ink-600: 110 97 78; /* #6e614e */
-  --ink-700: 84 74 60; /* #544a3c */
-  --ink-800: 58 51 42; /* #3a332a */
-  --ink-900: 26 23 20; /* #1a1714 */
-  --ink-950: 15 13 10; /* #0f0d0a */
+  /* ---------- Neutral ramp: warm obsidian ---------- */
+  --ink-50: 248 244 238;
+  --ink-100: 239 233 224;
+  --ink-200: 222 213 201;
+  --ink-300: 192 181 168;
+  --ink-400: 154 142 130;
+  --ink-500: 110 100 91;
+  --ink-600: 74 66 60;
+  --ink-700: 46 41 38;
+  --ink-800: 30 26 25;
+  --ink-900: 19 16 16;
+  --ink-950: 11 9 8;
 
-  --cream-50: 251 247 240; /* #fbf7f0 */
-  --cream-100: 243 236 223; /* #f3ecdf */
-  --cream-200: 237 232 224; /* #ede8e0 */
+  /* ---------- Ivory / cream ---------- */
+  --cream-50: 250 246 239;
+  --cream-100: 244 237 226;
+  --cream-200: 234 224 209;
 
-  --gold-100: 253 243 215; /* #fdf3d7 */
-  --gold-200: 249 228 168; /* #f9e4a8 */
-  --gold-300: 240 212 138; /* #f0d48a */
-  --gold-400: 219 181 79; /* #dbb54f */
-  --gold-500: 212 168 67; /* #d4a843 */
-  --gold-600: 184 146 42; /* #b8922a */
-  --gold-700: 163 124 44; /* #a37c2c */
+  /* ---------- Aurum gold — the signature ---------- */
+  --gold-50: 255 251 240;
+  --gold-100: 253 242 211;
+  --gold-200: 247 226 168;
+  --gold-300: 239 206 120;
+  --gold-400: 227 181 81;
+  --gold-500: 212 160 58;
+  --gold-600: 184 132 42;
+  --gold-700: 150 104 31;
+  --gold-800: 113 77 24;
+  --gold-900: 77 52 16;
 
-  --rosegold: 232 180 162; /* #e8b4a2 */
-  --platinum: 192 192 200; /* #c0c0c8 */
-  --diamond: 240 244 255; /* #f0f4ff */
-  
-  --burgundy: 74 21 40; /* #4a1528 */
-  --burgundy-light: 107 32 64; /* #6b2040 */
+  /* ---------- Champagne — soft luminous highlight ---------- */
+  --champagne-100: 250 240 222;
+  --champagne-300: 236 216 183;
+  --champagne-500: 214 186 143;
+  --champagne-700: 166 137 96;
 
-  /* Theme mappings - Dark by default */
-  --canvas: 6 5 4; /* #060504 */
+  /* ---------- Rose gold ---------- */
+  --rose-100: 250 227 217;
+  --rose-300: 240 191 174;
+  --rose-500: 219 154 130;
+  --rose-700: 168 108 87;
+
+  /* ---------- Jade — the jewel-tone counterpoint ---------- */
+  --jade-100: 209 236 226;
+  --jade-300: 122 194 173;
+  --jade-500: 26 138 111;
+  --jade-700: 15 92 74;
+  --jade-900: 8 51 41;
+
+  /* ---------- Amethyst ---------- */
+  --amethyst-300: 189 160 226;
+  --amethyst-500: 138 92 199;
+  --amethyst-700: 91 56 140;
+  --amethyst-900: 48 28 76;
+
+  /* ---------- Ruby / burgundy ---------- */
+  --burgundy-300: 214 138 160;
+  --burgundy-500: 158 47 80;
+  --burgundy-700: 110 23 49;
+  --burgundy-900: 62 13 28;
+
+  /* ---------- Precious materials ---------- */
+  --platinum: 200 204 214;
+  --diamond: 236 244 255;
+
+  /* ---------- Semantic mapping — DARK (default) ---------- */
+  --canvas: 8 7 6;
+  --canvas-alt: var(--ink-950);
   --surface: var(--ink-950);
   --surface-raised: var(--ink-900);
-  
+  --surface-sunken: 5 4 4;
+
   --border: var(--ink-800);
   --border-subtle: var(--ink-900);
-  
+  --border-strong: var(--ink-700);
+
   --text-primary: var(--cream-50);
   --text-secondary: var(--ink-200);
   --text-muted: var(--ink-400);
+  --text-faint: var(--ink-500);
 
-  --gold-glow: 212 168 67;
-  --shadow-ambient: 0 0 0;
-  --shadow-contact: 0 0 0;
+  --accent: var(--gold-500);
+  --accent-soft: var(--gold-300);
+  --accent-deep: var(--gold-700);
+  --on-accent: 11 9 8;
+
+  /* ---------- Effects ---------- */
+  --glass-tint: 8 7 6;
+  --glass-alpha: 0.55;
+  --hairline: 255 255 255;
+  --hairline-alpha: 0.07;
+  --shadow-color: 0 0 0;
+  --shadow-strength: 0.45;
+
+  /* ---------- Motion ---------- */
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 220ms;
+  --dur-base: 420ms;
+  --dur-slow: 780ms;
+
+  /* ---------- Layout ---------- */
+  --nav-h: 84px;
+  color-scheme: dark;
 }
 
-[data-theme='light'] {
-  --canvas: var(--cream-50);
+/* ---------- Semantic mapping — LIGHT ---------- */
+[data-theme="light"] {
+  --canvas: 250 246 239;
+  --canvas-alt: 255 255 255;
   --surface: 255 255 255;
-  --surface-raised: var(--cream-100);
-  
+  --surface-raised: 255 252 247;
+  --surface-sunken: 244 237 226;
+
   --border: var(--ink-200);
   --border-subtle: var(--ink-100);
-  
+  --border-strong: var(--ink-300);
+
   --text-primary: var(--ink-950);
   --text-secondary: var(--ink-700);
   --text-muted: var(--ink-500);
+  --text-faint: var(--ink-400);
+
+  --accent: var(--gold-700);
+  --accent-soft: var(--gold-600);
+  --accent-deep: var(--gold-900);
+  --on-accent: 255 251 240;
+
+  --glass-tint: 255 255 255;
+  --glass-alpha: 0.7;
+  --hairline: 11 9 8;
+  --hairline-alpha: 0.08;
+  --shadow-color: 74 66 60;
+  --shadow-strength: 0.14;
+  color-scheme: light;
 }
 
+/* ==========================================================================
+   BASE
+   ========================================================================== */
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: var(--nav-h);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
-  
+
+  /* When the JS smooth-scroller drives the page, disable native smoothing. */
+  html.has-smooth-scroll {
+    scroll-behavior: auto;
+  }
+
+  /* Set only once CustomCursor has mounted, and only on large fine-pointer
+     screens — text carets and touch devices keep their native affordances. */
+  @media (min-width: 1024px) and (pointer: fine) {
+    html.has-custom-cursor,
+    html.has-custom-cursor a,
+    html.has-custom-cursor button,
+    html.has-custom-cursor [role='button'] {
+      cursor: none;
+    }
+  }
+
   body {
     background-color: rgb(var(--canvas));
     color: rgb(var(--text-primary));
+    transition: background-color 600ms var(--ease-luxury), color 600ms var(--ease-luxury);
   }
 
   ::selection {
-    background-color: rgb(var(--gold-500) / 0.3);
-    color: rgb(var(--gold-100));
+    background-color: rgb(var(--gold-500) / 0.32);
+    color: rgb(var(--text-primary));
   }
 
-  /* Responsive typography scale */
+  :focus-visible {
+    outline: 2px solid rgb(var(--gold-500) / 0.85);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: rgb(var(--canvas)); }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgb(var(--gold-600)), rgb(var(--gold-800)));
+    border-radius: 999px;
+    border: 3px solid rgb(var(--canvas));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgb(var(--gold-400)), rgb(var(--gold-600)));
+  }
+
   h1 { @apply text-4xl md:text-5xl lg:text-7xl font-display font-light tracking-tight; }
   h2 { @apply text-3xl md:text-4xl lg:text-5xl font-display font-light; }
   h3 { @apply text-2xl md:text-3xl font-display; }
   h4 { @apply text-xl md:text-2xl font-display; }
-  p { @apply text-base md:text-lg leading-relaxed text-ink-200 font-sans font-light; }
+  p  { @apply text-base md:text-lg leading-relaxed font-sans font-light; color: rgb(var(--text-secondary)); }
+
+  input, select, textarea { color-scheme: inherit; }
+  option { background-color: rgb(var(--surface-raised)); color: rgb(var(--text-primary)); }
 }
 
+/* ==========================================================================
+   COMPONENTS
+   ========================================================================== */
 @layer components {
-  /* Glass Morphism */
+  /* ---------- Glass ---------- */
   .glass {
-    @apply bg-surface/40 backdrop-blur-md border border-white/5 shadow-lg;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+    background-color: rgb(var(--glass-tint) / var(--glass-alpha));
+    @apply backdrop-blur-xl border rounded-2xl;
+    border-color: rgb(var(--hairline) / var(--hairline-alpha));
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--hairline) / calc(var(--hairline-alpha) * 1.6)),
+      0 18px 40px -22px rgb(var(--shadow-color) / var(--shadow-strength));
   }
-
   .glass-soft {
-    @apply bg-surface/20 backdrop-blur-sm border border-white/5;
+    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) * 0.55));
+    @apply backdrop-blur-md border rounded-2xl;
+    border-color: rgb(var(--hairline) / var(--hairline-alpha));
   }
-
   .glass-strong {
-    @apply bg-surface/60 backdrop-blur-xl border border-white/10 shadow-xl;
-    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.1), 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    background-color: rgb(var(--glass-tint) / calc(var(--glass-alpha) * 1.35));
+    @apply backdrop-blur-2xl border rounded-2xl;
+    border-color: rgb(var(--hairline) / calc(var(--hairline-alpha) * 1.8));
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--hairline) / 0.14),
+      0 28px 64px -28px rgb(var(--shadow-color) / calc(var(--shadow-strength) + 0.15));
   }
 
-  /* 3D Card */
+  /* ---------- Elevated card ---------- */
   .card-3d {
-    @apply relative overflow-hidden rounded-2xl bg-surface-raised border border-white/5 transition-all duration-500;
-    box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.05), /* Edge highlight */
-      0 4px 6px -1px rgba(0, 0, 0, 0.1), /* Ambient shadow */
-      0 10px 15px -3px rgba(0, 0, 0, 0.1), /* Contact shadow */
-      0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    @apply relative overflow-hidden rounded-2xl border;
+    background-color: rgb(var(--surface-raised));
+    border-color: rgb(var(--hairline) / var(--hairline-alpha));
+    transition: transform var(--dur-base) var(--ease-luxury),
+                box-shadow var(--dur-base) var(--ease-luxury),
+                border-color var(--dur-base) var(--ease-luxury);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--hairline) / var(--hairline-alpha)),
+      0 10px 24px -18px rgb(var(--shadow-color) / var(--shadow-strength));
   }
   .card-3d:hover {
-    @apply border-gold-500/20 -translate-y-1;
-    box-shadow: 
-      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-      0 10px 15px -3px rgba(var(--gold-500) / 0.1),
-      0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    transform: translateY(-6px);
+    border-color: rgb(var(--gold-500) / 0.28);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--hairline) / 0.12),
+      0 30px 60px -28px rgb(var(--shadow-color) / calc(var(--shadow-strength) + 0.2)),
+      0 12px 40px -24px rgb(var(--gold-500) / 0.5);
   }
 
-  /* Glow Ring */
-  .glow-ring {
-    @apply relative transition-all duration-500;
+  /* ---------- Hairline frame that draws in on hover ---------- */
+  .frame-gold { @apply relative; }
+  .frame-gold::before,
+  .frame-gold::after {
+    content: "";
+    @apply pointer-events-none absolute rounded-[inherit];
+    inset: 0.75rem;
+    transition: transform 600ms var(--ease-luxury);
   }
+  .frame-gold::before {
+    border-top: 1px solid rgb(var(--gold-500) / 0.55);
+    border-bottom: 1px solid rgb(var(--gold-500) / 0.55);
+    transform: scaleX(0);
+  }
+  .frame-gold::after {
+    border-left: 1px solid rgb(var(--gold-500) / 0.55);
+    border-right: 1px solid rgb(var(--gold-500) / 0.55);
+    transform: scaleY(0);
+  }
+  .frame-gold:hover::before { transform: scaleX(1); }
+  .frame-gold:hover::after  { transform: scaleY(1); }
+
+  /* ---------- Glow ring ---------- */
+  .glow-ring { @apply relative transition-all duration-500; }
   .glow-ring::after {
-    content: '';
-    @apply absolute inset-0 rounded-full opacity-0 transition-opacity duration-500 -z-10;
-    box-shadow: 0 0 20px 2px rgb(var(--gold-500) / 0.3);
+    content: "";
+    @apply absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-500 -z-10;
+    box-shadow: 0 0 28px 4px rgb(var(--gold-500) / 0.35);
   }
-  .glow-ring:hover::after {
-    @apply opacity-100;
-  }
+  .glow-ring:hover::after { @apply opacity-100; }
 
-  /* Eyebrow text */
+  /* ---------- Eyebrow ---------- */
   .eyebrow {
-    @apply flex items-center gap-4 text-sm tracking-[0.2em] uppercase text-gold-500 font-accent font-medium;
+    @apply flex items-center gap-4 text-xs sm:text-sm tracking-[0.28em] uppercase font-accent font-medium;
+    color: rgb(var(--accent));
   }
   .eyebrow::before,
   .eyebrow::after {
-    content: '';
-    @apply h-px flex-1 bg-gradient-to-r from-transparent via-gold-500/50 to-transparent opacity-50;
+    content: "";
+    @apply h-px flex-1;
+    background: linear-gradient(to right, transparent, rgb(var(--gold-500) / 0.5), transparent);
   }
 
-  /* Shimmer overlay */
-  .shimmer-overlay {
-    @apply relative overflow-hidden;
-  }
+  /* ---------- Shimmer sweep ---------- */
+  .shimmer-overlay { @apply relative overflow-hidden; }
   .shimmer-overlay::after {
-    content: '';
-    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent;
-    animation: shimmer 2s infinite;
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgb(var(--gold-100) / 0.16), transparent);
+    animation: sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  /* ---------- Centre-out underline ---------- */
+  .link-underline { @apply relative inline-block; }
+  .link-underline::after {
+    content: "";
+    @apply absolute -bottom-0.5 left-0 h-px w-full origin-center scale-x-0;
+    background: linear-gradient(to right, transparent, rgb(var(--accent)), transparent);
+    transition: transform 500ms var(--ease-luxury);
+  }
+  .link-underline:hover::after,
+  .link-underline[data-active="true"]::after { @apply scale-x-100; }
+
+  /* ---------- Inputs ---------- */
+  .input-gold {
+    @apply w-full bg-transparent border-b py-2.5 px-1 font-sans transition-colors duration-300;
+    border-color: rgb(var(--border-strong));
+    color: rgb(var(--text-primary));
+  }
+  .input-gold::placeholder { color: rgb(var(--text-faint)); }
+  .input-gold:focus { @apply outline-none; border-color: rgb(var(--accent)); }
+
+  /* ---------- Skeleton ---------- */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg;
+    background-color: rgb(var(--surface-raised));
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgb(var(--hairline) / 0.09), transparent);
+    animation: sweep 1.6s linear infinite;
   }
 }
 
+/* ==========================================================================
+   UTILITIES
+   ========================================================================== */
 @layer utilities {
-  .text-gradient-gold {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-300 via-gold-500 to-gold-700;
-  }
+  .text-primary   { color: rgb(var(--text-primary)); }
+  .text-secondary { color: rgb(var(--text-secondary)); }
+  .text-muted     { color: rgb(var(--text-muted)); }
+  .text-faint     { color: rgb(var(--text-faint)); }
+  .text-accent    { color: rgb(var(--accent)); }
+  .bg-accent      { background-color: rgb(var(--accent)); }
+  .border-hairline { border-color: rgb(var(--hairline) / var(--hairline-alpha)); }
+
+  /* Metallic type */
+  .text-gradient-gold,
   .gold-gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-br from-gold-200 via-gold-400 to-gold-600;
+    background-image: linear-gradient(110deg,
+      rgb(var(--gold-700)) 0%,
+      rgb(var(--gold-300)) 22%,
+      rgb(var(--gold-100)) 38%,
+      rgb(var(--gold-400)) 52%,
+      rgb(var(--gold-700)) 72%,
+      rgb(var(--gold-300)) 100%);
+    background-size: 220% auto;
+    @apply bg-clip-text text-transparent;
+    animation: metal-flow 7s linear infinite;
   }
-  
+  .text-gradient-static {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, rgb(var(--gold-200)), rgb(var(--gold-500)) 55%, rgb(var(--gold-700)));
+  }
+
+  /* Dividers */
   .gold-divider {
-    @apply h-px w-full bg-gradient-to-r from-transparent via-gold-500/30 to-transparent;
+    @apply h-px w-full;
+    background: linear-gradient(to right, transparent, rgb(var(--gold-500) / 0.35), transparent);
   }
-  
   .gold-divider-vertical {
-    @apply w-px h-full bg-gradient-to-b from-transparent via-gold-500/30 to-transparent;
+    @apply w-px h-full;
+    background: linear-gradient(to bottom, transparent, rgb(var(--gold-500) / 0.35), transparent);
   }
 
-  /* Scrollbar */
-  .scrollbar-gold::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* Edge fades */
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
   }
-  .scrollbar-gold::-webkit-scrollbar-track {
-    background: rgb(var(--canvas));
+  .mask-fade-y {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
   }
+  .mask-fade-b {
+    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent);
+    mask-image: linear-gradient(to bottom, black 55%, transparent);
+  }
+
+  .perspective-1000 { perspective: 1000px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  .scrollbar-gold::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-gold::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-gold::-webkit-scrollbar-thumb {
-    background: rgb(var(--gold-500) / 0.3);
+    background: rgb(var(--gold-500) / 0.35);
     border-radius: 10px;
+    border: none;
   }
-  .scrollbar-gold::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--gold-500) / 0.6);
-  }
+  .scrollbar-gold::-webkit-scrollbar-thumb:hover { background: rgb(var(--gold-500) / 0.65); }
+
+  .drag-none { -webkit-user-drag: none; user-select: none; }
 }
 
-/* Form Fields */
-.input-gold {
-  @apply bg-transparent border-b border-ink-800 py-2 px-1 text-cream-50 focus:outline-none focus:border-gold-500 transition-colors duration-300 w-full placeholder:text-ink-600;
+/* ==========================================================================
+   GLOBAL KEYFRAMES
+   ========================================================================== */
+@keyframes sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+@keyframes metal-flow {
+  0%   { background-position: 0% center; }
+  100% { background-position: -220% center; }
+}
+@keyframes reveal-page {
+  to { clip-path: circle(150% at center); }
 }
 
-/* View Transitions */
+/* ==========================================================================
+   VIEW TRANSITIONS
+   ========================================================================== */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
-
-::view-transition-old(root) {
-  z-index: 1;
-}
-
+::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) {
   z-index: 2;
   clip-path: circle(0% at center);
   animation: reveal-page 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-@keyframes reveal-page {
-  to {
-    clip-path: circle(150% at center);
-  }
-}
-
-/* Mobile GPU Safeguards */
+/* ==========================================================================
+   PERFORMANCE SAFEGUARDS
+   ========================================================================== */
 @media (max-width: 820px) {
   .glass, .glass-soft, .glass-strong {
-    backdrop-filter: blur(8px) saturate(150%);
+    -webkit-backdrop-filter: blur(10px) saturate(150%);
+    backdrop-filter: blur(10px) saturate(150%);
   }
-  
-  .no-mobile-noise {
-    background-image: none !important;
-  }
-  
-  * {
-    will-change: auto !important;
-  }
+  .no-mobile-noise { background-image: none !important; }
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
+  *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

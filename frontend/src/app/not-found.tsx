@@ -1,37 +1,39 @@
 import Link from 'next/link';
+import DiamondSparkles from '@/components/motion/DiamondSparkles';
+import AuroraBackground from '@/components/motion/AuroraBackground';
+import CTAButton from '@/components/ui/CTAButton';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-canvas text-center px-4">
-      {/* Diamond Sparkles Background */}
-      <div className="absolute inset-0 opacity-30 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-white rounded-full shadow-[0_0_12px_2px_rgba(255,255,255,0.9)] animate-pulse" />
-        <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 bg-gold-300 rounded-full shadow-[0_0_12px_2px_rgba(240,212,138,0.9)] animate-pulse delay-75" />
-        <div className="absolute bottom-1/4 left-1/3 w-1 h-1 bg-white rounded-full shadow-[0_0_12px_2px_rgba(255,255,255,0.9)] animate-pulse delay-150" />
-        <div className="absolute bottom-1/3 right-1/3 w-1.5 h-1.5 bg-gold-300 rounded-full shadow-[0_0_12px_2px_rgba(240,212,138,0.9)] animate-pulse delay-300" />
-        <div className="absolute top-1/2 left-1/6 w-1 h-1 bg-white rounded-full shadow-[0_0_10px_2px_rgba(255,255,255,0.8)] animate-pulse delay-500" />
-      </div>
+    <div className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden bg-canvas px-4 text-center">
+      <AuroraBackground intensity="medium" grid parallax={false} />
+      <DiamondSparkles density={34} shape="star" className="z-[2]" />
 
-      <h1 className="font-display text-[12rem] leading-none text-gold-500/20 select-none">
+      <h1 className="select-none font-display text-[9rem] leading-none text-accent/15 md:text-[14rem]">
         404
       </h1>
-      
-      <div className="relative z-10 -mt-20 flex flex-col items-center gap-6">
-        <h2 className="font-display text-4xl md:text-5xl text-cream-50 font-medium">
-          Page Not Found
-        </h2>
-        
-        <p className="font-sans text-gold-300/80 text-lg md:text-xl max-w-md font-light">
-          The jewel you seek is elsewhere.
+
+      <div className="relative z-10 -mt-16 flex flex-col items-center gap-6 md:-mt-24">
+        <h2 className="font-display text-4xl text-primary md:text-5xl">Page Not Found</h2>
+
+        <p className="max-w-md font-sans text-lg font-light text-muted md:text-xl">
+          The jewel you seek is elsewhere. Let us guide you back to the vault.
         </p>
-        
-        <Link href="/" className="mt-8 group">
-          <button className="px-8 py-3 bg-transparent border border-gold-500/50 text-gold-500 hover:bg-gold-500 hover:text-canvas transition-all duration-500 font-sans tracking-widest uppercase text-sm flex items-center gap-3">
+
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row">
+          <CTAButton variant="primary" size="lg" href="/" showArrow>
             Return Home
-            <span className="group-hover:translate-x-1 transition-transform duration-300">
-              →
-            </span>
-          </button>
+          </CTAButton>
+          <CTAButton variant="secondary" size="lg" href="/collections">
+            Browse Collections
+          </CTAButton>
+        </div>
+
+        <Link
+          href="/contact"
+          className="link-underline mt-4 font-accent text-[10px] uppercase tracking-luxe text-faint transition-colors hover:text-accent"
+        >
+          Or speak to a jeweller
         </Link>
       </div>
     </div>
