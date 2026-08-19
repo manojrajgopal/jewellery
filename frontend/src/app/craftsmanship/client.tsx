@@ -16,7 +16,149 @@ import DiamondSparkles from '@/components/motion/DiamondSparkles';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ParticleField from '@/components/motion/ParticleField';
 import LensFlare from '@/components/motion/LensFlare';
+import AtelierPanorama, { type PanoramaStation } from '@/components/ui/AtelierPanorama';
+import ScrollStackCards from '@/components/motion/ScrollStackCards';
+import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import LiquidDistortHover from '@/components/motion/LiquidDistortHover';
+import RippleGrid from '@/components/motion/RippleGrid';
 import { Reveal } from '@/components/animations/Reveal';
+
+/** Hotspots along the pan. `at` is a fraction of the strip's full width. */
+const WORKSHOP_STATIONS: PanoramaStation[] = [
+  {
+    id: 'raising',
+    label: 'Raising',
+    at: 0.11,
+    y: 62,
+    detail:
+      'A flat disc of gold beaten into a hollow form over a stake, by hand, in perhaps four hundred blows. The loudest bench in the room, and the reason the setters are at the far end.',
+  },
+  {
+    id: 'kundan',
+    label: 'Kundan',
+    at: 0.33,
+    y: 46,
+    detail:
+      'Uncut stones set into closed collets over burnished gold foil. The foil is what makes an uncut stone glow — it holds light behind the gem rather than passing it through.',
+  },
+  {
+    id: 'setting',
+    label: 'Setting',
+    at: 0.56,
+    y: 58,
+    detail:
+      'Micro-pavé under ten thousandths of an inch. Arun works to a bead he can barely see and checks it at forty magnifications afterwards. Absolute silence at this bench.',
+  },
+  {
+    id: 'polishing',
+    label: 'Polishing',
+    at: 0.79,
+    y: 50,
+    detail:
+      'Six grades of compound, coarsest to finest, and the piece is washed between every one. A single grain carried forward from the previous grade puts a scratch through an hour of work.',
+  },
+  {
+    id: 'restoration',
+    label: 'Restoration',
+    at: 0.93,
+    y: 66,
+    detail:
+      'The 1904 bench, with a burn mark in the left corner from a torch someone put down in 1957. Eighteen-month queue, never advertised.',
+  },
+];
+
+/**
+ * The one way to ruin the piece at each stage. Written as failure modes rather than
+ * as a process, because the process strip further up this page already lists the
+ * stages — and the failure is what explains the fourteen-week lead time.
+ */
+const FAILURE_MODES = [
+  {
+    id: 'f1',
+    kicker: 'Stage One · Drawing',
+    title: 'Drawing something that cannot be made',
+    body: 'A gouache rendering can show a setting that would need the metal to be in two places at once. Nandita builds in the section thicknesses at the drawing stage, which is why our sketches look slightly heavier than the finished piece.',
+    image: '/images/products/ring.jpg',
+    meta: ['Two to three weeks', 'Nandita Rao'],
+    accent: 'gold' as const,
+  },
+  {
+    id: 'f2',
+    kicker: 'Stage Two · Raising',
+    title: 'Work-hardening the metal past the point of return',
+    body: 'Gold beaten without annealing becomes brittle and splits along the stress line. The fix is to stop, heat, and start again — which is why a raised form takes days and a cast one takes hours.',
+    image: '/images/hero/craftsmanship.jpg',
+    meta: ['Four hundred blows', 'Ravi Menon, 41 years'],
+    accent: 'burgundy' as const,
+  },
+  {
+    id: 'f3',
+    kicker: 'Stage Three · Setting',
+    title: 'Cutting the seat one thousandth too deep',
+    body: 'Too shallow and the stone sits proud and catches. Too deep and the girdle rests on nothing and the stone cracks the first time the ring meets a door frame. There is no adjustment afterwards; the seat is cut once.',
+    image: '/images/collections/gemstone.jpg',
+    meta: ['No second attempt', 'Arun Deshpande'],
+    accent: 'amethyst' as const,
+  },
+  {
+    id: 'f4',
+    kicker: 'Stage Four · Polishing',
+    title: 'Carrying one grain forward',
+    body: 'Six compounds, coarsest to finest, and the piece is washed between every one. A single grain of the previous grade puts a scratch through an hour of finished work, and the only remedy is to go back two grades.',
+    image: '/images/products/necklace.jpg',
+    meta: ['Six compounds', 'Washed between each'],
+    accent: 'jade' as const,
+  },
+  {
+    id: 'f5',
+    kicker: 'Stage Five · Finishing',
+    title: 'Striking the mark through the shank',
+    body: 'The hallmark and the artisan\'s mark are struck, not engraved, and a strike misjudged on a thin section distorts the band. It is the last operation on the piece and the one with the least margin.',
+    image: '/images/collections/bridal.jpg',
+    meta: ['Struck, not engraved', 'The final operation'],
+    accent: 'rose' as const,
+  },
+];
+
+/** Techniques still done by hand, with the reason rather than the romance. */
+const TECHNIQUES = [
+  {
+    name: 'Hand-raising',
+    origin: 'Anatolian, c. 2500 BC',
+    image: '/images/hero/craftsmanship.jpg',
+    why: 'Compresses the grain as it forms. A raised bowl is measurably stronger than a cast one of the same weight.',
+  },
+  {
+    name: 'Kundan',
+    origin: 'Mughal, 16th century',
+    image: '/images/collections/heritage.jpg',
+    why: 'A closed setting over gold foil. Nothing else makes an uncut stone glow, and nothing else holds it on all sides for a century.',
+  },
+  {
+    name: 'Repoussé',
+    origin: 'Mycenaean',
+    image: '/images/collections/statement.jpg',
+    why: 'Raised from behind, chased from the front. The two passes produce a relief with no seam and no solder.',
+  },
+  {
+    name: 'Granulation',
+    origin: 'Etruscan, 7th century BC',
+    image: '/images/products/earrings.jpg',
+    why: 'Grains fused without solder, by heat alone. The technique was lost for a thousand years and reconstructed twice.',
+  },
+  {
+    name: 'Bright-cut',
+    origin: 'Georgian, c. 1790',
+    image: '/images/products/ring.jpg',
+    why: 'A graver facet cut into the metal beside the stone, throwing light back at it. Machine engraving cannot reproduce the burr.',
+  },
+  {
+    name: 'Pearl knotting',
+    origin: 'Persian',
+    image: '/images/products/necklace.jpg',
+    why: 'A knot between every pearl. If the silk parts you lose one pearl instead of the whole strand.',
+  },
+];
 
 const STAGES = [
   {
@@ -228,6 +370,103 @@ export default function CraftsmanshipClient() {
                   </div>
                 </GlassPanel>
               </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The workshop, pannable. A photograph shows one bench; a pan shows how far
+          apart the benches are, which is the thing visitors are always surprised by. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Pan The Room"
+            title="Five benches, forty feet apart"
+            highlightWords={['forty']}
+            subtitle="Raising, setting, kundan, polishing and restoration — deliberately separated, because a setter needs quiet and a raiser makes noise. Drag across, and press a mark to hear what happens there."
+            align="center"
+            className="mb-14"
+          />
+
+          <AtelierPanorama
+            plates={[
+              { src: '/images/hero/craftsmanship.jpg', alt: 'The raising bench' },
+              { src: '/images/collections/heritage.jpg', alt: 'The kundan bench' },
+              { src: '/images/collections/gemstone.jpg', alt: 'The setting bench' },
+              { src: '/images/products/necklace.jpg', alt: 'The polishing room' },
+            ]}
+            stations={WORKSHOP_STATIONS}
+            height={480}
+          />
+        </div>
+      </section>
+
+      {/* The five operations, stacked. The process strip earlier on this page names
+          the stages; this says what can go wrong at each one, which is the half that
+          actually explains why the work takes fourteen weeks. */}
+      <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+        <RippleGrid spacing={48} reach={190} dot={1} />
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <div className="mb-16 text-center">
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              What Can Go Wrong
+            </p>
+            <ScrollAssembleText
+              text="Every stage has one way to ruin the piece"
+              as="h2"
+              highlightWords={['ruin']}
+              spread={74}
+              className="mx-auto max-w-3xl font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl md:text-5xl"
+            />
+          </div>
+
+          <div className="pb-[28vh]">
+            <ScrollStackCards cards={FAILURE_MODES} offset={22} shrink={0.05} />
+          </div>
+        </div>
+      </section>
+
+      {/* Techniques, as plates that warp under the pointer */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/30 py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The Hands"
+            title="Six techniques we have not mechanised"
+            highlightWords={['mechanised']}
+            subtitle="Not out of nostalgia. Each of these produces a result a machine cannot yet match, and where that stops being true we will change our minds."
+            align="center"
+            className="mb-14"
+          />
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {TECHNIQUES.map((technique, i) => (
+              <motion.div
+                key={technique.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-10%' }}
+                transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <LiquidDistortHover
+                  src={technique.image}
+                  alt={technique.name}
+                  aspect="4 / 5"
+                  strength={18}
+                  frequency={0.015}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                >
+                  <span className="block font-accent text-[9px] uppercase tracking-luxest text-accent">
+                    {technique.origin}
+                  </span>
+                  <span className="mt-1.5 block font-display text-xl font-light text-on-media">
+                    {technique.name}
+                  </span>
+                  <span className="mt-2 block font-sans text-[11px] font-light leading-relaxed text-on-media-muted">
+                    {technique.why}
+                  </span>
+                </LiquidDistortHover>
+              </motion.div>
             ))}
           </div>
         </div>

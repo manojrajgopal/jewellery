@@ -8,6 +8,13 @@ import PageBanner from '@/components/ui/PageBanner';
 import Lightbox from '@/components/ui/Lightbox';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ParticleField from '@/components/motion/ParticleField';
+import CTAButton from '@/components/ui/CTAButton';
+import FilmstripScroller from '@/components/motion/FilmstripScroller';
+import JewellerLoupe from '@/components/motion/JewellerLoupe';
+import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import CylinderMarquee from '@/components/motion/CylinderMarquee';
+import RippleGrid from '@/components/motion/RippleGrid';
+import { contactSheet } from '@/data/editorial';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
@@ -115,6 +122,105 @@ export default function GalleryClient() {
               </motion.button>
             ))}
           </AnimatePresence>
+        </div>
+      </section>
+
+      {/* The contact sheet — the shoot in shoot order, which is a different way of
+          reading the same portfolio than the filtered masonry above. The masonry is
+          for finding a piece; this is for seeing how the pictures were made. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/30 py-20 md:py-28">
+        <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-12 lg:px-24">
+          <div className="mb-12">
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Unedited
+            </p>
+            <ScrollAssembleText
+              text="Every frame, in the order it was shot"
+              as="h2"
+              highlightWords={['order']}
+              spread={70}
+              className="max-w-2xl font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl"
+            />
+            <p className="mt-5 max-w-xl font-sans text-sm font-light leading-relaxed text-muted">
+              Slate codes, edge marks and all. Scroll and the strip runs through the gate.
+            </p>
+          </div>
+
+          <FilmstripScroller
+            frames={contactSheet}
+            height={360}
+            travel={0.8}
+            title="Aurum · Season Shoot"
+          />
+        </div>
+      </section>
+
+      {/* One plate, under the loupe */}
+      <section className="relative overflow-hidden py-20 md:py-28">
+        <RippleGrid spacing={46} reach={190} dot={1.1} />
+
+        <div className="relative z-10 mx-auto grid max-w-6xl gap-14 px-6 md:px-12 lg:grid-cols-2 lg:items-center">
+          <JewellerLoupe
+            src="/images/hero/craftsmanship.jpg"
+            alt="A goldsmith raising a hollow form at the bench"
+            zoom={2.5}
+            size={195}
+            readout="Bench detail"
+            aspect="4 / 3"
+          />
+
+          <div>
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Photographed At Forty Times
+            </p>
+            <h2 className="font-display text-2xl font-light leading-tight text-primary md:text-4xl">
+              Nothing in this gallery has been retouched
+            </h2>
+            <div className="mt-5 space-y-5 font-sans text-base font-light leading-relaxed text-muted">
+              <p>
+                Colour is graded to match the piece under showroom light and nothing else
+                is done. No stones added, no prongs straightened, no inclusions painted
+                out — which is why some of these frames show a tool mark or a fingerprint
+                on the metal.
+              </p>
+              <p>
+                Move across the plate and look for yourself. If a photograph will not
+                survive a loupe, it should not be selling anything.
+              </p>
+            </div>
+
+            <div className="mt-9 flex flex-wrap gap-4">
+              <CTAButton variant="primary" size="md" href="/lookbook" showArrow>
+                The bound lookbook
+              </CTAButton>
+              <CTAButton variant="secondary" size="md" href="/craftsmanship">
+                Pan the workshop
+              </CTAButton>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What is in the frame, on a drum */}
+      <section className="relative overflow-hidden border-t border-hairline py-16 md:py-20">
+        <CausticsCanvas intensity={0.24} lobes={4} speed={40} />
+        <div className="relative z-10 mx-auto max-w-4xl px-6">
+          <p className="mb-8 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+            What is in the frame
+          </p>
+          <CylinderMarquee
+            items={[
+              'Raking light',
+              'Dark ground',
+              'On the hand',
+              'On velvet',
+              'At the bench',
+              'Sorting tray',
+            ]}
+            radius={128}
+            speed={11}
+            reverse
+          />
         </div>
       </section>
 

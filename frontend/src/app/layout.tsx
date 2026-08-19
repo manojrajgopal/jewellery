@@ -19,6 +19,7 @@ import GoldDustTrail from '@/components/motion/GoldDustTrail';
 import ClickSparkle from '@/components/motion/ClickSparkle';
 import ScrollVelocitySkew from '@/components/motion/ScrollVelocitySkew';
 import CompareTray from '@/components/ui/CompareTray';
+import ConciergeDock from '@/components/ui/ConciergeDock';
 
 /* ---------------------------------------------------------------------------
    Typography — high-contrast Didone display, roman-capital accent, geometric
@@ -98,17 +99,25 @@ const HOME_SECTIONS = [
   { id: 'collections', label: 'Collections' },
   { id: 'coverflow', label: 'Cabinet' },
   { id: 'pieces', label: 'Signature' },
+  { id: 'lookbook', label: 'Lookbook' },
   { id: 'film', label: 'The Film' },
   { id: 'showcase', label: 'The Stone' },
   { id: 'stone-school', label: 'The 4Cs' },
+  { id: 'stones', label: 'Stones' },
   { id: 'craftsmanship', label: 'Atelier' },
+  { id: 'artisans', label: 'The Bench' },
   { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
+  { id: 'provenance', label: 'Provenance' },
   { id: 'tools', label: 'Tools' },
+  { id: 'journal', label: 'Journal' },
   { id: 'bespoke', label: 'Bespoke' },
+  { id: 'presentation', label: 'Presentation' },
   { id: 'testimonials', label: 'Patrons' },
-  { id: 'gift-finder', label: 'Concierge' },
+  { id: 'gift-finder', label: 'Gift Finder' },
   { id: 'services', label: 'Services' },
+  { id: 'moodboard', label: 'Your Board' },
+  { id: 'private-view', label: 'Private View' },
   { id: 'boutiques', label: 'Houses' },
   { id: 'contact', label: 'Visit' },
 ];
@@ -170,6 +179,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Shows itself only once something has been added to it. */}
               <CompareTray />
+
+              {/* Bottom-left, opposite BackToTop and the compare tray so the three
+                  never overlap. Hides itself on /contact, where everything it
+                  offers is already on the page. */}
+              <ConciergeDock />
 
               {/* Projection layer sits above the page, below the cursor. */}
               <FilmGrain />

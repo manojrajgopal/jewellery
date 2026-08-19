@@ -12,9 +12,38 @@ import GradientOrb from '@/components/ui/GradientOrb';
 import SparkleBurst from '@/components/motion/SparkleBurst';
 import BoutiqueLocator from '@/components/ui/BoutiqueLocator';
 import ParticleField from '@/components/motion/ParticleField';
+import RippleGrid from '@/components/motion/RippleGrid';
+import FlipClock from '@/components/motion/FlipClock';
+import OccasionReminder from '@/components/ui/OccasionReminder';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
+
+/**
+ * What a visitor can do without an appointment. Written as three specific offers
+ * rather than as opening hours, because "Mon–Sat 11–8" answers when the door is
+ * unlocked and not whether it is worth walking through.
+ */
+const OPEN_HOUSE = [
+  {
+    icon: Clock,
+    when: 'Any weekday, no appointment',
+    title: 'Cleaning and a prong check',
+    body: 'Bring in anything, ours or not. Ultrasonic where the stone allows it, hand-cleaned where it does not, and a look along the setting for movement. Fifteen minutes, no charge, no obligation.',
+  },
+  {
+    icon: MapPin,
+    when: 'Saturdays, 11am to 2pm',
+    title: 'The bench is open',
+    body: 'One artisan works at the front bench where you can watch and interrupt. It slows the work down considerably and it is the best three hours of the week.',
+  },
+  {
+    icon: Phone,
+    when: 'Sundays, by appointment',
+    title: 'A private hour',
+    body: 'The boutique to yourself with an advisor and a gemmologist. The bench is closed, so anything technical is answered on the Monday — which is why this is the wrong day for a commission conversation.',
+  },
+];
 
 const FAQS = [
   {
@@ -345,6 +374,87 @@ export default function ContactClient() {
             className="mb-14"
           />
           <BoutiqueLocator />
+        </div>
+      </section>
+
+      {/* When the doors are actually open, and what is on behind them. The form
+          above books an appointment; this is the answer to "can I just walk in". */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24">
+        <RippleGrid spacing={48} reach={190} dot={1} />
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Walk In"
+            title="What is on, and when"
+            highlightWords={['when']}
+            subtitle="Every address keeps the same hours. Sunday is by appointment because the bench is closed and there is nobody to answer a technical question."
+            align="center"
+            className="mb-14"
+          />
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {OPEN_HOUSE.map((item, i) => (
+              <motion.article
+                key={item.title}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-10%' }}
+                transition={{ duration: 0.6, delay: i * 0.09, ease: [0.22, 1, 0.36, 1] }}
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-hairline bg-surface-raised/60 p-7 backdrop-blur-xl transition-colors duration-500 hover:border-gold-500/35"
+              >
+                <span
+                  aria-hidden="true"
+                  className="facet-fan pointer-events-none absolute -right-10 -top-10 h-36 w-36 animate-conic-spin-slow rounded-full opacity-20"
+                />
+
+                <span className="relative mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-gold-500/30 text-accent">
+                  <item.icon size={17} strokeWidth={1.6} />
+                </span>
+
+                <p className="relative font-accent text-[9px] uppercase tracking-luxest text-accent">
+                  {item.when}
+                </p>
+                <h3 className="relative mt-2.5 font-display text-xl font-light leading-snug text-primary">
+                  {item.title}
+                </h3>
+                <p className="relative mt-3 font-sans text-sm font-light leading-relaxed text-muted">
+                  {item.body}
+                </p>
+              </motion.article>
+            ))}
+          </div>
+
+          {/* The next private view, counted down */}
+          <div className="mt-14 flex flex-col items-center gap-6 rounded-2xl border border-hairline bg-surface-raised/50 p-8 text-center backdrop-blur-xl md:p-10">
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              The Next Private View
+            </p>
+            <h3 className="max-w-2xl font-display text-2xl font-light leading-snug text-primary md:text-3xl">
+              Forty places, the whole season on velvet, and the bench answering questions
+            </h3>
+            {/* A real date rather than a computed one — a countdown that resets on
+                reload undermines the thing it is meant to make credible. */}
+            <FlipClock to="2026-11-14T18:00:00" expiredLabel="The doors are open" />
+            <p className="nums-tabular font-sans text-[11px] font-light italic text-faint">
+              14 November 2026 · 6pm · {brandData.contact.address.split(',')[0]}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Dates we should know about */}
+      <section className="relative overflow-hidden py-24">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Before You Write"
+            title="Tell yourself, not us"
+            highlightWords={['yourself,']}
+            subtitle="A commission needs six weeks and engraving needs ten days. Keep the dates that matter here and the panel will tell you which is still possible — the list stays in your browser and is never sent to us."
+            align="center"
+            className="mb-14"
+          />
+
+          <OccasionReminder />
         </div>
       </section>
 

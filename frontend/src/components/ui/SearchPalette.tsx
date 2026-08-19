@@ -3,17 +3,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Search, CornerDownLeft, Gem, Layers, Sparkles, FileText } from 'lucide-react';
+import {
+  Search,
+  CornerDownLeft,
+  Gem,
+  Layers,
+  Sparkles,
+  FileText,
+  Diamond,
+  Newspaper,
+} from 'lucide-react';
 import { products } from '@/data/products';
 import { collections } from '@/data/collections';
 import { services } from '@/data/services';
+import { gems } from '@/data/gems';
+import { journal } from '@/data/editorial';
 
 interface Entry {
   id: string;
   title: string;
   subtitle: string;
   href: string;
-  group: 'Pieces' | 'Collections' | 'Services' | 'Pages';
+  group: 'Pieces' | 'Collections' | 'Services' | 'Stones' | 'Journal' | 'Pages';
 }
 
 const PAGES: Entry[] = [
@@ -22,12 +33,19 @@ const PAGES: Entry[] = [
   { id: 'p-craft', title: 'Craftsmanship', subtitle: 'Inside the atelier', href: '/craftsmanship', group: 'Pages' },
   { id: 'p-gallery', title: 'Gallery', subtitle: 'The complete portfolio', href: '/gallery', group: 'Pages' },
   { id: 'p-contact', title: 'Contact', subtitle: 'Visit the boutique', href: '/contact', group: 'Pages' },
+  { id: 'p-lookbook', title: 'The Lookbook', subtitle: 'Twelve plates, bound', href: '/lookbook', group: 'Pages' },
+  { id: 'p-journal', title: 'The Journal', subtitle: 'Notes from the bench', href: '/journal', group: 'Pages' },
+  { id: 'p-stones', title: 'Stone Library', subtitle: 'Every gem, honestly graded', href: '/gemstones', group: 'Pages' },
+  { id: 'p-care', title: 'Care & Sizing', subtitle: 'The ritual, and how to measure', href: '/care', group: 'Pages' },
+  { id: 'p-bespoke', title: 'Bespoke', subtitle: 'Commission a piece', href: '/bespoke', group: 'Pages' },
 ];
 
 const GROUP_ICON = {
   Pieces: Gem,
   Collections: Layers,
   Services: Sparkles,
+  Stones: Diamond,
+  Journal: Newspaper,
   Pages: FileText,
 } as const;
 
@@ -69,6 +87,23 @@ export default function SearchPalette({
         subtitle: s.description.slice(0, 72),
         href: '/services',
         group: 'Services' as const,
+      })),
+      // Stones and journal entries are searchable by the thing a visitor would
+      // actually type — a stone's name, or a phrase from a headline. Both deep-link
+      // to the page that answers, rather than to a generic index.
+      ...gems.map((g) => ({
+        id: `gem-${g.id}`,
+        title: g.name,
+        subtitle: `${g.hardness} Mohs · ${g.meaning.split('.')[0]}`,
+        href: '/gemstones',
+        group: 'Stones' as const,
+      })),
+      ...journal.map((j) => ({
+        id: `jrn-${j.id}`,
+        title: j.title,
+        subtitle: `${j.topic} · ${j.read} min · ${j.author}`,
+        href: `/journal/${j.slug}`,
+        group: 'Journal' as const,
       })),
       ...PAGES,
     ],

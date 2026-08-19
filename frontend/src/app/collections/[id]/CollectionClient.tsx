@@ -13,6 +13,8 @@ import RecentlyViewed from '@/components/ui/RecentlyViewed';
 import GoldDivider from '@/components/ui/GoldDivider';
 import SectionHeading from '@/components/ui/SectionHeading';
 import CurtainReveal from '@/components/motion/CurtainReveal';
+import JewellerLoupe from '@/components/motion/JewellerLoupe';
+import VelvetTray from '@/components/motion/VelvetTray';
 import GradientOrb from '@/components/ui/GradientOrb';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
@@ -28,6 +30,12 @@ export default function CollectionClient({ id }: { id: string }) {
   // `collection.name` meant no piece ever appeared on these pages.
   const collectionProducts = products.filter((p) => p.collection === id);
   const related = collections.filter((c) => c.id !== id).slice(0, 3);
+
+  // The piece this collection is best represented by: its bestseller, or failing
+  // that whatever it has. Undefined for a collection with nothing in it yet, which
+  // is why the loupe section below is conditional.
+  const hero =
+    collectionProducts.find((p) => p.isBestseller) ?? collectionProducts[0];
 
   if (!collection) {
     return (
@@ -144,6 +152,46 @@ export default function CollectionClient({ id }: { id: string }) {
               </div>
             )}
           </div>
+
+          {/* Under the loupe, and in its case. Only rendered when the collection
+              actually has a piece to feature — an empty collection gets the
+              "in progress" plate above and nothing else. */}
+          {hero && (
+            <div className="mb-32">
+              <SectionHeading
+                eyebrow="Look Closer"
+                title="The piece, at ten magnifications"
+                highlightWords={['ten']}
+                subtitle="The figure the whole clarity scale is defined at, and the only honest way to check that the report and the stone describe the same object."
+                align="center"
+                className="mb-14"
+              />
+
+              <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+                <JewellerLoupe
+                  src={hero.images?.[0] ?? hero.image ?? '/images/products/ring.jpg'}
+                  alt={hero.name}
+                  zoom={2.4}
+                  size={190}
+                  readout="10×"
+                  aspect="4 / 3"
+                />
+
+                <VelvetTray
+                  image={hero.images?.[0] ?? hero.image ?? '/images/products/ring.jpg'}
+                  alt={hero.name}
+                  title={hero.name}
+                  subtitle={hero.gemstone ?? 'Presented by hand'}
+                  meta={[
+                    hero.formattedPrice ?? hero.price,
+                    hero.metal.replace('-', ' '),
+                    hero.karat ?? hero.category,
+                  ]}
+                  trigger="click"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Related */}
           <div>

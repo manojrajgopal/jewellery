@@ -63,11 +63,19 @@ export default function ScrollProgress({
         />
       </div>
 
-      {/* Section rail */}
+      {/* Section rail.
+          The gap tightens once the list is long. At the original eighteen sections a
+          1rem gap measured ~470px and always fitted; the home page now runs to
+          twenty-six, which at that spacing overflows a 700px-tall window even on a
+          desktop-width viewport. The height cap and the scroll are the backstop for
+          anything longer still — a rail that runs off the screen loses its last
+          entries silently, which is worse than one that scrolls. */}
       {showRail && (
         <nav
           aria-label="Section navigation"
-          className="fixed right-5 top-1/2 z-[90] hidden -translate-y-1/2 flex-col items-end gap-4 xl:flex"
+          className={`scrollbar-hide fixed right-5 top-1/2 z-[90] hidden max-h-[82vh] -translate-y-1/2 flex-col items-end overflow-y-auto py-1 xl:flex ${
+            sections.length > 20 ? 'gap-2.5' : 'gap-4'
+          }`}
         >
           {sections.map((s) => {
             const active = activeId === s.id;

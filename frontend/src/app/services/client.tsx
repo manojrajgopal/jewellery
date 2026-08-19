@@ -11,7 +11,67 @@ import GradientOrb from '@/components/ui/GradientOrb';
 import FAQAccordion from '@/components/ui/FAQAccordion';
 import SpotlightCard from '@/components/motion/SpotlightCard';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
+import ScrollStackCards from '@/components/motion/ScrollStackCards';
+import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import RippleGrid from '@/components/motion/RippleGrid';
+import SavingsPlanner from '@/components/ui/SavingsPlanner';
+import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
+
+/**
+ * Real lead times, queue included.
+ *
+ * Published as a stack rather than a table because each one needs a sentence of
+ * explanation — a bare "18 months" against restoration reads as incompetence, and the
+ * reason it is eighteen months is the thing that makes it acceptable.
+ */
+const LEAD_TIMES = [
+  {
+    id: 'lt1',
+    kicker: 'Cleaning & polish',
+    title: 'Same day, while you wait',
+    body: 'Ultrasonic where the stone allows it, hand-cleaned where it does not, then a professional polish. Free for anything we made, and free for anything we did not if you are in the boutique anyway.',
+    image: '/images/products/ring.jpg',
+    meta: ['Same day', 'No charge'],
+    accent: 'jade' as const,
+  },
+  {
+    id: 'lt2',
+    kicker: 'Resizing & engraving',
+    title: 'Seven to ten working days',
+    body: 'A resize is a cut, a solder and a full refinish, and the refinish is what takes the time. Engraving is ten days because the engraver works two days a week and will not be hurried.',
+    image: '/images/products/bracelet.jpg',
+    meta: ['7–10 days', 'Free within the first year'],
+    accent: 'gold' as const,
+  },
+  {
+    id: 'lt3',
+    kicker: 'Retipping & stone replacement',
+    title: 'Two to four weeks, longer if we are matching',
+    body: 'The bench work is two days. The wait is sourcing a stone that matches the ones already in the piece — and if the piece is forty years old, matching an old cut can take a month of looking.',
+    image: '/images/collections/gemstone.jpg',
+    meta: ['2–4 weeks', 'Longer to match'],
+    accent: 'amethyst' as const,
+  },
+  {
+    id: 'lt4',
+    kicker: 'Bespoke commission',
+    title: 'Six to fourteen weeks, and we will not compress it',
+    body: 'Two weeks of drawing, a week of your revisions, then the bench. Fourteen at the top end means handwork — kundan, granulation, repoussé. We have never met a deadline by cutting a stage and we are not going to start.',
+    image: '/images/collections/bridal.jpg',
+    meta: ['6–14 weeks', 'Drawing included'],
+    accent: 'burgundy' as const,
+  },
+  {
+    id: 'lt5',
+    kicker: 'Full restoration',
+    title: 'Eighteen months, and there is a queue',
+    body: 'One bench, one artisan, thirty-six years of Victorian and Edwardian work, and no way to add capacity without adding someone who cannot yet do it. We have never advertised this service and the queue is still eighteen months.',
+    image: '/images/collections/heritage.jpg',
+    meta: ['18-month queue', 'Joseph Fernandes'],
+    accent: 'rose' as const,
+  },
+];
 
 const SERVICES = [
   {
@@ -220,6 +280,70 @@ export default function ServicesClient() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* What each service actually costs in time. The cards above say what we do;
+          this says how long you will be without the piece, which is the question
+          people are too polite to ask and then resent the answer to. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <RippleGrid spacing={48} reach={190} dot={1} />
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <div className="mb-16 text-center">
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Lead Times, Honestly
+            </p>
+            <ScrollAssembleText
+              text="How long you will be without it"
+              as="h2"
+              highlightWords={['without']}
+              spread={72}
+              className="mx-auto max-w-2xl font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl md:text-5xl"
+            />
+            <p className="mx-auto mt-5 max-w-xl font-sans text-sm font-light leading-relaxed text-muted">
+              Every figure here is the real one, including the queue. We would rather
+              disappoint you now than at the counter in three weeks.
+            </p>
+          </div>
+
+          <div className="pb-[28vh]">
+            <ScrollStackCards cards={LEAD_TIMES} offset={22} shrink={0.05} />
+          </div>
+        </div>
+      </section>
+
+      {/* Paying for it over time */}
+      <section className="relative overflow-hidden py-24 md:py-32">
+        <CausticsCanvas intensity={0.28} lobes={5} speed={34} />
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Paying For It"
+            title="Set aside monthly, spend it whenever"
+            highlightWords={['monthly,']}
+            subtitle="A deposit scheme rather than an instrument with a yield — we add instalments at maturity, and the panel below says exactly what that is and is not."
+            align="center"
+            className="mb-14"
+          />
+
+          <SavingsPlanner />
+        </div>
+      </section>
+
+      {/* What arrives at the end of it */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/30 py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="And Then"
+            title="What it comes back in"
+            highlightWords={['back']}
+            subtitle="A serviced piece is returned in a fresh case, cleaned, and photographed at forty magnifications so you have a record of the condition it left us in."
+            align="center"
+            className="mb-14"
+          />
+
+          <PackagingConfigurator />
         </div>
       </section>
 

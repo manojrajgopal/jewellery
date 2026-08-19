@@ -15,6 +15,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle';
 import CinemaToggle from '@/components/ui/CinemaToggle';
 import SearchPalette from '@/components/ui/SearchPalette';
 import AudioAmbience from '@/components/motion/AudioAmbience';
+import DiscoverMenu, { DISCOVER } from '@/components/layout/DiscoverMenu';
 import { openShortcuts, openWishlist } from '@/components/providers/KeyboardLayer';
 import { useWishlist } from '@/hooks/useWishlist';
 
@@ -109,9 +110,11 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop navigation with a shared sliding pill */}
+          {/* Desktop navigation with a shared sliding pill. Padding is a shade
+              tighter than the utilities either side of it, because the bar now
+              carries the Discover trigger as well as the eight primary links. */}
           <nav
-            className="hidden items-center gap-1 lg:flex"
+            className="hidden items-center gap-0.5 lg:flex"
             onMouseLeave={() => setHovered(null)}
           >
             {navLinks.map((link) => {
@@ -121,7 +124,7 @@ export default function Navbar() {
                   key={link.name}
                   href={link.href}
                   onMouseEnter={() => setHovered(link.name)}
-                  className={`relative px-3.5 py-2 font-accent text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
+                  className={`relative px-3 py-2 font-accent text-[11px] uppercase tracking-luxe transition-colors duration-300 ${
                     active ? 'text-accent' : 'text-secondary hover:text-primary'
                   }`}
                 >
@@ -137,12 +140,17 @@ export default function Navbar() {
                     <motion.span
                       layoutId="nav-active"
                       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                      className="absolute inset-x-3.5 -bottom-0.5 h-px bg-gradient-to-r from-transparent via-accent to-transparent"
+                      className="absolute inset-x-3 -bottom-0.5 h-px bg-gradient-to-r from-transparent via-accent to-transparent"
                     />
                   )}
                 </Link>
               );
             })}
+
+            {/* The reference and editorial pages, behind one trigger. They share
+                the `nav-active` layoutId with the links above on purpose, so the
+                underline slides across to Discover when one of them is open. */}
+            <DiscoverMenu />
           </nav>
 
           {/* Utilities */}
@@ -304,11 +312,44 @@ export default function Navbar() {
                 </motion.div>
               ))}
 
+              {/* The Discover pages, as a secondary rail. Set smaller than the
+                  primary links rather than mixed in with them, so the drawer keeps
+                  the same hierarchy the desktop bar has. */}
+              <motion.div
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 + navLinks.length * 0.06 }}
+                className="mt-8 w-full max-w-sm"
+              >
+                <p className="mb-3 font-accent text-[9px] uppercase tracking-luxest text-accent">
+                  Discover
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {DISCOVER.map((entry) => {
+                    const Icon = entry.icon;
+                    return (
+                      <Link
+                        key={entry.href}
+                        href={entry.href}
+                        className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-3 font-accent text-[9px] uppercase tracking-luxe transition-colors ${
+                          isActive(entry.href)
+                            ? 'border-gold-500/50 bg-gold-500/10 text-accent'
+                            : 'border-hairline text-muted hover:border-gold-500/40 hover:text-accent'
+                        }`}
+                      >
+                        <Icon size={13} strokeWidth={1.7} className="flex-shrink-0" />
+                        {entry.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </motion.div>
+
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 + navLinks.length * 0.06 }}
-                className="mt-10"
+                transition={{ duration: 0.5, delay: 0.16 + navLinks.length * 0.06 }}
+                className="mt-9"
               >
                 <CTAButton variant="primary" size="lg" href="/contact" showArrow>
                   Book Appointment

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, type ElementType } from 'react';
 import { motion, useInView, type Variants } from 'framer-motion';
 
 type Mode = 'chars' | 'words' | 'lines';
@@ -59,8 +59,12 @@ export default function SplitText({
     },
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Tag = motion(as as any);
+  // Indexed, not called. `motion(tag)` builds a brand-new component type on every
+  // render, so React sees a different element type each time the parent updates and
+  // remounts the whole subtree — which restarts every glyph mid-animation and throws
+  // away the inView state. The indexed form is memoised inside framer-motion, and is
+  // also the API that is not deprecated.
+  const Tag = motion[as as keyof typeof motion] as ElementType;
 
   const isHighlighted = (word: string) => {
     // Strip punctuation so 'Gold,' still matches the highlight 'Gold'.

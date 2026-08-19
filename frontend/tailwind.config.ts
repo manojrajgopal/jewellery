@@ -439,6 +439,182 @@ const config: Config = {
           "0%, 100%": { filter: "hue-rotate(0deg)" },
           "50%":      { filter: "hue-rotate(40deg)" },
         },
+
+        /* ======================================================================
+           MOTION LAYER v4 — foil, mechanism, fabric and optics
+           Added alongside the v3 set rather than replacing any of it: several
+           existing components target these names as strings, so a rename is a
+           breaking change even when the curve is identical.
+           ====================================================================== */
+
+        /* ---------- Holographic foil and metal ---------- */
+        /* Two things move at once: the gradient slides and the hue turns. Foil
+           that only slides reads as plastic; the hue turn is what sells leaf. */
+        "foil-shift": {
+          "0%":   { backgroundPosition: "0% 50%", filter: "hue-rotate(-16deg) saturate(1.15)" },
+          "50%":  { backgroundPosition: "100% 50%", filter: "hue-rotate(18deg) saturate(1.4)" },
+          "100%": { backgroundPosition: "0% 50%", filter: "hue-rotate(-16deg) saturate(1.15)" },
+        },
+        "sheen-diagonal": {
+          "0%":   { transform: "translate3d(-140%, -140%, 0) rotate(28deg)" },
+          "100%": { transform: "translate3d(140%, 140%, 0) rotate(28deg)" },
+        },
+        "emboss-press": {
+          "0%":   { transform: "translateY(-2px)", filter: "brightness(1.12)" },
+          "55%":  { transform: "translateY(1px)", filter: "brightness(0.94)" },
+          "100%": { transform: "translateY(0)", filter: "brightness(1)" },
+        },
+        "neon-gold": {
+          "0%, 100%": { textShadow: "0 0 6px rgb(var(--gold-400) / 0.55), 0 0 22px rgb(var(--gold-500) / 0.3)" },
+          "48%":      { textShadow: "0 0 3px rgb(var(--gold-400) / 0.3), 0 0 10px rgb(var(--gold-500) / 0.14)" },
+          "52%":      { textShadow: "0 0 10px rgb(var(--gold-300) / 0.8), 0 0 34px rgb(var(--gold-400) / 0.45)" },
+        },
+
+        /* ---------- The loupe ----------
+           A jeweller lens throws a crescent of light across what it magnifies. */
+        "loupe-flare": {
+          "0%, 100%": { transform: "translate3d(-14%, -8%, 0) rotate(-8deg)", opacity: "0.35" },
+          "50%":      { transform: "translate3d(12%, 6%, 0) rotate(6deg)", opacity: "0.8" },
+        },
+        "laser-scan": {
+          "0%":   { transform: "translateY(-6%)", opacity: "0" },
+          "10%":  { opacity: "1" },
+          "90%":  { opacity: "1" },
+          "100%": { transform: "translateY(106%)", opacity: "0" },
+        },
+        "radar-sweep": {
+          "0%":   { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+
+        /* ---------- Paper, leaf and fabric ---------- */
+        "page-turn": {
+          "0%":   { transform: "perspective(1600px) rotateY(0deg)", filter: "brightness(1)" },
+          "45%":  { filter: "brightness(0.86)" },
+          "100%": { transform: "perspective(1600px) rotateY(-172deg)", filter: "brightness(1)" },
+        },
+        "leaf-flip-down": {
+          "0%":   { transform: "perspective(420px) rotateX(0deg)" },
+          "100%": { transform: "perspective(420px) rotateX(-90deg)" },
+        },
+        "leaf-flip-up": {
+          "0%":   { transform: "perspective(420px) rotateX(90deg)" },
+          "100%": { transform: "perspective(420px) rotateX(0deg)" },
+        },
+        "velvet-fold": {
+          "0%":   { transform: "perspective(900px) rotateX(-72deg) scaleY(0.6)", opacity: "0" },
+          "60%":  { transform: "perspective(900px) rotateX(8deg) scaleY(1.02)", opacity: "1" },
+          "100%": { transform: "perspective(900px) rotateX(0deg) scaleY(1)", opacity: "1" },
+        },
+        "curtain-part-l": {
+          "0%":   { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-101%)" },
+        },
+        "curtain-part-r": {
+          "0%":   { transform: "translateX(0)" },
+          "100%": { transform: "translateX(101%)" },
+        },
+        "wipe-diagonal": {
+          "0%":   { clipPath: "polygon(0 0, 0 0, 0 0, 0 0)" },
+          "100%": { clipPath: "polygon(0 0, 140% 0, 140% 140%, 0 140%)" },
+        },
+
+        /* ---------- Sound and signal ---------- */
+        "wave-ride": {
+          "0%":   { transform: "translateX(0) scaleY(1)" },
+          "50%":  { transform: "translateX(-25%) scaleY(0.72)" },
+          "100%": { transform: "translateX(-50%) scaleY(1)" },
+        },
+        "eq-bar": {
+          "0%, 100%": { transform: "scaleY(0.28)" },
+          "22%":      { transform: "scaleY(1)" },
+          "48%":      { transform: "scaleY(0.46)" },
+          "71%":      { transform: "scaleY(0.86)" },
+        },
+        "pulse-dot": {
+          "0%, 100%": { transform: "scale(1)", opacity: "1" },
+          "50%":      { transform: "scale(0.55)", opacity: "0.45" },
+        },
+
+        /* ---------- Mechanism ---------- */
+        pendulum: {
+          "0%, 100%": { transform: "rotate(-11deg)" },
+          "50%":      { transform: "rotate(11deg)" },
+        },
+        "spool-unwind": {
+          "0%":   { strokeDashoffset: "0" },
+          "100%": { strokeDashoffset: "-460" },
+        },
+        "thread-stitch": {
+          "0%":   { strokeDashoffset: "180", opacity: "0" },
+          "14%":  { opacity: "1" },
+          "100%": { strokeDashoffset: "0", opacity: "1" },
+        },
+        "blueprint-draw": {
+          "0%":   { strokeDashoffset: "1200", opacity: "0.2" },
+          "100%": { strokeDashoffset: "0", opacity: "1" },
+        },
+
+        /* ---------- Stones in space ---------- */
+        "gem-tumble": {
+          "0%":   { transform: "rotate3d(1, 1, 0.4, 0deg)" },
+          "100%": { transform: "rotate3d(1, 1, 0.4, 360deg)" },
+        },
+        "facet-spin-3d": {
+          "0%":   { transform: "rotateY(0deg) rotateX(9deg)" },
+          "100%": { transform: "rotateY(360deg) rotateX(9deg)" },
+        },
+        "crown-rise": {
+          "0%":   { transform: "translateY(38%) scale(0.82) rotateX(28deg)", opacity: "0" },
+          "100%": { transform: "translateY(0) scale(1) rotateX(0deg)", opacity: "1" },
+        },
+
+        /* ---------- Type and heat ---------- */
+        "glyph-jitter": {
+          "0%, 100%": { transform: "translate3d(0,0,0)" },
+          "25%":      { transform: "translate3d(-0.6px, 0.8px, 0)" },
+          "50%":      { transform: "translate3d(0.8px, -0.5px, 0)" },
+          "75%":      { transform: "translate3d(-0.4px, -0.7px, 0)" },
+        },
+        "heat-haze": {
+          "0%, 100%": { transform: "skewX(0deg) scaleY(1)", filter: "blur(0px)" },
+          "35%":      { transform: "skewX(0.7deg) scaleY(1.012)", filter: "blur(0.4px)" },
+          "70%":      { transform: "skewX(-0.6deg) scaleY(0.99)", filter: "blur(0.3px)" },
+        },
+        "melt-down": {
+          "0%":   { clipPath: "inset(0 0 0 0)", filter: "blur(0px)" },
+          "100%": { clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" },
+        },
+
+        /* ---------- Cards and shelves ---------- */
+        "card-deal": {
+          "0%":   { transform: "translate3d(-46%, 26%, 0) rotate(-16deg) scale(0.9)", opacity: "0" },
+          "100%": { transform: "translate3d(0,0,0) rotate(0deg) scale(1)", opacity: "1" },
+        },
+        "pin-drop": {
+          "0%":   { transform: "translateY(-140%) scale(0.6)", opacity: "0" },
+          "58%":  { transform: "translateY(0) scale(1.12)", opacity: "1" },
+          "76%":  { transform: "translateY(-12%) scale(0.96)" },
+          "100%": { transform: "translateY(0) scale(1)", opacity: "1" },
+        },
+        "depth-push": {
+          "0%":   { transform: "perspective(1200px) translateZ(0)" },
+          "100%": { transform: "perspective(1200px) translateZ(-140px)" },
+        },
+        "iris-close": {
+          "0%":   { clipPath: "circle(150% at 50% 50%)" },
+          "100%": { clipPath: "circle(0% at 50% 50%)" },
+        },
+
+        /* ---------- Vertical rails ---------- */
+        "marquee-y": {
+          "0%":   { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
+        "marquee-y-reverse": {
+          "0%":   { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0)" },
+        },
       },
 
       animation: {
@@ -523,6 +699,57 @@ const config: Config = {
         "tilt-idle": "tilt-idle 14s ease-in-out infinite",
         "path-dash": "path-dash 2.4s cubic-bezier(0.22,1,0.36,1) both",
         "hue-cycle": "hue-cycle 16s ease-in-out infinite",
+
+        /* ---------- v4: foil and metal ---------- */
+        "foil-shift": "foil-shift 9s ease-in-out infinite",
+        "sheen-diagonal": "sheen-diagonal 2.6s cubic-bezier(0.4,0,0.2,1) infinite",
+        "emboss-press": "emboss-press 340ms cubic-bezier(0.22,1,0.36,1) both",
+        "neon-gold": "neon-gold 7s ease-in-out infinite",
+
+        /* ---------- v4: the loupe ---------- */
+        "loupe-flare": "loupe-flare 8s ease-in-out infinite",
+        "laser-scan": "laser-scan 3.2s cubic-bezier(0.4,0,0.2,1) infinite",
+        "radar-sweep": "radar-sweep 5.5s linear infinite",
+
+        /* ---------- v4: paper and fabric ---------- */
+        "page-turn": "page-turn 1.15s cubic-bezier(0.65,0,0.35,1) forwards",
+        "leaf-flip-down": "leaf-flip-down 320ms cubic-bezier(0.65,0,0.35,1) forwards",
+        "leaf-flip-up": "leaf-flip-up 320ms cubic-bezier(0.22,1,0.36,1) forwards",
+        "velvet-fold": "velvet-fold 1s cubic-bezier(0.22,1,0.36,1) both",
+        "curtain-part-l": "curtain-part-l 1.3s cubic-bezier(0.76,0,0.24,1) forwards",
+        "curtain-part-r": "curtain-part-r 1.3s cubic-bezier(0.76,0,0.24,1) forwards",
+        "wipe-diagonal": "wipe-diagonal 1.1s cubic-bezier(0.76,0,0.24,1) both",
+
+        /* ---------- v4: sound and signal ---------- */
+        "wave-ride": "wave-ride 9s ease-in-out infinite",
+        "eq-bar": "eq-bar 1.1s ease-in-out infinite",
+        "pulse-dot": "pulse-dot 1.8s ease-in-out infinite",
+
+        /* ---------- v4: mechanism ---------- */
+        pendulum: "pendulum 4.2s ease-in-out infinite",
+        "spool-unwind": "spool-unwind 14s linear infinite",
+        "thread-stitch": "thread-stitch 2s cubic-bezier(0.22,1,0.36,1) both",
+        "blueprint-draw": "blueprint-draw 3s cubic-bezier(0.22,1,0.36,1) both",
+
+        /* ---------- v4: stones in space ---------- */
+        "gem-tumble": "gem-tumble 26s linear infinite",
+        "facet-spin-3d": "facet-spin-3d 18s linear infinite",
+        "crown-rise": "crown-rise 1.1s cubic-bezier(0.22,1,0.36,1) both",
+
+        /* ---------- v4: type and heat ---------- */
+        "glyph-jitter": "glyph-jitter 3.4s steps(4) infinite",
+        "heat-haze": "heat-haze 6s ease-in-out infinite",
+        "melt-down": "melt-down 1.4s cubic-bezier(0.76,0,0.24,1) forwards",
+
+        /* ---------- v4: cards and shelves ---------- */
+        "card-deal": "card-deal 0.85s cubic-bezier(0.22,1,0.36,1) both",
+        "pin-drop": "pin-drop 0.9s cubic-bezier(0.34,1.56,0.64,1) both",
+        "depth-push": "depth-push 1.2s cubic-bezier(0.22,1,0.36,1) both",
+        "iris-close": "iris-close 1s cubic-bezier(0.76,0,0.24,1) forwards",
+
+        /* ---------- v4: vertical rails ---------- */
+        "marquee-y": "marquee-y 34s linear infinite",
+        "marquee-y-reverse": "marquee-y-reverse 34s linear infinite",
       },
     },
   },

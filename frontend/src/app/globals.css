@@ -1054,3 +1054,359 @@ html[data-theme='light'][data-cinema='on'] {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* ==========================================================================
+   MOTION LAYER v4 — the loupe, the lookbook, foil, velvet and blueprint
+   Surfaces and masks the v4 components rely on. Kept here rather than in the
+   Tailwind config for the same reason as v3: these are compositions the JIT
+   cannot express as a single utility, and several are targeted by descendant
+   selectors from inside a component.
+   ========================================================================== */
+:root {
+  /* The loupe's optical character. Exposed so a section can dial the lens down
+     over busy photography without editing the component. */
+  --loupe-size: 190px;
+  --loupe-zoom: 2.15;
+  --loupe-fringe: 1.4px;
+
+  /* Foil: how far the holographic band travels, and how wide it reads. */
+  --foil-spread: 220%;
+  --foil-alpha: 0.42;
+}
+
+[data-theme='light'] {
+  /* Additive holographic light over cream washes out, so the light theme leans
+     on saturation instead of luminance. */
+  --foil-alpha: 0.3;
+}
+
+@layer components {
+  /* ---------- Holographic foil ----------
+     Three overlaid gradients: a prism band, a specular highlight, and a fine
+     diffraction comb. The comb is what stops it reading as a plain rainbow. */
+  .foil-holo {
+    background-image:
+      linear-gradient(
+        var(--foil-angle, 108deg),
+        transparent 12%,
+        rgb(var(--amethyst-500) / var(--foil-alpha)) 26%,
+        rgb(var(--jade-500) / var(--foil-alpha)) 38%,
+        rgb(var(--gold-200) / calc(var(--foil-alpha) * 1.4)) 50%,
+        rgb(var(--rose-500) / var(--foil-alpha)) 62%,
+        rgb(var(--amethyst-500) / var(--foil-alpha)) 74%,
+        transparent 88%
+      ),
+      repeating-linear-gradient(
+        var(--foil-angle, 108deg),
+        transparent 0px,
+        rgb(var(--hairline) / 0.05) 2px,
+        transparent 4px
+      );
+    background-size: var(--foil-spread) var(--foil-spread), 12px 12px;
+    background-blend-mode: screen, overlay;
+  }
+
+  /* Pointer-driven variant: components write --foil-angle from the cursor
+     bearing, so the band tips as though the sheet were being turned. */
+  .foil-holo-live {
+    transition: background-position 220ms linear;
+  }
+
+  /* ---------- Embossed gold type ----------
+     Struck rather than printed: a lit top edge, a cut bottom edge, and a faint
+     bloom so it still reads at display sizes. */
+  .text-emboss-gold {
+    color: rgb(var(--gold-300));
+    text-shadow:
+      0 1px 0 rgb(var(--gold-100) / 0.4),
+      0 -1px 1px rgb(var(--gold-800) / 0.7),
+      0 0 22px rgb(var(--gold-500) / 0.22);
+  }
+  [data-theme='light'] .text-emboss-gold {
+    color: rgb(var(--gold-700));
+    text-shadow:
+      0 1px 0 rgb(255 255 255 / 0.9),
+      0 -1px 1px rgb(var(--gold-800) / 0.35),
+      0 0 18px rgb(var(--gold-600) / 0.18);
+  }
+
+  /* ---------- The loupe ----------
+     A real lens has three tells: a bright rim, a crescent of internal flare,
+     and colour fringing at the edge of the field. All three are cheap in CSS;
+     none of them are cheap to fake with a single box-shadow. */
+  .loupe-lens {
+    box-shadow:
+      0 0 0 1px rgb(var(--gold-300) / 0.55),
+      0 0 0 7px rgb(var(--gold-800) / 0.35),
+      0 0 0 8px rgb(var(--gold-400) / 0.4),
+      0 24px 60px -18px rgb(var(--shadow-color) / 0.8),
+      inset 0 0 34px -6px rgb(var(--gold-200) / 0.28);
+  }
+  .loupe-fringe {
+    /* Chromatic aberration at the field edge only — a full-field fringe reads
+       as a broken image rather than as glass. */
+    box-shadow:
+      inset 0 0 0 var(--loupe-fringe) rgb(255 60 90 / 0.28),
+      inset 0 0 0 calc(var(--loupe-fringe) * 2) rgb(60 210 255 / 0.22);
+  }
+  .loupe-crescent {
+    background-image: radial-gradient(
+      70% 55% at 30% 24%,
+      rgb(255 255 255 / 0.42),
+      transparent 62%
+    );
+  }
+
+  /* ---------- The lookbook ----------
+     Pages are stacked in a preserve-3d parent and hinge on their inner edge. */
+  .book-stage {
+    perspective: 2200px;
+    perspective-origin: 50% 46%;
+  }
+  .book-leaf {
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    backface-visibility: hidden;
+  }
+  /* The gutter shadow. Two gradients so the crease darkens on both leaves
+     rather than only the one that happens to be on top. */
+  .book-gutter::before,
+  .book-gutter::after {
+    content: '';
+    @apply pointer-events-none absolute inset-y-0 w-16;
+  }
+  .book-gutter::before {
+    right: 0;
+    background: linear-gradient(90deg, transparent, rgb(var(--shadow-color) / 0.42));
+  }
+  .book-gutter::after {
+    left: 0;
+    background: linear-gradient(270deg, transparent, rgb(var(--shadow-color) / 0.42));
+  }
+
+  /* Uncoated stock. A flat paper colour under a photograph looks like a screen;
+     the fibre is what makes it look like a printed page. */
+  .paper-stock {
+    background-color: rgb(var(--surface-raised));
+    background-image:
+      radial-gradient(circle at 18% 22%, rgb(var(--hairline) / 0.035) 0 1px, transparent 1px),
+      radial-gradient(circle at 62% 74%, rgb(var(--hairline) / 0.03) 0 1px, transparent 1px);
+    background-size: 7px 7px, 11px 11px;
+  }
+
+  /* ---------- Velvet ----------
+     The tray a piece is presented on. Nap direction is the whole effect: the
+     pile catches light on one axis and swallows it on the other. */
+  .velvet-bed {
+    background-image:
+      linear-gradient(
+        176deg,
+        rgb(var(--burgundy-900) / 0.55),
+        rgb(var(--burgundy-700) / 0.32) 46%,
+        rgb(var(--burgundy-900) / 0.6)
+      ),
+      repeating-linear-gradient(
+        92deg,
+        rgb(var(--hairline) / 0.028) 0px,
+        transparent 2px,
+        rgb(var(--shadow-color) / 0.05) 4px
+      );
+    box-shadow: inset 0 0 60px -10px rgb(var(--shadow-color) / 0.9);
+  }
+
+  /* ---------- Blueprint ----------
+     The technical drawing under a bespoke commission. */
+  .blueprint-field {
+    background-image:
+      linear-gradient(rgb(var(--gold-500) / 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--gold-500) / 0.055) 1px, transparent 1px),
+      linear-gradient(rgb(var(--gold-500) / 0.11) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--gold-500) / 0.11) 1px, transparent 1px);
+    background-size: 16px 16px, 16px 16px, 80px 80px, 80px 80px;
+  }
+
+  /* ---------- Stitched border ----------
+     A dashed rule that travels, for anything presented as a sample or a swatch. */
+  .stitch-border {
+    @apply relative;
+  }
+  .stitch-border::before {
+    content: '';
+    @apply pointer-events-none absolute inset-1 rounded-[inherit];
+    border: 1px dashed rgb(var(--gold-400) / 0.4);
+    animation: stitch-travel 24s linear infinite;
+  }
+
+  /* ---------- Frosted etch ----------
+     Acid-etched glass: opaque where the mark is, clear elsewhere. */
+  .frosted-etch {
+    -webkit-backdrop-filter: blur(3px) saturate(1.2);
+    backdrop-filter: blur(3px) saturate(1.2);
+    background-image: linear-gradient(
+      148deg,
+      rgb(var(--hairline) / 0.1),
+      transparent 40%,
+      rgb(var(--hairline) / 0.06)
+    );
+  }
+
+  /* ---------- Facet fan ----------
+     The crown of a brilliant cut, drawn as alternating conic wedges. Used as a
+     decorative plate behind stone content. */
+  .facet-fan {
+    background-image: conic-gradient(
+      from 0deg,
+      rgb(var(--gold-200) / 0.16) 0deg 12deg,
+      rgb(var(--gold-500) / 0.06) 12deg 24deg,
+      rgb(var(--champagne-300) / 0.14) 24deg 36deg,
+      rgb(var(--gold-500) / 0.05) 36deg 48deg
+    );
+    background-size: 100% 100%;
+  }
+
+  /* ---------- Equaliser rail ----------
+     Bars are staggered by an index variable rather than by nth-child, so the
+     component can render any number of them. */
+  .eq-rail > span {
+    transform-origin: bottom center;
+    animation: eq-bar 1.1s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+
+  /* ---------- Rarity meter ----------
+     A segmented gauge. Filled segments glow; empty ones stay hairline. */
+  .rarity-seg {
+    @apply h-1.5 flex-1 rounded-full bg-line;
+    transition: background-color 420ms var(--ease-luxury), box-shadow 420ms var(--ease-luxury);
+  }
+  .rarity-seg[data-on='true'] {
+    background-color: rgb(var(--accent));
+    box-shadow: 0 0 10px -1px rgb(var(--gold-500) / 0.7);
+  }
+}
+
+@layer utilities {
+  /* ---------- Additional facet clips ----------
+     The v3 set covers the cuts already in use; these are the remaining shapes
+     the stone library needs. */
+  .clip-cushion {
+    clip-path: polygon(
+      14% 0%, 86% 0%, 100% 14%, 100% 86%, 86% 100%, 14% 100%, 0% 86%, 0% 14%
+    );
+  }
+  .clip-oval { clip-path: ellipse(46% 50% at 50% 50%); }
+  .clip-radiant {
+    clip-path: polygon(22% 0%, 78% 0%, 100% 26%, 84% 100%, 16% 100%, 0% 26%);
+  }
+  .clip-asscher {
+    clip-path: polygon(
+      26% 0%, 74% 0%, 100% 26%, 100% 74%, 74% 100%, 26% 100%, 0% 74%, 0% 26%
+    );
+  }
+  .clip-heart {
+    clip-path: path('M50 100 C10 70 0 44 0 28 C0 10 14 0 28 0 C38 0 46 6 50 14 C54 6 62 0 72 0 C86 0 100 10 100 28 C100 44 90 70 50 100 Z');
+  }
+  .clip-ticket {
+    clip-path: polygon(
+      0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%
+    );
+  }
+
+  /* ---------- Masks ---------- */
+  .mask-fade-y-soft {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+  }
+  .mask-vignette {
+    -webkit-mask-image: radial-gradient(75% 75% at 50% 50%, black 55%, transparent 100%);
+    mask-image: radial-gradient(75% 75% at 50% 50%, black 55%, transparent 100%);
+  }
+  .mask-sweep-r {
+    -webkit-mask-image: linear-gradient(100deg, black 0%, black 42%, transparent 68%);
+    mask-image: linear-gradient(100deg, black 0%, black 42%, transparent 68%);
+  }
+
+  /* ---------- Scroll snap rails ----------
+     Used by the horizontal editorial rails, which have to land on a panel even
+     when the visitor flicks past three of them. */
+  .snap-rail-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .snap-rail-y { scroll-snap-type: y mandatory; }
+  .snap-panel { scroll-snap-align: center; scroll-snap-stop: always; }
+  .snap-panel-start { scroll-snap-align: start; }
+
+  /* ---------- 3D helpers, continued ---------- */
+  .perspective-800  { perspective: 800px; }
+  .perspective-3000 { perspective: 3000px; }
+  .perspective-origin-left { perspective-origin: left center; }
+  .translate-z-6  { transform: translateZ(24px); }
+  .translate-z-10 { transform: translateZ(40px); }
+  .translate-z-28 { transform: translateZ(112px); }
+  .-translate-z-8 { transform: translateZ(-32px); }
+  .rotate-y-180 { transform: rotateY(180deg); }
+  .rotate-x-90  { transform: rotateX(90deg); }
+
+  /* ---------- Type ---------- */
+  .text-shadow-luxe { text-shadow: 0 2px 24px rgb(var(--shadow-color) / 0.55); }
+  .text-stretch-wide { font-stretch: expanded; letter-spacing: 0.12em; }
+  .nums-slashed { font-variant-numeric: slashed-zero tabular-nums; }
+
+  /* ---------- Cursors ----------
+     Set on the element rather than the body so the loupe's cursor does not
+     leak onto the section around it. */
+  .cursor-loupe { cursor: zoom-in; }
+  .cursor-grab-x { cursor: grab; }
+  .cursor-grab-x:active { cursor: grabbing; }
+
+  /* ---------- Aspect ratios the editorial pages use ---------- */
+  .aspect-golden { aspect-ratio: 1.618 / 1; }
+  .aspect-plate  { aspect-ratio: 4 / 5; }
+  .aspect-cinema { aspect-ratio: 2.39 / 1; }
+}
+
+/* ==========================================================================
+   v4 KEYFRAMES
+   Only the ones referenced from this file; the rest are in tailwind.config.ts.
+   ========================================================================== */
+@keyframes stitch-travel {
+  0%   { background-position: 0 0; }
+  100% { background-position: 240px 0; }
+}
+
+@keyframes lens-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(2%, -2%, 0); }
+}
+
+/* The v4 layer is decoration on top of decoration, so it comes off entirely
+   when the OS asks for stillness — the same rule the cinema layer follows. */
+@media (prefers-reduced-motion: reduce) {
+  .foil-holo,
+  .eq-rail > span,
+  .stitch-border::before {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   SVG TRANSFORM BOX
+   CSS transforms on SVG elements resolve against the SVG user-space origin by
+   default, not against the element's own box — so a `scale()` on a circle at
+   (42, 38) pulls it toward (0, 0) instead of shrinking it in place, and a
+   percentage translate resolves against a reference box the element does not
+   have. Opting into `fill-box` makes SVG children behave the way the same
+   keyframes already behave on HTML elements, which is what every shared
+   animation in this file assumes.
+   ========================================================================== */
+@layer utilities {
+  .svg-center {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .svg-origin-left {
+    transform-box: fill-box;
+    transform-origin: left center;
+  }
+}

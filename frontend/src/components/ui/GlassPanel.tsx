@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ElementType } from 'react';
+import React, { ElementType, useMemo } from 'react';
 import { motion } from 'framer-motion';
 
 type Variant = 'default' | 'strong' | 'soft';
@@ -34,7 +34,19 @@ export default function GlassPanel({
   interactive = false,
   sheen = true,
 }: GlassPanelProps) {
-  const MotionComponent = motion(Component as ElementType);
+  /**
+   * Resolved once per `as`. `motion(Component)` produced a fresh component type on
+   * every render, which remounted the panel's whole subtree whenever the parent
+   * updated. Tag names come from framer-motion's own cache via the indexed form;
+   * `motion.create` is uncached, so the component branch is memoised here.
+   */
+  const MotionComponent = useMemo<ElementType>(
+    () =>
+      typeof Component === 'string'
+        ? (motion[Component as keyof typeof motion] as ElementType)
+        : motion.create(Component),
+    [Component]
+  );
 
   return (
     <MotionComponent

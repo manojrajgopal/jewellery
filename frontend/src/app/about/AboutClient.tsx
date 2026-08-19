@@ -3,7 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Crown, Gem, Leaf, ShieldCheck } from 'lucide-react';
+import { Crown, Gem, Leaf, ScrollText, ShieldCheck } from 'lucide-react';
 import PageBanner from '@/components/ui/PageBanner';
 import CTAButton from '@/components/ui/CTAButton';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -16,6 +16,12 @@ import CountUp from '@/components/motion/CountUp';
 import FadeInOnView from '@/components/animations/FadeInOnView';
 import HeritageTimeline from '@/components/ui/HeritageTimeline';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
+import ScrollStackCards from '@/components/motion/ScrollStackCards';
+import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import CylinderMarquee from '@/components/motion/CylinderMarquee';
+import RippleGrid from '@/components/motion/RippleGrid';
+import FoilCard from '@/components/motion/FoilCard';
+import FlipClock from '@/components/motion/FlipClock';
 import { brandData } from '@/data/brand';
 
 const VALUES = [
@@ -46,6 +52,59 @@ const STATS = [
   { label: 'Master Artisans', value: 45, suffix: '' },
   { label: 'Awards Won', value: 120, suffix: '+' },
   { label: 'Unique Designs', value: 5000, suffix: '+' },
+];
+
+/**
+ * What each generation changed. Deliberately not a second chronology — the
+ * timeline above already carries the dates, so these carry the arguments, and each
+ * one is framed as a break with the generation before it.
+ */
+const GENERATIONS = [
+  {
+    id: 'g1',
+    kicker: 'First Generation · 1892',
+    title: 'Refused to buy rough he had not seen',
+    body: 'The house was founded on an inconvenience: every parcel inspected in person before purchase, at a time when the trade bought sight-unseen on a broker\'s word. It halved the volume and it is the reason there is a fourth generation.',
+    image: '/images/collections/heritage.jpg',
+    meta: ['Founded 1892', 'The first ledger'],
+    accent: 'gold' as const,
+  },
+  {
+    id: 'g2',
+    kicker: 'Second Generation · 1931',
+    title: 'Bought the bench, and kept the ledger of who sat at it',
+    body: 'A plain steel-topped bench, bought secondhand in 1904 and still in the restoration room. Recording every artisan who worked at it seemed sentimental at the time. It is now how we service a piece set fifty years ago.',
+    image: '/images/hero/craftsmanship.jpg',
+    meta: ['Bench acquired 1904', 'Ledger begun 1931'],
+    accent: 'burgundy' as const,
+  },
+  {
+    id: 'g3',
+    kicker: 'Third Generation · 1968',
+    title: 'Stopped grading our own goods',
+    body: 'The most expensive decision the house has taken. Sending every stone above 0.30ct to an independent laboratory meant admitting our own grades had been generous — and it is the only reason a customer has any reason to believe the next one.',
+    image: '/images/collections/gemstone.jpg',
+    meta: ['Independent grading', 'Every stone above 0.30ct'],
+    accent: 'jade' as const,
+  },
+  {
+    id: 'g4',
+    kicker: 'Fourth Generation · 2011',
+    title: 'Published the chain, including the parts that flatter nobody',
+    body: 'Full traceability means publishing rough-to-polished weight loss, named sites of extraction, and the artisan\'s mark. It invites questions we then have to answer. That is the point of it.',
+    image: '/images/collections/bridal.jpg',
+    meta: ['RJC certified', 'Passport on every piece'],
+    accent: 'amethyst' as const,
+  },
+];
+
+/** The original charter, five clauses, never amended. */
+const CHARTER = [
+  'No parcel of rough shall be purchased unseen, whatever the discount offered.',
+  'No stone shall be graded by the hand that stands to profit from the grade.',
+  'The proportion that returns light shall be preferred to the proportion that returns weight.',
+  'Every piece shall carry the mark of the person who finished it.',
+  'Any piece of this house shall be serviced without charge for as long as it exists, whoever brings it in.',
 ];
 
 export default function AboutClient() {
@@ -183,6 +242,116 @@ export default function AboutClient() {
                 </FadeInOnView>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Four generations, as a stack the reader scrolls through. The timeline
+            above covers dates; this covers what each generation actually changed,
+            which is the part a chronology cannot carry. */}
+        <section className="relative overflow-hidden bg-canvas-alt py-24 md:py-32">
+          <RippleGrid spacing={48} reach={190} dot={1} />
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <div className="mb-16 text-center">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Four Generations
+              </p>
+              <ScrollAssembleText
+                text="Each one changed something the last would have refused"
+                as="h2"
+                highlightWords={['refused']}
+                spread={74}
+                className="mx-auto max-w-3xl font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl md:text-5xl"
+              />
+            </div>
+
+            {/* Extra bottom room so the last card has scroll left to stick against */}
+            <div className="pb-[28vh]">
+              <ScrollStackCards cards={GENERATIONS} offset={22} shrink={0.05} />
+            </div>
+          </div>
+        </section>
+
+        {/* The charter, struck on foil */}
+        <section className="relative overflow-hidden py-24 md:py-28">
+          <CausticsCanvas intensity={0.26} lobes={5} speed={36} />
+
+          <div className="relative z-10 mx-auto max-w-4xl px-6">
+            <FoilCard tilt={5} travel={85}>
+              <div className="p-8 md:p-12">
+                <p className="mb-6 flex items-center gap-2.5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                  <ScrollText size={13} strokeWidth={1.8} />
+                  The House Charter, 1892
+                </p>
+
+                <ol className="flex flex-col gap-5">
+                  {CHARTER.map((clause, i) => (
+                    <motion.li
+                      key={clause}
+                      initial={{ opacity: 0, x: -18 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                      className="flex gap-4 border-b border-hairline pb-5 last:border-0 last:pb-0"
+                    >
+                      <span className="nums-tabular flex-shrink-0 font-display text-2xl leading-none text-accent/50">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <p className="font-display text-base font-light italic leading-snug text-secondary md:text-lg">
+                        {clause}
+                      </p>
+                    </motion.li>
+                  ))}
+                </ol>
+
+                <p className="mt-8 font-sans text-[10px] font-light leading-relaxed text-faint">
+                  Written by hand in the first ledger and never amended. The fifth clause
+                  is why the restoration bench has never charged for a service.
+                </p>
+              </div>
+            </FoilCard>
+          </div>
+        </section>
+
+        {/* The 135th, counted down */}
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/30 py-20 md:py-24">
+          <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-8 px-6 text-center">
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              The Hundred and Thirty-Fifth Year
+            </p>
+            <h2 className="max-w-2xl font-display text-2xl font-light leading-snug text-primary md:text-4xl">
+              We open the first ledger to the public in
+            </h2>
+
+            {/* A fixed date, not one derived from load time — a countdown that resets
+                on reload tells the visitor immediately that it is theatre. */}
+            <FlipClock to="2027-03-04T11:00:00" expiredLabel="The ledger is on the table" />
+
+            <p className="max-w-xl font-sans text-sm font-light leading-relaxed text-muted">
+              Every commission since 1892, in the original hand, on the original bench.
+              One week only, and the fourth generation will be reading from it.
+            </p>
+          </div>
+        </section>
+
+        {/* The values, on a drum */}
+        <section className="relative overflow-hidden py-16 md:py-20">
+          <div className="relative z-10 mx-auto max-w-4xl px-6">
+            <p className="mb-8 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+              What has not changed
+            </p>
+            <CylinderMarquee
+              items={[
+                'Integrity',
+                'Artistry',
+                'Legacy',
+                'Responsibility',
+                'Patience',
+                'Restraint',
+              ]}
+              radius={125}
+              speed={10}
+            />
           </div>
         </section>
 

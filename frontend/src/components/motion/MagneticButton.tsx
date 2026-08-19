@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ElementType } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
 interface MagneticButtonProps {
@@ -58,8 +58,22 @@ export default function MagneticButton({
     y.set(0);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const Component = motion(as as any);
+  /**
+   * Resolved once per `as`, never per render.
+   *
+   * `motion(as)` built a new component type on every render, so React saw a different
+   * element type each time the pointer moved and remounted the button — which is why
+   * the spring never had a chance to settle. Indexing `motion` hits framer-motion's
+   * own cache for tag names; `motion.create` is *not* cached, so the component branch
+   * has to be memoised here.
+   */
+  const Component = useMemo<ElementType>(
+    () =>
+      typeof as === 'string'
+        ? (motion[as as keyof typeof motion] as ElementType)
+        : motion.create(as),
+    [as]
+  );
 
   if (!isClient) {
     const Fallback = as;

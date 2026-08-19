@@ -10,6 +10,11 @@ import MotionCard from '@/components/motion/MotionCard';
 import RevealImage from '@/components/motion/RevealImage';
 import GoldDivider from '@/components/ui/GoldDivider';
 import SectionHeading from '@/components/ui/SectionHeading';
+import ParallaxColumns, { type ColumnPlate } from '@/components/motion/ParallaxColumns';
+import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import CylinderMarquee from '@/components/motion/CylinderMarquee';
+import VelvetTray from '@/components/motion/VelvetTray';
+import RippleGrid from '@/components/motion/RippleGrid';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
 import { products } from '@/data/products';
@@ -24,6 +29,31 @@ const FILTERS = [
   ...collections.map((c) => ({ value: c.id, label: c.name })),
 ];
 
+/**
+ * The plate wall. Built from the catalogue rather than hand-listed, so a new
+ * collection or product appears here without anyone remembering to add it — and
+ * captions come from the real record rather than from a parallel copy of it.
+ */
+const PLATE_WALL: ColumnPlate[] = [
+  ...collections.map((c) => ({
+    src: c.image,
+    alt: c.name,
+    caption: c.name,
+    href: `/collections/${c.id}`,
+  })),
+  ...products.slice(0, 6).map((p) => ({
+    src: p.images?.[0] ?? p.image ?? '/images/products/ring.jpg',
+    alt: p.name,
+    caption: `${p.name} · ${p.formattedPrice ?? p.price}`,
+    href: `/collections/${p.collection}`,
+  })),
+];
+
+/** Derived from the catalogue's own category field, so the drum cannot go stale. */
+const CATEGORY_WORDS = Array.from(new Set(products.map((p) => p.category))).map(
+  (c) => c.charAt(0).toUpperCase() + c.slice(1)
+);
+
 export default function CollectionsClient() {
   const [active, setActive] = useState('all');
 
@@ -33,6 +63,10 @@ export default function CollectionsClient() {
   );
 
   const countFor = (id: string) => products.filter((p) => p.collection === id).length;
+
+  // The bestseller, or the first piece if nothing is flagged — never undefined, so
+  // the case section does not have to be conditional on the data.
+  const featured = products.find((p) => p.isBestseller) ?? products[0];
 
   return (
     <>
@@ -128,6 +162,94 @@ export default function CollectionsClient() {
           </StaggerContainer>
 
           <GoldDivider variant="jewel" className="my-24" />
+
+          {/* The season's plates — the same catalogue read as an editorial wall
+              rather than as a set of collection cards. Columns travel at different
+              rates, so scanning it has depth the grid above deliberately does not. */}
+          <section className="relative -mx-6 overflow-hidden px-6 py-8 md:-mx-12 md:px-12">
+            <RippleGrid spacing={48} reach={190} dot={1} />
+
+            <div className="relative z-10">
+              <div className="mb-14 text-center">
+                <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                  The Same Pieces, Differently
+                </p>
+                <ScrollAssembleText
+                  text="Twelve plates, no captions until you ask"
+                  as="h2"
+                  highlightWords={['ask']}
+                  spread={72}
+                  className="mx-auto max-w-2xl font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl"
+                />
+                <p className="mx-auto mt-5 max-w-xl font-sans text-sm font-light leading-relaxed text-muted">
+                  A grid tells you what each collection is called. This tells you what it
+                  looks like next to the others, which is the comparison you were making
+                  anyway.
+                </p>
+              </div>
+
+              <ParallaxColumns plates={PLATE_WALL} columns={4} depth={135} />
+            </div>
+          </section>
+
+          {/* The one piece worth pulling out, in its case */}
+          <section className="mt-24 grid gap-14 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-center">
+            {featured && (
+              <VelvetTray
+                image={featured.images?.[0] ?? '/images/products/ring.jpg'}
+                alt={featured.name}
+                title={featured.name}
+                subtitle={featured.gemstone ?? 'Presented by hand'}
+                meta={[
+                  featured.formattedPrice ?? featured.price,
+                  featured.metal.replace('-', ' '),
+                  featured.category,
+                ]}
+                trigger="click"
+              />
+            )}
+
+            <div>
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                The House Piece
+              </p>
+              <h2 className="font-display text-2xl font-light leading-tight text-primary md:text-4xl">
+                {featured?.name ?? 'The signature piece'}
+              </h2>
+              <p className="mt-5 max-w-prose font-sans text-base font-light leading-relaxed text-muted">
+                {featured?.description}
+              </p>
+              <p className="mt-5 font-display text-lg italic leading-snug text-secondary">
+                Press the case to open it. Everything in these collections arrives this way
+                — tooled, blind-stamped, and lined against the metal rather than against
+                the case.
+              </p>
+
+              <div className="mt-9 flex flex-wrap gap-4">
+                <CTAButton
+                  variant="primary"
+                  size="md"
+                  href={`/collections/${featured?.collection ?? collections[0].id}`}
+                  showArrow
+                >
+                  See it in the collection
+                </CTAButton>
+                <CTAButton variant="secondary" size="md" href="/lookbook">
+                  The bound lookbook
+                </CTAButton>
+              </div>
+            </div>
+          </section>
+
+          {/* Categories, on a drum */}
+          <section className="mt-24">
+            <p className="mb-8 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+              What we make
+            </p>
+            <CylinderMarquee items={CATEGORY_WORDS} radius={130} speed={11} />
+          </section>
+
+          <GoldDivider variant="wide" className="my-24" />
 
           {/* Closing CTA */}
           <div className="text-center">

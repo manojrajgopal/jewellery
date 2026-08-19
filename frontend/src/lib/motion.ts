@@ -441,3 +441,263 @@ export const modalPop: Variants = {
  */
 export const stillFor = (reduced: boolean, variants: Variants): Variants =>
   reduced ? { hidden: { opacity: 1 }, visible: { opacity: 1 } } : variants;
+
+/* ===========================================================================
+   SHOT LANGUAGE v4
+   The v3 block above covers entrances and sequencing. This block covers the
+   three things it left out: camera moves that carry motion blur, mechanical
+   reveals that move a mask rather than the subject, and helpers for the
+   viewport contract every section repeats by hand.
+   =========================================================================== */
+
+/**
+ * The viewport settings almost every section wants: fire once, and start a
+ * little before the element is fully on screen so the motion is already
+ * underway when the visitor's eye arrives. Spread it rather than retyping it —
+ * the margins drifting apart between sections is what makes a page feel
+ * assembled instead of directed.
+ */
+export const onceInView = { once: true, margin: '-12% 0px -12% 0px' } as const;
+
+/** Same contract, but for elements that are tall enough to need an earlier cue. */
+export const onceInViewEarly = { once: true, margin: '-4% 0px -24% 0px' } as const;
+
+/* ---------------------------------------------------------------------------
+   Camera moves with lens character
+--------------------------------------------------------------------------- */
+
+/** Whip pan: arrives smeared along its travel, then resolves. */
+export const whipPan = (from: 'left' | 'right' = 'left'): Variants => ({
+  hidden: {
+    opacity: 0,
+    x: from === 'left' ? -90 : 90,
+    filter: 'blur(14px)',
+    skewX: from === 'left' ? 7 : -7,
+  },
+  visible: {
+    opacity: 1,
+    x: 0,
+    filter: 'blur(0px)',
+    skewX: 0,
+    transition: { duration: dur.slow, ease: ease.camera },
+  },
+});
+
+/** Tilt-shift: the plane of focus rolls past the subject. */
+export const tiltShift: Variants = {
+  hidden: { opacity: 0, rotateX: 14, y: 44, filter: 'blur(10px)', transformPerspective: 1400 },
+  visible: {
+    opacity: 1,
+    rotateX: 0,
+    y: 0,
+    filter: 'blur(0px)',
+    transformPerspective: 1400,
+    transition: { duration: dur.cinematic, ease: ease.luxury },
+  },
+};
+
+/** Push in on the Z axis rather than by scale, so siblings keep their depth. */
+export const pushIn3D: Variants = {
+  hidden: { opacity: 0, z: -180, transformPerspective: 1200 },
+  visible: {
+    opacity: 1,
+    z: 0,
+    transformPerspective: 1200,
+    transition: { duration: dur.slow, ease: ease.camera },
+  },
+};
+
+/** A handheld settle — the frame overshoots slightly and corrects. */
+export const handheldSettle: Variants = {
+  hidden: { opacity: 0, y: 26, rotate: -0.7 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    rotate: 0,
+    transition: { type: 'spring', stiffness: 190, damping: 17, mass: 0.9 },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Mechanical reveals — the mask moves, not the subject
+--------------------------------------------------------------------------- */
+
+/** Camera shutter: slats part from the centre outward. */
+export const shutterOpen: Variants = {
+  hidden: { clipPath: 'inset(50% 0 50% 0)' },
+  visible: {
+    clipPath: 'inset(0% 0 0% 0)',
+    transition: { duration: dur.slow, ease: ease.curtain },
+  },
+};
+
+/** Diagonal wipe, the way a printed page is uncovered by a turning sheet. */
+export const wipeDiagonal: Variants = {
+  hidden: { clipPath: 'polygon(0 0, 0 0, 0 0, 0 0)' },
+  visible: {
+    clipPath: 'polygon(0 0, 140% 0, 140% 140%, 0 140%)',
+    transition: { duration: dur.cinematic, ease: ease.curtain },
+  },
+};
+
+/** Unrolls downward from its top edge — for panels and drawers. */
+export const unrollDown: Variants = {
+  hidden: { scaleY: 0, opacity: 0, transformOrigin: 'top center' },
+  visible: {
+    scaleY: 1,
+    opacity: 1,
+    transformOrigin: 'top center',
+    transition: { duration: dur.base, ease: ease.luxury },
+  },
+};
+
+/** An accordion fold opening flat, hinged on its top edge. */
+export const foldOpen: Variants = {
+  hidden: { rotateX: -78, opacity: 0, transformPerspective: 900, transformOrigin: 'top center' },
+  visible: {
+    rotateX: 0,
+    opacity: 1,
+    transformPerspective: 900,
+    transformOrigin: 'top center',
+    transition: { duration: dur.slow, ease: ease.luxury },
+  },
+};
+
+/** Circular iris anchored anywhere — pass the origin as a CSS position. */
+export const irisFrom = (at = '50% 50%'): Variants => ({
+  hidden: { clipPath: `circle(0% at ${at})` },
+  visible: {
+    clipPath: `circle(140% at ${at})`,
+    transition: { duration: dur.cinematic, ease: ease.luxury },
+  },
+});
+
+/* ---------------------------------------------------------------------------
+   Objects arriving
+--------------------------------------------------------------------------- */
+
+/** Dealt onto the table from off to one side. */
+export const cardDeal = (index = 0): Variants => ({
+  hidden: { opacity: 0, x: -70, y: 40, rotate: -14, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    rotate: 0,
+    scale: 1,
+    transition: { duration: dur.slow, delay: index * 0.07, ease: ease.luxury },
+  },
+});
+
+/** Dropped from above and bounced once, like a stone set into a tray. */
+export const pinDrop: Variants = {
+  hidden: { opacity: 0, y: -80, scale: 0.7 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 340, damping: 16, mass: 0.8 },
+  },
+};
+
+/** A stone turning into place as it arrives. */
+export const facetTurnIn: Variants = {
+  hidden: { opacity: 0, rotate: -35, scale: 0.6, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1,
+    rotate: 0,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: { duration: dur.slow, ease: ease.spring },
+  },
+};
+
+/** Rises with a slight crown, for anything presented as the hero of its row. */
+export const crownRise: Variants = {
+  hidden: { opacity: 0, y: 54, scale: 0.86, rotateX: 22, transformPerspective: 1000 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotateX: 0,
+    transformPerspective: 1000,
+    transition: { duration: dur.cinematic, ease: ease.luxury },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Sequencing, continued
+--------------------------------------------------------------------------- */
+
+/**
+ * Stagger that eases rather than ticking: children near the middle of the row
+ * resolve fastest. Framer has no built-in for this, so the delay is computed
+ * per child and applied through a custom prop.
+ */
+export const waveDelay = (index: number, total: number, spread = 0.5) => {
+  if (total <= 1) return 0;
+  const t = index / (total - 1);
+  // A raised cosine, so the ends lag and the centre leads.
+  return ((1 - Math.cos(t * Math.PI * 2)) / 2) * spread;
+};
+
+/** Children arrive in a wave. Pair with waveDelay via the `custom` prop. */
+export const waveItem: Variants = {
+  hidden: { opacity: 0, y: 34, filter: 'blur(7px)' },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: dur.slow, delay, ease: ease.luxury },
+  }),
+};
+
+/** Depth layers: each level sits further back and arrives slightly later. */
+export const depthLayer = (level = 0): Variants => ({
+  hidden: { opacity: 0, y: 30 + level * 12, scale: 1 - level * 0.02 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: dur.slow, delay: level * 0.09, ease: ease.camera },
+  },
+});
+
+/* ---------------------------------------------------------------------------
+   Interaction states
+--------------------------------------------------------------------------- */
+
+/** Lifts and blooms. For plates whose whole content is a photograph. */
+export const liftGlow = {
+  rest: { y: 0, scale: 1, boxShadow: '0 12px 30px -22px rgb(0 0 0 / 0.4)' },
+  hover: {
+    y: -10,
+    scale: 1.02,
+    boxShadow: '0 34px 70px -30px rgb(0 0 0 / 0.65)',
+    transition: { type: 'spring' as const, stiffness: 240, damping: 20 },
+  },
+  tap: { scale: 0.99, transition: { duration: dur.instant } },
+};
+
+/** Presses in rather than lifting — for controls that read as struck metal. */
+export const pressIn = {
+  rest: { scale: 1, filter: 'brightness(1)' },
+  hover: { scale: 1.03, filter: 'brightness(1.08)', transition: { duration: dur.fast } },
+  tap: { scale: 0.96, filter: 'brightness(0.93)', transition: { duration: dur.instant } },
+};
+
+/** The rail's own drag physics, so every draggable rail on the site matches. */
+export const railDrag = {
+  dragElastic: 0.14,
+  dragTransition: { power: 0.28, timeConstant: 320, bounceStiffness: 220, bounceDamping: 28 },
+} as const;
+
+/* ---------------------------------------------------------------------------
+   Reduced motion
+--------------------------------------------------------------------------- */
+
+/**
+ * Companion to stillFor: returns a transition that collapses to nothing when
+ * the OS asks for stillness, so a component can keep one code path.
+ */
+export const timing = (reduced: boolean | null, t: object) => (reduced ? { duration: 0 } : t);

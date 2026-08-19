@@ -8,8 +8,16 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 import ShortcutsOverlay from '@/components/ui/ShortcutsOverlay';
 import WishlistDrawer from '@/components/ui/WishlistDrawer';
 import { openCompare } from '@/hooks/useCompare';
+import { openConcierge } from '@/components/ui/ConciergeDock';
 
-/** Second key of a `G`-prefixed sequence → route. */
+/**
+ * Second key of a `G`-prefixed sequence → route.
+ *
+ * The first letter of the destination wherever it is still free. Four of the newer
+ * pages could not have theirs — `c` is collections, `g` is gallery, `s` is services
+ * — so the stone library takes `e` and care takes `r`. Both are documented in the
+ * shortcut sheet, which is the only place anyone discovers these anyway.
+ */
 const GO_TO: Record<string, string> = {
   h: '/',
   c: '/collections',
@@ -19,6 +27,10 @@ const GO_TO: Record<string, string> = {
   s: '/services',
   b: '/about',
   d: '/bespoke',
+  l: '/lookbook',
+  j: '/journal',
+  e: '/gemstones',
+  r: '/care',
 };
 
 /**
@@ -71,6 +83,8 @@ export default function KeyboardLayer() {
         setShortcutsOpen(false);
         setWishlistOpen(false);
         clearPending();
+        // The dock closes itself on Escape; it owns its own listener rather than
+        // exposing a close event, since nothing else needs to shut it.
         return;
       }
 
@@ -126,6 +140,12 @@ export default function KeyboardLayer() {
           // nothing has been added to compare.
           e.preventDefault();
           openCompare();
+          break;
+        case 'o':
+          // The dock owns the panel, so this only asks. It is absent on /contact,
+          // where the key is a no-op rather than an error.
+          e.preventDefault();
+          openConcierge();
           break;
         default:
           break;

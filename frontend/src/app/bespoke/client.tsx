@@ -1,6 +1,6 @@
 'use client';
 
-import { Clock, FileText, Gem, Hammer, PenTool, Truck } from 'lucide-react';
+import { CalendarClock, Clock, FileText, Gem, Hammer, PenTool, Truck } from 'lucide-react';
 
 import PageBanner from '@/components/ui/PageBanner';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -14,6 +14,12 @@ import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import MetalText from '@/components/motion/MetalText';
 import Odometer from '@/components/motion/Odometer';
 import ScrollTextMask from '@/components/motion/ScrollTextMask';
+import CTAButton from '@/components/ui/CTAButton';
+import EngravingStudio from '@/components/ui/EngravingStudio';
+import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
+import FlipClock from '@/components/motion/FlipClock';
+import FoilCard from '@/components/motion/FoilCard';
+import RippleGrid from '@/components/motion/RippleGrid';
 
 const JOURNEY = [
   {
@@ -188,6 +194,87 @@ export default function BespokeClient() {
           <p className="mt-8 font-accent text-[11px] uppercase tracking-luxer text-accent">
             Devrath Shah · Fourth-generation master goldsmith
           </p>
+        </div>
+      </section>
+
+      {/* ---------------- The inscription ----------------
+           The studio above settles the metal, the stone and the setting. This is the
+           last decision, and the only one that cannot be undone afterwards — so it
+           gets its own section rather than a field in the configurator. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <RippleGrid spacing={46} reach={190} dot={1.1} />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The Last Decision"
+            title="What it will say, for ever"
+            highlightWords={['ever']}
+            subtitle="Engraving is included and cannot be reversed. Set it on the band here and see whether it fits before the graver goes anywhere near the metal."
+            className="mb-14"
+          />
+
+          <EngravingStudio />
+        </div>
+      </section>
+
+      {/* ---------------- The commission window ---------------- */}
+      <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+        <CausticsCanvas intensity={0.3} lobes={5} speed={34} />
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <div className="mb-20">
+            <FoilCard tilt={5} travel={85}>
+              <div className="grid gap-10 p-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-12">
+                <div>
+                  <p className="mb-4 flex items-center gap-2.5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                    <CalendarClock size={13} strokeWidth={1.8} />
+                    The Christmas Window
+                  </p>
+
+                  <h2 className="text-emboss-gold font-display text-2xl font-light leading-tight md:text-4xl">
+                    The bench stops taking commissions when the queue reaches fourteen weeks
+                  </h2>
+
+                  <p className="mt-5 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                    Not a sales tactic — a capacity limit. Six pairs of hands, and every
+                    stage held to its real day count. Once the book is full for a season it
+                    is full, and the next opening is the following one.
+                  </p>
+
+                  <div className="mt-8 flex flex-wrap gap-4">
+                    <CTAButton variant="primary" size="md" href="/contact" showArrow>
+                      Take a place in the book
+                    </CTAButton>
+                    <CTAButton variant="secondary" size="md" href="/services">
+                      All the lead times
+                    </CTAButton>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-start gap-4 md:items-end">
+                  <span className="font-accent text-[9px] uppercase tracking-luxest text-faint">
+                    Book closes in
+                  </span>
+                  {/* A fixed date. A window that resets on reload is not a window. */}
+                  <FlipClock to="2026-09-30T20:00:00" expiredLabel="Closed for the season" />
+                  <span className="nums-tabular font-sans text-[11px] font-light italic text-faint">
+                    30 September 2026 · 8pm
+                  </span>
+                </div>
+              </div>
+            </FoilCard>
+          </div>
+
+          {/* And what it arrives in */}
+          <SectionHeading
+            eyebrow="Presented"
+            title="And what it arrives in"
+            highlightWords={['arrives']}
+            subtitle="Made to order alongside the piece. The lining is chosen against the metal rather than against the case — cream under yellow gold, black under platinum."
+            className="mb-14"
+          />
+
+          <PackagingConfigurator />
         </div>
       </section>
 

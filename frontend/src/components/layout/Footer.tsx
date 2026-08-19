@@ -3,12 +3,24 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Facebook, Instagram, Mail, MapPin, Phone, Send, Twitter, Keyboard } from 'lucide-react';
+import {
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Send,
+  Twitter,
+  Keyboard,
+  Headset,
+} from 'lucide-react';
 import SparkleBurst from '@/components/motion/SparkleBurst';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
 import CinemaToggle from '@/components/ui/CinemaToggle';
 import { openShortcuts } from '@/components/providers/KeyboardLayer';
+import { openConcierge } from '@/components/ui/ConciergeDock';
+import { DISCOVER } from '@/components/layout/DiscoverMenu';
 import { collections } from '@/data/collections';
 import { services } from '@/data/services';
 
@@ -51,7 +63,7 @@ export default function Footer() {
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-16 lg:py-24">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-12 lg:gap-8">
           {/* Brand */}
-          <div className="flex flex-col lg:col-span-5">
+          <div className="flex flex-col lg:col-span-4">
             <Link href="/" className="mb-4 flex items-center gap-3">
               <motion.span
                 whileHover={{ rotate: 135 }}
@@ -130,8 +142,27 @@ export default function Footer() {
             </ul>
           </nav>
 
+          {/* Discover — the reference and editorial pages */}
+          <nav className="flex flex-col lg:col-span-2" aria-label="Discover">
+            <h3 className="mb-6 font-accent text-[11px] uppercase tracking-luxe text-primary">
+              Discover
+            </h3>
+            <ul className="flex flex-col gap-3">
+              {DISCOVER.map((entry) => (
+                <li key={entry.href}>
+                  <Link
+                    href={entry.href}
+                    className="link-underline font-sans text-sm font-light text-muted transition-colors duration-300 hover:text-accent"
+                  >
+                    {entry.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
           {/* Visit */}
-          <div className="flex flex-col lg:col-span-3">
+          <div className="flex flex-col lg:col-span-2">
             <h3 className="mb-6 font-accent text-[11px] uppercase tracking-luxe text-primary">
               Visit Us
             </h3>
@@ -220,16 +251,31 @@ export default function Footer() {
             </div>
           </div>
 
-          <button
-            onClick={openShortcuts}
-            className="group flex items-center gap-2.5 font-sans text-[11px] font-light text-faint transition-colors hover:text-accent"
-          >
-            <Keyboard size={14} strokeWidth={1.7} />
-            Keyboard shortcuts
-            <kbd className="rounded border border-hairline px-1.5 py-0.5 font-sans text-[10px] text-muted transition-colors group-hover:border-gold-500/40 group-hover:text-accent">
-              ?
-            </kbd>
-          </button>
+          <div className="flex flex-wrap items-center gap-x-7 gap-y-3">
+            {/* The dock lives bottom-left and is easy to miss; this is the way in
+                for anyone who came looking for a telephone number instead. */}
+            <button
+              onClick={openConcierge}
+              className="group flex items-center gap-2.5 font-sans text-[11px] font-light text-faint transition-colors hover:text-accent"
+            >
+              <Headset size={14} strokeWidth={1.7} />
+              Speak to the concierge
+              <kbd className="rounded border border-hairline px-1.5 py-0.5 font-sans text-[10px] text-muted transition-colors group-hover:border-gold-500/40 group-hover:text-accent">
+                O
+              </kbd>
+            </button>
+
+            <button
+              onClick={openShortcuts}
+              className="group flex items-center gap-2.5 font-sans text-[11px] font-light text-faint transition-colors hover:text-accent"
+            >
+              <Keyboard size={14} strokeWidth={1.7} />
+              Keyboard shortcuts
+              <kbd className="rounded border border-hairline px-1.5 py-0.5 font-sans text-[10px] text-muted transition-colors group-hover:border-gold-500/40 group-hover:text-accent">
+                ?
+              </kbd>
+            </button>
+          </div>
         </div>
 
         {/* Legal */}
@@ -242,7 +288,9 @@ export default function Footer() {
             <Link href="/contact" className="transition-colors hover:text-accent">
               Terms of Service
             </Link>
-            <Link href="/contact" className="transition-colors hover:text-accent">
+            {/* Now points at the real care page rather than at /contact, which is
+                where this link went before the page existed. */}
+            <Link href="/care" className="transition-colors hover:text-accent">
               Care Guide
             </Link>
           </div>
