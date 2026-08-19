@@ -13,10 +13,16 @@ interface BreadcrumbItem {
 export default function Breadcrumbs({
   items,
   className = '',
+  onMedia = false,
 }: {
   items: BreadcrumbItem[];
   className?: string;
+  /** Set when the trail sits on a photograph rather than the page background. */
+  onMedia?: boolean;
 }) {
+  const linkTone = onMedia ? 'text-on-media-soft' : 'text-muted';
+  const dividerTone = onMedia ? 'text-on-media-muted' : 'text-faint';
+
   return (
     <motion.nav
       initial={{ opacity: 0, y: -10 }}
@@ -27,7 +33,7 @@ export default function Breadcrumbs({
     >
       <Link
         href="/"
-        className="link-underline flex items-center gap-1.5 text-muted transition-colors duration-300 hover:text-accent"
+        className={`link-underline flex items-center gap-1.5 transition-colors duration-300 hover:text-accent ${linkTone}`}
       >
         <Home size={13} strokeWidth={1.8} />
         <span>Home</span>
@@ -35,11 +41,11 @@ export default function Breadcrumbs({
 
       {items.map((item, index) => (
         <React.Fragment key={`${item.label}-${index}`}>
-          <ChevronRight size={13} className="text-faint" aria-hidden="true" />
+          <ChevronRight size={13} className={dividerTone} aria-hidden="true" />
           {item.href ? (
             <Link
               href={item.href}
-              className="link-underline text-muted transition-colors duration-300 hover:text-accent"
+              className={`link-underline transition-colors duration-300 hover:text-accent ${linkTone}`}
             >
               {item.label}
             </Link>

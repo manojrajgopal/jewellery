@@ -37,7 +37,8 @@ export default function AuroraBackground({
       ref={ref}
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
-      style={{ opacity: OPACITY[intensity] }}
+      // Scaled by --bloom so the jewel field stays a whisper on cream.
+      style={{ opacity: `calc(${OPACITY[intensity]} * var(--bloom, 1))` }}
     >
       <motion.div style={parallax ? { y } : undefined} className="absolute inset-[-20%]">
         <div className="absolute left-[8%] top-[10%] h-[46vw] w-[46vw] animate-aurora-drift rounded-full bg-gold-500/25 blur-[120px]" />

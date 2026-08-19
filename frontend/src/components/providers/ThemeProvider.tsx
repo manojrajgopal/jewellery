@@ -21,7 +21,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
   setTheme: () => {},
   mounted: false,
@@ -29,29 +29,40 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 export const useTheme = () => useContext(ThemeContext);
 
+export const DEFAULT_THEME: Theme = 'light';
+
+/** Browser-UI colour per theme, kept in step with --canvas. */
+const THEME_COLOR: Record<Theme, string> = { light: '#faf6ef', dark: '#080706' };
+
 /**
  * Inlined in <head> so the correct theme is painted before first frame —
- * without it the page flashes dark before switching to a stored light theme.
+ * without it the page flashes the default before switching to a stored theme.
+ * Light is the default: a stored choice still wins, but the OS preference no
+ * longer decides, so a first-time visitor always arrives in light.
  */
-export const themeInitScript = `(function(){try{var s=localStorage.getItem('${STORAGE_KEY}');var t=s||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+export const themeInitScript = `(function(){try{var s=localStorage.getItem('${STORAGE_KEY}');var t=s==='dark'?'dark':'light';document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'${THEME_COLOR.dark}':'${THEME_COLOR.light}');}catch(e){document.documentElement.setAttribute('data-theme','${DEFAULT_THEME}');}})();`;
 
 export default function ThemeProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [mounted, setMounted] = useState(false);
 
   // Adopt whatever the init script already painted.
   useEffect(() => {
     const attr = document.documentElement.getAttribute('data-theme');
-    setThemeState(attr === 'light' ? 'light' : 'dark');
+    setThemeState(attr === 'dark' ? 'dark' : 'light');
     setMounted(true);
   }, []);
 
   const applyTheme = useCallback((next: Theme) => {
     document.documentElement.setAttribute('data-theme', next);
+    // Keep the browser's own chrome in step, so the surround matches the page.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', THEME_COLOR[next]);
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {

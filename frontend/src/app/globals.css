@@ -86,8 +86,11 @@
 
   --text-primary: var(--cream-50);
   --text-secondary: var(--ink-200);
-  --text-muted: var(--ink-400);
-  --text-faint: var(--ink-500);
+  /* Lifted one stop each: ink-500 on obsidian measured 3.49:1, which is below
+     AA for the small metadata it was carrying. The ramp still reads as four
+     distinct steps — 18.7 / 13.9 / 9.5 / 6.3 against the canvas. */
+  --text-muted: var(--ink-300);
+  --text-faint: var(--ink-400);
 
   --accent: var(--gold-500);
   --accent-soft: var(--gold-300);
@@ -101,6 +104,34 @@
   --hairline-alpha: 0.07;
   --shadow-color: 0 0 0;
   --shadow-strength: 0.45;
+
+  /* ---------- Photography ----------
+     A photograph does not change with the theme, so anything laid over one
+     needs its own contrast pair: a veil in the theme's own base colour, and
+     ink that reads against that veil. Using --text-* over a photo is what made
+     the light theme illegible — the type flipped dark while the plate stayed
+     dark. --media-tone additionally grades the image itself, so the same
+     photograph sits correctly on obsidian and on cream. */
+  --media-veil: 11 9 8;
+  --media-veil-top: 0.90;
+  --media-veil-mid: 0.74;
+  --veil-side: 0.62;
+  --veil-top: 0.72;
+  --veil-bottom: 0.88;
+  --media-tone: brightness(0.95) contrast(1.06) saturate(1.02);
+  --on-media: var(--cream-50);
+  --on-media-soft: var(--cream-200);
+  --on-media-muted: var(--ink-300);
+  --on-media-line: 255 255 255;
+  --on-media-line-alpha: 0.22;
+
+  /* Additive glows read as light on obsidian but as haze on cream, so their
+     strength is a token rather than a constant. */
+  --bloom: 1;
+
+  /* Chrome that floats over both photography and page background. */
+  --nav-tint-alpha: 0.45;
+  --nav-tint-alpha-scrolled: 0.85;
 
   /* ---------- Motion ---------- */
   --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
@@ -129,10 +160,15 @@
 
   --text-primary: var(--ink-950);
   --text-secondary: var(--ink-700);
-  --text-muted: var(--ink-500);
-  --text-faint: var(--ink-400);
+  /* One step darker than the mirrored dark values: ink-400 over cream is only
+     about 2.9:1, which is what made the muted copy and breadcrumbs wash out. */
+  --text-muted: var(--ink-600);
+  --text-faint: var(--ink-500);
 
-  --accent: var(--gold-700);
+  /* One stop deeper than gold-700, which measured 4.26:1 over the hero's cream
+     veil — short of AA for the small caps sitting on it. Still unmistakably the
+     brand gold as a fill, and now AA as type on both cream and veiled photos. */
+  --accent: 134 92 27;
   --accent-soft: var(--gold-600);
   --accent-deep: var(--gold-900);
   --on-accent: 255 251 240;
@@ -140,9 +176,31 @@
   --glass-tint: 255 255 255;
   --glass-alpha: 0.7;
   --hairline: 11 9 8;
-  --hairline-alpha: 0.08;
+  --hairline-alpha: 0.1;
   --shadow-color: 74 66 60;
   --shadow-strength: 0.14;
+
+  /* Photography — the veil turns to cream and the ink over it turns dark, so
+     the plate becomes a luminous wash instead of a dark hole in a light page.
+     Brightness is lifted and contrast eased so the image reads through it. */
+  --media-veil: 250 246 239;
+  --media-veil-top: 0.86;
+  --media-veil-mid: 0.66;
+  /* Dark ink needs more cover than cream does over the same photograph. */
+  --veil-side: 0.94;
+  --veil-top: 0.82;
+  --veil-bottom: 0.94;
+  --media-tone: brightness(1.08) contrast(0.94) saturate(1.08);
+  --on-media: var(--ink-900);
+  --on-media-soft: var(--ink-700);
+  --on-media-muted: var(--ink-600);
+  --on-media-line: 11 9 8;
+  --on-media-line-alpha: 0.16;
+
+  --bloom: 0.5;
+
+  --nav-tint-alpha: 0.72;
+  --nav-tint-alpha-scrolled: 0.92;
   color-scheme: light;
 }
 
@@ -219,6 +277,14 @@
 
   input, select, textarea { color-scheme: inherit; }
   option { background-color: rgb(var(--surface-raised)); color: rgb(var(--text-primary)); }
+
+  /* Every photograph is graded to the current theme. The same asset has to sit
+     correctly on obsidian and on cream, and untouched imagery was the loudest
+     thing that did not change with the mode. Opt out with .media-tone-none. */
+  img {
+    filter: var(--media-tone);
+    transition: filter var(--dur-slow) var(--ease-luxury);
+  }
 }
 
 /* ==========================================================================
@@ -352,6 +418,25 @@
     background: linear-gradient(90deg, transparent, rgb(var(--hairline) / 0.09), transparent);
     animation: sweep 1.6s linear infinite;
   }
+
+  /* ---------- Floating chrome ----------
+     The navbar sits over photography as often as over the page, so its tint
+     strength is a token: cream at 45% over a dark plate turned to grey mud and
+     dragged the dark light-theme type down with it. */
+  .chrome-tint {
+    background-color: rgb(var(--canvas) / var(--nav-tint-alpha));
+  }
+  .chrome-tint-scrolled {
+    background-color: rgb(var(--canvas) / var(--nav-tint-alpha-scrolled));
+  }
+
+  /* Both sweeps are keyed off near-white and are invisible on cream. */
+  [data-theme='light'] .shimmer-overlay::after {
+    background: linear-gradient(90deg, transparent, rgb(var(--gold-600) / 0.18), transparent);
+  }
+  [data-theme='light'] .skeleton::after {
+    background: linear-gradient(90deg, transparent, rgb(var(--ink-500) / 0.14), transparent);
+  }
 }
 
 /* ==========================================================================
@@ -365,6 +450,63 @@
   .text-accent    { color: rgb(var(--accent)); }
   .bg-accent      { background-color: rgb(var(--accent)); }
   .border-hairline { border-color: rgb(var(--hairline) / var(--hairline-alpha)); }
+
+  /* ---------- Over photography ----------
+     Use these, never --text-*, for anything sitting on an image. They are
+     guaranteed to contrast with .media-veil in the same theme. */
+  .text-on-media       { color: rgb(var(--on-media)); }
+  .text-on-media-soft  { color: rgb(var(--on-media-soft)); }
+  .text-on-media-muted { color: rgb(var(--on-media-muted)); }
+  .border-on-media     { border-color: rgb(var(--on-media-line) / var(--on-media-line-alpha)); }
+  .bg-on-media-wash    { background-color: rgb(var(--on-media-line) / calc(var(--on-media-line-alpha) * 0.5)); }
+
+  /* Grading is applied to every img in the base layer; these are the explicit
+     handles for non-img media and for opting out. */
+  .media-tone {
+    filter: var(--media-tone);
+    transition: filter var(--dur-slow) var(--ease-luxury);
+  }
+  .media-tone-none { filter: none; }
+
+  /* The veil that carries on-media type, resolving into the page background. */
+  .media-veil {
+    background-image: linear-gradient(
+      to bottom,
+      rgb(var(--media-veil) / var(--media-veil-top)) 0%,
+      rgb(var(--media-veil) / var(--media-veil-mid)) 46%,
+      rgb(var(--canvas)) 100%
+    );
+  }
+  .media-veil-soft {
+    background-image: linear-gradient(
+      to bottom,
+      rgb(var(--media-veil) / calc(var(--media-veil-top) * 0.82)) 0%,
+      rgb(var(--media-veil) / calc(var(--media-veil-mid) * 0.72)) 52%,
+      rgb(var(--media-veil) / calc(var(--media-veil-top) * 0.92)) 100%
+    );
+  }
+  /* Full-bleed hero. A flat veil strong enough to carry type would flatten the
+     photograph, so this one is directional: dense down the text column, clear
+     across the subject, with just enough at top and bottom for the navbar and
+     the stat row. */
+  .media-veil-hero {
+    background-image:
+      linear-gradient(
+        to right,
+        rgb(var(--media-veil) / var(--veil-side)) 0%,
+        rgb(var(--media-veil) / calc(var(--veil-side) * 0.94)) 42%,
+        rgb(var(--media-veil) / calc(var(--veil-side) * 0.62)) 58%,
+        rgb(var(--media-veil) / calc(var(--veil-side) * 0.22)) 74%,
+        transparent 90%
+      ),
+      linear-gradient(
+        to bottom,
+        rgb(var(--media-veil) / var(--veil-top)) 0%,
+        transparent 26%,
+        transparent 58%,
+        rgb(var(--media-veil) / var(--veil-bottom)) 100%
+      );
+  }
 
   /* Metallic type */
   .text-gradient-gold,
@@ -383,6 +525,31 @@
   .text-gradient-static {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, rgb(var(--gold-200)), rgb(var(--gold-500)) 55%, rgb(var(--gold-700)));
+  }
+
+  /* Both gold gradients are built from near-white highlights, which vanish on
+     cream — the wordmark all but disappeared. Light gets the same metal read
+     from the darker half of the ramp. */
+  [data-theme='light'] .text-gradient-static {
+    background-image: linear-gradient(
+      135deg,
+      rgb(var(--gold-600)),
+      rgb(var(--gold-800)) 55%,
+      rgb(var(--gold-600))
+    );
+  }
+  [data-theme='light'] .text-gradient-gold,
+  [data-theme='light'] .gold-gradient-text {
+    background-image: linear-gradient(
+      110deg,
+      rgb(var(--gold-900)) 0%,
+      rgb(var(--gold-600)) 22%,
+      rgb(var(--gold-400)) 38%,
+      rgb(var(--gold-700)) 52%,
+      rgb(var(--gold-900)) 72%,
+      rgb(var(--gold-600)) 100%
+    );
+    background-size: 220% auto;
   }
 
   /* Dividers */

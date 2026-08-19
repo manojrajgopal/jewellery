@@ -83,10 +83,13 @@ export default function Navbar() {
       >
         <motion.div
           layout
+          // Tint strength comes from a token: the bar floats over photography
+          // as often as over the page, and cream at 45% over a dark plate went
+          // muddy grey while the light theme's dark type sat on top of it.
           className={`mx-auto flex w-full max-w-7xl items-center justify-between rounded-full border transition-all duration-500 ${
             scrolled
-              ? 'border-hairline bg-canvas/85 px-5 py-2 shadow-lift backdrop-blur-2xl'
-              : 'border-transparent bg-canvas/45 px-7 py-3.5 backdrop-blur-xl'
+              ? 'chrome-tint-scrolled border-hairline px-5 py-2 shadow-lift backdrop-blur-2xl'
+              : 'chrome-tint border-hairline px-7 py-3.5 backdrop-blur-xl'
           }`}
         >
           {/* Wordmark */}

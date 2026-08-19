@@ -72,7 +72,11 @@ export default function Preloader() {
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(done);
-      root.setAttribute('data-intro', 'exiting');
+      // Deliberately leaves data-intro as 'playing'. Stamping 'exiting' here
+      // meant React's development double-invoke — mount, clean up, mount again
+      // — left the second mount seeing "not playing", so the curtain never
+      // appeared at all in dev. Preloader lives in the root layout for the
+      // life of the page, so the only unmount that happens is that remount.
     };
   }, []);
 

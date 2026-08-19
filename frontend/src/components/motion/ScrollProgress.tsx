@@ -58,7 +58,7 @@ export default function ScrollProgress({
           style={{ scaleX }}
         />
         <motion.div
-          className="absolute top-1/2 h-[3px] w-16 -translate-y-1/2 rounded-full bg-gold-200 blur-[3px]"
+          className="absolute top-1/2 h-[3px] w-16 -translate-y-1/2 rounded-full bg-accent-soft blur-[3px]"
           style={{ left: headLeft, x: '-100%' }}
         />
       </div>
@@ -78,11 +78,14 @@ export default function ScrollProgress({
                 className="group flex items-center gap-3"
                 aria-current={active ? 'true' : undefined}
               >
+                {/* The rail floats over photography as well as over the page,
+                    so the label carries its own plate rather than relying on
+                    whatever happens to be behind it. */}
                 <span
-                  className={`font-accent text-[10px] uppercase tracking-luxe transition-all duration-300 ${
+                  className={`rounded-full px-2 py-0.5 font-accent text-[10px] uppercase tracking-luxe backdrop-blur-md transition-all duration-300 ${
                     active
-                      ? 'text-accent opacity-100'
-                      : 'text-muted opacity-0 group-hover:opacity-100'
+                      ? 'chrome-tint-scrolled text-accent opacity-100'
+                      : 'chrome-tint text-secondary opacity-0 group-hover:opacity-100'
                   }`}
                 >
                   {s.label}
@@ -91,12 +94,12 @@ export default function ScrollProgress({
                   <span
                     className={`block rounded-full transition-all duration-500 ${
                       active
-                        ? 'h-2.5 w-2.5 bg-gold-400 shadow-[0_0_10px_2px_rgb(var(--gold-400)/0.6)]'
-                        : 'h-1.5 w-1.5 bg-line-strong group-hover:bg-gold-600'
+                        ? 'h-2.5 w-2.5 bg-accent shadow-[0_0_10px_2px_rgb(var(--accent)/0.6)]'
+                        : 'h-1.5 w-1.5 bg-line-strong group-hover:bg-accent'
                     }`}
                   />
                   {active && (
-                    <span className="absolute inline-flex h-2.5 w-2.5 animate-scale-pulse rounded-full bg-gold-400/60" />
+                    <span className="absolute inline-flex h-2.5 w-2.5 animate-scale-pulse rounded-full bg-accent/60" />
                   )}
                 </span>
               </a>

@@ -75,10 +75,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#080706' },
-    { media: '(prefers-color-scheme: light)', color: '#faf6ef' },
-  ],
+  // Light is the default theme, and the choice is ours rather than the OS's, so
+  // a single value is correct here; ThemeProvider rewrites it on toggle.
+  themeColor: '#faf6ef',
   width: 'device-width',
   initialScale: 1,
 };
@@ -99,7 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // data-intro defaults to 'seen' so the curtain stays hidden if scripting is
   // unavailable; introInitScript upgrades it to 'playing' before the first paint.
   return (
-    <html lang="en" data-theme="dark" data-intro="seen" suppressHydrationWarning>
+    <html lang="en" data-theme="light" data-intro="seen" suppressHydrationWarning>
       <head>
         {/* Paint the stored theme before first frame to avoid a flash. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />

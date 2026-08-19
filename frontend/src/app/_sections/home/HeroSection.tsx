@@ -33,15 +33,20 @@ export default function HeroSection() {
   const contentY = useTransform(smooth, [0, 1], ['0%', '-32%']);
   const contentOpacity = useTransform(smooth, [0, 0.65], [1, 0]);
   const statsY = useTransform(smooth, [0, 1], ['0%', '-70%']);
-  const veil = useTransform(smooth, [0, 1], [0.45, 0.9]);
+  // Starts at nothing: .media-veil-hero already carries the copy, so this layer
+  // only deepens as the hero scrolls away. It used to start at 0.45 and double
+  // as the legibility veil, which is why it could not be strong enough for both.
+  const veil = useTransform(smooth, [0, 1], [0, 0.72]);
 
   return (
     <section
       ref={ref}
       id="hero"
-      className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-ink-950"
+      className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-canvas"
     >
-      {/* Backdrop */}
+      {/* Backdrop — the veil is drawn in the theme's own base colour, so the
+          stage is obsidian in dark and a bright cream wash in light, and the
+          type over it flips with it rather than against it. */}
       <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0 z-0">
         <Image
           src="/images/hero/hero-main.jpg"
@@ -52,12 +57,16 @@ export default function HeroSection() {
           quality={90}
           sizes="100vw"
         />
+        {/* Legibility veil at full strength — it must never be scaled down by
+            scroll, or the copy ends up sitting on bare photograph. */}
+        <div className="media-veil-hero absolute inset-0" />
+        {/* Separate scroll-driven wash that deepens as the hero leaves. */}
         <motion.div
-          style={{ opacity: veil }}
-          className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/35 to-black/90"
+          style={{ opacity: veil, backgroundColor: 'rgb(var(--media-veil))' }}
+          className="absolute inset-0"
         />
         {/* Warm colour grade over the photograph */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/25 via-transparent to-amethyst-900/25 mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/25 via-transparent to-amethyst-900/25 opacity-[var(--bloom)] mix-blend-overlay" />
       </motion.div>
 
       <AuroraBackground intensity="medium" parallax={false} className="z-[1]" />
@@ -78,7 +87,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, scale: 0.4 }}
           animate={{ opacity: 0.4, scale: 1 }}
           transition={{ duration: 1.1, delay: 1.4 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-          className={`absolute z-10 hidden h-12 w-12 border-gold-400/60 md:block ${pos}`}
+          className={`absolute z-10 hidden h-12 w-12 border-accent/60 md:block ${pos}`}
         />
       ))}
 
@@ -98,9 +107,9 @@ export default function HeroSection() {
               animate={{ rotate: [0, 180, 360] }}
               transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
             >
-              <Diamond className="h-4 w-4 text-gold-400" strokeWidth={1.5} />
+              <Diamond className="h-4 w-4 text-accent" strokeWidth={1.5} />
             </motion.span>
-            <span className="font-accent text-xs uppercase tracking-luxest text-gold-300">
+            <span className="font-accent text-xs uppercase tracking-luxest text-accent">
               Since 1892
             </span>
             <span className="hidden h-px w-16 bg-gradient-to-r from-gold-400/70 to-transparent md:block" />
@@ -112,14 +121,14 @@ export default function HeroSection() {
             mode="chars"
             highlightWords={['Gold']}
             delay={0.25}
-            className="mb-8 font-display text-5xl font-light leading-[0.98] text-white md:text-7xl lg:text-8xl"
+            className="mb-8 font-display text-5xl font-light leading-[0.98] text-on-media md:text-7xl lg:text-8xl"
           />
 
           <motion.p
             initial={{ opacity: 0, y: 24, filter: 'blur(6px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto mb-11 max-w-2xl font-sans text-lg font-light leading-relaxed text-cream-100/85 md:mx-0 md:text-xl"
+            className="mx-auto mb-11 max-w-2xl font-sans text-lg font-light leading-relaxed text-on-media-soft md:mx-0 md:text-xl"
           >
             Four generations of master artisans dedicating their lives to transforming the
             world&apos;s most precious materials into enduring legacies.
@@ -163,10 +172,10 @@ export default function HeroSection() {
                 interactive
                 className="flex flex-col items-center justify-center p-6 text-center"
               >
-                <span className="mb-2 font-accent text-[10px] uppercase tracking-luxer text-gold-400">
+                <span className="mb-2 font-accent text-[10px] uppercase tracking-luxer text-accent">
                   {stat.label}
                 </span>
-                <span className="font-display text-2xl text-white">
+                <span className="font-display text-2xl text-on-media">
                   <CountUp end={stat.value} duration={2.2} suffix={stat.suffix} />
                 </span>
               </GlassPanel>
@@ -185,10 +194,10 @@ export default function HeroSection() {
         style={{ opacity: contentOpacity }}
         className="group absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2"
       >
-        <span className="font-accent text-[9px] uppercase tracking-luxer text-white/50 transition-colors group-hover:text-gold-300">
+        <span className="font-accent text-[9px] uppercase tracking-luxer text-on-media-muted transition-colors group-hover:text-accent">
           Scroll
         </span>
-        <span className="relative flex h-10 w-px overflow-hidden bg-white/20">
+        <span className="relative flex h-10 w-px overflow-hidden bg-on-media-wash">
           <motion.span
             animate={{ y: ['-100%', '100%'] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}

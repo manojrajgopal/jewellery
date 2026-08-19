@@ -73,7 +73,11 @@ export default function GradientOrb({
     ? null
     : COLOR_MAP[color] ?? COLOR_MAP.gold;
 
-  const core = rgb ? `rgb(${rgb} / ${intensity})` : `${color}${Math.round(intensity * 255).toString(16).padStart(2, '0')}`;
+  // --bloom scales every additive glow down in the light theme, where the same
+  // alpha that reads as light on obsidian reads as grubby haze on cream.
+  const core = rgb
+    ? `rgb(${rgb} / calc(${intensity} * var(--bloom, 1)))`
+    : `${color}${Math.round(intensity * 255).toString(16).padStart(2, '0')}`;
 
   return (
     <motion.div

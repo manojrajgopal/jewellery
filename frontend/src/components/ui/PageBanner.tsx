@@ -52,7 +52,8 @@ export default function PageBanner({
         compact ? 'pb-16 pt-32 md:pb-20 md:pt-40' : 'pb-20 pt-36 md:pb-28 md:pt-44'
       } ${className}`}
     >
-      {/* Backdrop */}
+      {/* Backdrop — graded and veiled in the current theme, so the plate reads
+          as obsidian in dark and as a luminous cream wash in light. */}
       <motion.div style={{ y: imageY, scale: imageScale }} className="absolute inset-0">
         <Image
           src={backgroundImage}
@@ -62,8 +63,8 @@ export default function PageBanner({
           priority
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink-950/92 via-ink-950/78 to-canvas" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/30 to-amethyst-900/25 mix-blend-overlay" />
+        <div className="media-veil absolute inset-0" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/30 to-amethyst-900/25 opacity-[var(--bloom)] mix-blend-overlay" />
       </motion.div>
 
       <AuroraBackground intensity="subtle" parallax={false} className="z-[1]" />
@@ -74,14 +75,14 @@ export default function PageBanner({
         style={{ y: contentY, opacity: contentOpacity }}
         className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8"
       >
-        <Breadcrumbs items={breadcrumbs} className="mb-7" />
+        <Breadcrumbs items={breadcrumbs} onMedia className="mb-7" />
 
         <SplitText
           text={title}
           as="h1"
           mode="chars"
           delay={0.15}
-          className="mb-4 font-display text-4xl font-light leading-[1.05] text-cream-50 md:text-5xl lg:text-6xl"
+          className="mb-4 font-display text-4xl font-light leading-[1.05] text-on-media md:text-5xl lg:text-6xl"
         />
 
         {subtitle && (
@@ -89,7 +90,7 @@ export default function PageBanner({
             initial={{ opacity: 0, y: 20, filter: 'blur(6px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.9, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl font-sans text-lg font-light text-ink-300 md:text-xl"
+            className="max-w-2xl font-sans text-lg font-light text-on-media-soft md:text-xl"
           >
             {subtitle}
           </motion.p>

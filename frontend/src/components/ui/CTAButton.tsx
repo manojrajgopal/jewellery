@@ -28,8 +28,10 @@ const VARIANTS: Record<Variant, string> = {
   ghost: 'bg-transparent text-accent hover:text-accent-soft border border-transparent',
   jewel:
     'text-gold-100 border border-gold-500/30 bg-gradient-to-br from-burgundy-700 via-burgundy-900 to-ink-950 shadow-lift',
+  // Sits on a veiled photographic plate, so it follows the on-media pair
+  // rather than being pinned to white — which was invisible in the light theme.
   'outline-light':
-    'bg-transparent border border-white/40 text-white hover:border-white hover:bg-white/10',
+    'bg-transparent border border-on-media text-on-media hover:border-accent hover:text-accent hover:bg-on-media-wash',
 };
 
 const SIZES: Record<Size, string> = {

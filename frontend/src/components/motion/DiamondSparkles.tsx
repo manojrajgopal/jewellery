@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { useTheme } from '@/components/providers/ThemeProvider';
+
 interface DiamondSparklesProps {
   density?: number;
   className?: string;
@@ -25,7 +27,18 @@ interface Particle {
   hue: string;
 }
 
-const PALETTE = ['#FDF2D3', '#EFCE78', '#FFFBF0', '#D6BA8F', '#ECF4FF'];
+/**
+ * Facets are drawn on canvas, so they cannot inherit the theme through CSS.
+ * The near-white set catches the light beautifully on obsidian and is simply
+ * invisible on cream, so the light theme gets the darker half of the gold ramp
+ * and a warm glow instead of a white one.
+ */
+const PALETTE = {
+  dark: ['#FDF2D3', '#EFCE78', '#FFFBF0', '#D6BA8F', '#ECF4FF'],
+  light: ['#B8842A', '#96681F', '#D4A03A', '#714D18', '#A68960'],
+} as const;
+
+const GLOW = { dark: '#FFFFFF', light: 'rgba(150, 104, 31, 0.55)' } as const;
 
 /**
  * Canvas field of drifting, twinkling facets. Four-point stars catch the light
@@ -40,6 +53,7 @@ export default function DiamondSparkles({
 }: DiamondSparklesProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [disabled, setDisabled] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -56,6 +70,8 @@ export default function DiamondSparkles({
     const isSmall = window.innerWidth < 768;
     const count = Math.round(density * (isSmall ? 0.45 : 1));
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const palette = PALETTE[theme] ?? PALETTE.dark;
+    const glow = GLOW[theme] ?? GLOW.dark;
 
     let raf = 0;
     let width = 0;
@@ -73,7 +89,7 @@ export default function DiamondSparkles({
       phase: Math.random() * Math.PI * 2,
       twinkle: 0.012 + Math.random() * 0.028,
       star: shape === 'star' ? true : shape === 'dot' ? false : Math.random() > 0.55,
-      hue: color ?? PALETTE[Math.floor(Math.random() * PALETTE.length)],
+      hue: color ?? palette[Math.floor(Math.random() * palette.length)],
       ...p,
     });
 
@@ -121,7 +137,7 @@ export default function DiamondSparkles({
       ctx.fillStyle = p.hue;
       ctx.globalAlpha = alpha;
       ctx.shadowBlur = 6;
-      ctx.shadowColor = '#ffffff';
+      ctx.shadowColor = glow;
       ctx.fill();
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
@@ -195,7 +211,7 @@ export default function DiamondSparkles({
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerleave', onPointerLeave);
     };
-  }, [density, color, interactive, shape]);
+  }, [density, color, interactive, shape, theme]);
 
   if (disabled) return null;
 
