@@ -4,7 +4,10 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Parallax from '@/components/motion/Parallax';
-import CountUp from '@/components/motion/CountUp';
+import Odometer from '@/components/motion/Odometer';
+import ShatterImage from '@/components/motion/ShatterImage';
+import SpotlightReveal from '@/components/motion/SpotlightReveal';
+import ParticleField from '@/components/motion/ParticleField';
 import CurtainReveal from '@/components/motion/CurtainReveal';
 import SectionHeading from '@/components/ui/SectionHeading';
 import GoldDivider from '@/components/ui/GoldDivider';
@@ -22,23 +25,43 @@ const STATS = brandData.stats ?? [
 export default function HeritageSection() {
   return (
     <section id="about" className="relative w-full overflow-hidden bg-canvas py-24 md:py-32">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <ParticleField count={32} rise />
+
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
           {/* Imagery */}
           <div className="relative">
+            {/* The plate is lit only where the pointer falls — the workshop is
+                a dark room, and the visitor carries the lamp. */}
             <CurtainReveal
               direction="left"
               className="group relative aspect-[4/5] w-full overflow-hidden rounded-2xl lg:aspect-square"
             >
-              <Parallax speed={0.35} scaleRange={[1, 1.12]} className="h-full w-full">
-                <Image
-                  src="/images/hero/craftsmanship.jpg"
-                  alt="An AURUM artisan at the bench"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </Parallax>
+              <SpotlightReveal
+                radius={210}
+                className="h-full w-full"
+                base={
+                  <Parallax speed={0.35} scaleRange={[1, 1.12]} className="h-full w-full">
+                    <ShatterImage
+                      src="/images/hero/craftsmanship.jpg"
+                      alt="An AURUM artisan at the bench"
+                      grid={5}
+                      spread={1.2}
+                      className="h-full w-full brightness-[0.55] saturate-[0.75]"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                  </Parallax>
+                }
+                lit={
+                  <Image
+                    src="/images/hero/craftsmanship.jpg"
+                    alt=""
+                    fill
+                    className="scale-105 object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                }
+              />
               <div className="pointer-events-none absolute inset-0 rounded-2xl border border-gold-500/0 transition-colors duration-700 group-hover:border-gold-500/35" />
             </CurtainReveal>
 
@@ -78,12 +101,9 @@ export default function HeritageSection() {
             <FadeInOnView direction="up" delay={0.35} className="grid grid-cols-2 gap-x-8 gap-y-10">
               {STATS.map((stat) => (
                 <div key={stat.label} className="group flex flex-col">
-                  <CountUp
-                    end={stat.value}
-                    suffix={stat.suffix}
-                    duration={2.4}
-                    className="font-display text-4xl text-accent transition-transform duration-500 group-hover:translate-x-1 md:text-5xl"
-                  />
+                  <span className="font-display text-4xl text-accent transition-transform duration-500 group-hover:translate-x-1 md:text-5xl">
+                    <Odometer value={stat.value} suffix={stat.suffix} group duration={1.5} />
+                  </span>
                   <span className="mt-1 block h-px w-8 bg-accent/40 transition-all duration-500 group-hover:w-16" />
                   <span className="mt-2 font-accent text-[10px] uppercase tracking-luxe text-muted">
                     {stat.label}

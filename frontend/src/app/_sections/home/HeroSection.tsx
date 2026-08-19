@@ -8,6 +8,8 @@ import SplitText from '@/components/motion/SplitText';
 import DiamondSparkles from '@/components/motion/DiamondSparkles';
 import AuroraBackground from '@/components/motion/AuroraBackground';
 import GodRays from '@/components/motion/GodRays';
+import LensFlare from '@/components/motion/LensFlare';
+import ParticleField from '@/components/motion/ParticleField';
 import Typewriter from '@/components/motion/Typewriter';
 import CircularText from '@/components/motion/CircularText';
 import CountUp from '@/components/motion/CountUp';
@@ -85,6 +87,13 @@ export default function HeroSection() {
         <GodRays intensity="medium" originX={14} originY={-14} parallax={false} />
       </motion.div>
 
+      {/* The flare tracks the pointer, so the hero has a light source the
+          visitor can move rather than a fixed painted highlight. */}
+      <motion.div style={{ opacity: raysOpacity }} className="absolute inset-0 z-[1]">
+        <LensFlare intensity={0.55} />
+      </motion.div>
+
+      <ParticleField count={54} rise repel={150} className="z-[2]" />
       <DiamondSparkles density={46} shape="mixed" className="z-[2]" />
 
       {/* Corner rules */}

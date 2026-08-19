@@ -9,6 +9,7 @@ import Badge from '@/components/ui/Badge';
 import CTAButton from '@/components/ui/CTAButton';
 import { productImage, productPrice } from '@/components/ui/ProductCard';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { useToast } from '@/components/providers/ToastProvider';
 import type { Product } from '@/types';
 
@@ -30,7 +31,15 @@ export default function QuickViewModal({
   onClose: () => void;
 }) {
   const { has, toggle } = useWishlist();
+  const { record } = useRecentlyViewed();
   const { toast } = useToast();
+
+  // Opening the quick view is the strongest signal of interest the grid
+  // produces, so it — rather than a hover or a scroll-past — is what counts
+  // as having viewed a piece.
+  useEffect(() => {
+    if (product) record(product.id);
+  }, [product, record]);
 
   useEffect(() => {
     if (!product) return;

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useSpring } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Crown, Gem, Leaf, ShieldCheck } from 'lucide-react';
 import PageBanner from '@/components/ui/PageBanner';
 import CTAButton from '@/components/ui/CTAButton';
@@ -14,34 +14,9 @@ import CurtainReveal from '@/components/motion/CurtainReveal';
 import Parallax from '@/components/motion/Parallax';
 import CountUp from '@/components/motion/CountUp';
 import FadeInOnView from '@/components/animations/FadeInOnView';
+import HeritageTimeline from '@/components/ui/HeritageTimeline';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import { brandData } from '@/data/brand';
-
-const MILESTONES = [
-  {
-    year: '1892',
-    title: 'Founded by a Master Goldsmith',
-    description:
-      'Our first boutique opens in the heart of the city, establishing a tradition of excellence that would outlast its founder by more than a century.',
-  },
-  {
-    year: '1940',
-    title: 'The Second Generation',
-    description:
-      'The craft expands into rare gemstones and complex settings, earning the house its first royal patronage.',
-  },
-  {
-    year: '1978',
-    title: 'The Third Generation',
-    description:
-      'International recognition arrives alongside the establishment of our signature diamond cut.',
-  },
-  {
-    year: '2010',
-    title: 'The Fourth Generation',
-    description:
-      'Digital innovation joins ancestral technique — CAD modelling beside the same hand tools used in 1892.',
-  },
-];
 
 const VALUES = [
   {
@@ -74,14 +49,6 @@ const STATS = [
 ];
 
 export default function AboutClient() {
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: timelineRef,
-    offset: ['start 65%', 'end 60%'],
-  });
-  // The vertical rail fills as the reader descends the timeline.
-  const railScale = useSpring(scrollYProgress, { stiffness: 90, damping: 30 });
-
   return (
     <>
       <PageBanner
@@ -144,68 +111,20 @@ export default function AboutClient() {
 
         <GoldDivider variant="jewel" />
 
-        {/* Timeline */}
-        <section className="border-y border-hairline bg-surface-raised/40 py-24">
-          <div className="mx-auto max-w-4xl px-6">
+        {/* Timeline — the full house chronology, scroll-scrubbed */}
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/40 py-24 md:py-32">
+          <CausticsCanvas intensity={0.3} lobes={5} />
+
+          <div className="relative mx-auto max-w-5xl px-6">
             <SectionHeading
               eyebrow="Milestones"
-              title="The Journey"
-              highlightWords={['Journey']}
+              title="One hundred and thirty-two years"
+              highlightWords={['thirty-two']}
               align="center"
               className="mb-20"
             />
 
-            <div ref={timelineRef} className="relative">
-              {/* Track + progress rail */}
-              <div className="absolute bottom-0 left-[27px] top-0 w-px bg-line md:left-1/2" />
-              <motion.div
-                style={{ scaleY: railScale }}
-                className="absolute bottom-0 left-[27px] top-0 w-px origin-top bg-gradient-to-b from-gold-300 via-gold-500 to-gold-700 md:left-1/2"
-              />
-
-              <div className="space-y-24">
-                {MILESTONES.map((milestone, index) => {
-                  const flipped = index % 2 !== 0;
-
-                  return (
-                    <FadeInOnView
-                      key={milestone.year}
-                      delay={index * 0.1}
-                      className="relative flex flex-col items-start gap-8 md:flex-row md:items-center md:gap-0"
-                    >
-                      {/* The year marker is absolutely positioned, so it does not
-                          occupy a flex slot. Without this spacer the copy has no
-                          sibling to be ordered against and every entry stacks on
-                          the left instead of alternating. */}
-                      {flipped && <div className="hidden md:block md:w-1/2" aria-hidden="true" />}
-
-                      <div
-                        className={`flex pl-20 md:w-1/2 md:pl-0 ${
-                          flipped ? 'md:justify-start md:pl-16' : 'md:justify-end md:pr-16'
-                        }`}
-                      >
-                        <div className={`text-left ${flipped ? '' : 'md:text-right'}`}>
-                          <h3 className="mb-2 font-display text-2xl text-accent-soft">
-                            {milestone.title}
-                          </h3>
-                          <p className="font-sans text-sm font-light leading-relaxed text-muted">
-                            {milestone.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <motion.div
-                        whileHover={{ scale: 1.09 }}
-                        className="absolute left-0 z-10 flex h-14 w-14 items-center justify-center rounded-full border border-gold-500/50 bg-canvas font-display text-sm text-gold-100 shadow-[0_0_20px_-4px_rgb(var(--gold-500)/0.45)] md:left-1/2 md:-translate-x-1/2"
-                      >
-                        {milestone.year}
-                        <span className="absolute inset-0 animate-scale-pulse rounded-full border border-gold-500/30" />
-                      </motion.div>
-                    </FadeInOnView>
-                  );
-                })}
-              </div>
-            </div>
+            <HeritageTimeline />
           </div>
         </section>
 

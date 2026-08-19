@@ -8,6 +8,9 @@ import LiveGoldRate from '@/components/ui/LiveGoldRate';
 import ImageCompare from '@/components/motion/ImageCompare';
 import CountUp from '@/components/motion/CountUp';
 import Marquee from '@/components/motion/Marquee';
+import ValuationCalculator from '@/components/ui/ValuationCalculator';
+import CertificateVerify from '@/components/ui/CertificateVerify';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
 
 const RESTORATION_STATS = [
   { label: 'Pieces restored', value: 4200, suffix: '+', separator: true },
@@ -32,6 +35,7 @@ export default function AtelierToolsSection() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-spotlight-soft opacity-[var(--bloom)]"
       />
+      <CausticsCanvas intensity={0.3} lobes={5} speed={34} />
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
         <SectionHeading
@@ -106,6 +110,27 @@ export default function AtelierToolsSection() {
                 </div>
               ))}
             </dl>
+          </motion.div>
+        </div>
+
+        {/* ---- Valuation and verification ---- */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-10%' }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <ValuationCalculator />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-10%' }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <CertificateVerify />
           </motion.div>
         </div>
       </div>

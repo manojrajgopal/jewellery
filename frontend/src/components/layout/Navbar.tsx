@@ -23,6 +23,7 @@ const navLinks = [
   { name: 'Collections', href: '/collections' },
   { name: 'About', href: '/about' },
   { name: 'Craftsmanship', href: '/craftsmanship' },
+  { name: 'Bespoke', href: '/bespoke' },
   { name: 'Gallery', href: '/gallery' },
   { name: 'Services', href: '/services' },
   { name: 'Contact', href: '/contact' },

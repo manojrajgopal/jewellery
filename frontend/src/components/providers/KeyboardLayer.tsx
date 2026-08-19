@@ -7,6 +7,7 @@ import { useCinema } from '@/components/providers/CinemaProvider';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import ShortcutsOverlay from '@/components/ui/ShortcutsOverlay';
 import WishlistDrawer from '@/components/ui/WishlistDrawer';
+import { openCompare } from '@/hooks/useCompare';
 
 /** Second key of a `G`-prefixed sequence → route. */
 const GO_TO: Record<string, string> = {
@@ -17,6 +18,7 @@ const GO_TO: Record<string, string> = {
   g: '/gallery',
   s: '/services',
   b: '/about',
+  d: '/bespoke',
 };
 
 /**
@@ -118,6 +120,12 @@ export default function KeyboardLayer() {
         case 'c':
           e.preventDefault();
           toggleCinema();
+          break;
+        case 'x':
+          // The tray owns the table, so this only asks — nothing opens if
+          // nothing has been added to compare.
+          e.preventDefault();
+          openCompare();
           break;
         default:
           break;

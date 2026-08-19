@@ -7,6 +7,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import SectionHeading from '@/components/ui/SectionHeading';
 import MotionCard from '@/components/motion/MotionCard';
+import ParticleField from '@/components/motion/ParticleField';
 import GoldBorderTrace from '@/components/motion/GoldBorderTrace';
 import CTAButton from '@/components/ui/CTAButton';
 import { collections } from '@/data/collections';
@@ -20,8 +21,10 @@ export default function CollectionsSection() {
     products.filter((p) => p.collection === id).length || undefined;
 
   return (
-    <section id="collections" className="relative bg-canvas py-24 md:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section id="collections" className="relative overflow-hidden bg-canvas py-24 md:py-32">
+      <ParticleField count={30} rise link linkDistance={140} />
+
+      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <SectionHeading
           eyebrow="Our World"
           title="Curated Collections"
@@ -84,6 +87,12 @@ export default function CollectionsSection() {
                         <p className="font-sans text-sm font-light leading-relaxed text-white/75 opacity-0 transition-opacity duration-500 delay-150 group-hover:opacity-100">
                           {collection.tagline ?? collection.description}
                         </p>
+
+                        {/* Hairline that travels the base edge while hovered */}
+                        <span
+                          aria-hidden="true"
+                          className="mt-4 block h-px w-full origin-left scale-x-0 bg-gradient-to-r from-gold-300 via-gold-500 to-transparent transition-transform duration-[900ms] ease-luxury group-hover:scale-x-100"
+                        />
                       </div>
                     </MotionCard>
                   </GoldBorderTrace>

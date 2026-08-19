@@ -10,6 +10,7 @@ import GoldDivider from '@/components/ui/GoldDivider';
 import GradientOrb from '@/components/ui/GradientOrb';
 import FAQAccordion from '@/components/ui/FAQAccordion';
 import SpotlightCard from '@/components/motion/SpotlightCard';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 
 const SERVICES = [
@@ -175,6 +176,8 @@ export default function ServicesClient() {
 
       {/* Process */}
       <section className="relative overflow-hidden bg-surface-raised/40 py-24">
+        <CausticsCanvas intensity={0.3} lobes={5} speed={34} />
+
         <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12 lg:px-24">
           <SectionHeading
             eyebrow="The Journey"

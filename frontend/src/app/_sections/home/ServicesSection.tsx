@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check, Gem, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import SectionHeading from '@/components/ui/SectionHeading';
 import SpotlightCard from '@/components/motion/SpotlightCard';
+import TiltCard from '@/components/motion/TiltCard';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { services } from '@/data/services';
 
@@ -18,7 +20,8 @@ const ICONS: Record<string, React.ElementType> = {
 
 export default function ServicesSection() {
   return (
-    <section id="services" className="relative w-full bg-canvas py-24 md:py-32">
+    <section id="services" className="relative w-full overflow-hidden bg-canvas py-24 md:py-32">
+      <CausticsCanvas intensity={0.28} lobes={5} speed={30} />
       {/* Hairline grid wash */}
       <div
         aria-hidden="true"
@@ -44,6 +47,7 @@ export default function ServicesSection() {
 
             return (
               <StaggerItem key={service.id} className="h-full">
+                <TiltCard strength={8} lift={12} className="h-full">
                 <SpotlightCard className="h-full border border-hairline bg-surface-raised/60 backdrop-blur-xl">
                   <div className="group flex h-full flex-col p-7">
                     {/* Index watermark */}
@@ -95,6 +99,7 @@ export default function ServicesSection() {
                     </Link>
                   </div>
                 </SpotlightCard>
+                </TiltCard>
               </StaggerItem>
             );
           })}

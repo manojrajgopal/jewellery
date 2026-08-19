@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ProductCard from '@/components/ui/ProductCard';
 import QuickViewModal from '@/components/ui/QuickViewModal';
+import RecentlyViewed from '@/components/ui/RecentlyViewed';
 import CTAButton from '@/components/ui/CTAButton';
 import GradientOrb from '@/components/ui/GradientOrb';
 import { useCenteredCard } from '@/hooks/useCenteredCard';
@@ -152,6 +153,8 @@ export default function SignaturePieces() {
           </CTAButton>
         </motion.div>
       </div>
+
+      <RecentlyViewed className="mt-20" />
 
       <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
     </section>

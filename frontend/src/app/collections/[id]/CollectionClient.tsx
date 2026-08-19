@@ -9,6 +9,7 @@ import MotionCard from '@/components/motion/MotionCard';
 import RevealImage from '@/components/motion/RevealImage';
 import ProductCard from '@/components/ui/ProductCard';
 import QuickViewModal from '@/components/ui/QuickViewModal';
+import RecentlyViewed from '@/components/ui/RecentlyViewed';
 import GoldDivider from '@/components/ui/GoldDivider';
 import SectionHeading from '@/components/ui/SectionHeading';
 import CurtainReveal from '@/components/motion/CurtainReveal';
@@ -188,6 +189,8 @@ export default function CollectionClient({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      <RecentlyViewed />
 
       <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
     </>

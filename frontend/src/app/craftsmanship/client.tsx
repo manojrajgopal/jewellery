@@ -13,6 +13,9 @@ import Parallax from '@/components/motion/Parallax';
 import CurtainReveal from '@/components/motion/CurtainReveal';
 import SplitText from '@/components/motion/SplitText';
 import DiamondSparkles from '@/components/motion/DiamondSparkles';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
+import ParticleField from '@/components/motion/ParticleField';
+import LensFlare from '@/components/motion/LensFlare';
 import { Reveal } from '@/components/animations/Reveal';
 
 const STAGES = [
@@ -83,6 +86,9 @@ export default function CraftsmanshipClient() {
 
       {/* Editorial intro */}
       <section className="relative overflow-hidden py-24">
+        <CausticsCanvas intensity={0.35} lobes={6} />
+        <ParticleField count={38} rise link />
+
         <GradientOrb color="gold" size="xl" position="left" intensity={0.1} blur="3xl" />
 
         <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 md:px-12 lg:grid-cols-2">
@@ -229,6 +235,8 @@ export default function CraftsmanshipClient() {
 
       {/* Quote + CTA */}
       <section className="relative overflow-hidden bg-surface-raised/30 px-6 py-32 text-center">
+        <LensFlare intensity={0.4} originX={50} originY={20} follow={false} />
+
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-900/15 blur-[130px]" />
         <DiamondSparkles density={22} shape="star" className="z-[1]" />
 

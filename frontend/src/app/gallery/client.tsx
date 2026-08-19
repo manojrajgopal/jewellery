@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Expand } from 'lucide-react';
 import PageBanner from '@/components/ui/PageBanner';
 import Lightbox from '@/components/ui/Lightbox';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
+import ParticleField from '@/components/motion/ParticleField';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
@@ -41,7 +43,10 @@ export default function GalleryClient() {
         breadcrumbs={[{ label: 'Gallery' }]}
       />
 
-      <section className="mx-auto max-w-[1600px] px-6 py-16 md:px-12 lg:px-24">
+      <section className="relative mx-auto max-w-[1600px] overflow-hidden px-6 py-16 md:px-12 lg:px-24">
+        <CausticsCanvas intensity={0.28} lobes={6} speed={30} />
+        <ParticleField count={34} rise />
+
         {/* Filter rail */}
         <div className="mb-16 flex flex-wrap justify-center gap-3">
           {CATEGORIES.map((category) => {

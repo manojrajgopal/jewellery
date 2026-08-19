@@ -913,3 +913,144 @@ html[data-theme='light'][data-cinema='on'] {
     --vignette-opacity: 0.3;
   }
 }
+
+/* ==========================================================================
+   MOTION LAYER v3 — depth, velocity, and surface treatments
+   Utilities the newer motion components rely on. Kept here rather than in the
+   Tailwind config because several are arbitrary-value compositions that the
+   JIT cannot express as a single class.
+   ========================================================================== */
+@layer utilities {
+  /* ---------- Z translation for TiltCard's interior parallax ----------
+     Tailwind ships no translate-z scale, and these have to exist as real
+     classes because TiltCard targets them through a descendant selector. */
+  .translate-z-0  { transform: translateZ(0px); }
+  .translate-z-2  { transform: translateZ(8px); }
+  .translate-z-4  { transform: translateZ(16px); }
+  .translate-z-8  { transform: translateZ(32px); }
+  .translate-z-14 { transform: translateZ(56px); }
+  .translate-z-20 { transform: translateZ(80px); }
+  .-translate-z-4 { transform: translateZ(-16px); }
+
+  /* ---------- Scroll inertia ----------
+     ScrollVelocitySkew writes the variables; only elements carrying one of
+     these classes actually move, so nothing global is ever transformed. */
+  .velocity-skew {
+    transform: skewY(var(--scroll-skew, 0deg));
+    transition: transform 120ms linear;
+  }
+  .velocity-squash {
+    transform: scaleY(var(--scroll-squash, 1));
+    transform-origin: center;
+  }
+  .velocity-slide {
+    transform: translateY(calc(var(--scroll-skew, 0deg) * 1.4));
+  }
+
+  /* ---------- Aperture and letterbox framing ---------- */
+  .aperture-frame {
+    clip-path: inset(0 round 0px);
+    transition: clip-path 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .aperture-frame[data-closed='true'] {
+    clip-path: inset(14% 8% round 32px);
+  }
+
+  /* ---------- Additional facet clips ---------- */
+  .clip-pear      { clip-path: path('M50 0 C78 26 100 52 100 70 C100 88 78 100 50 100 C22 100 0 88 0 70 C0 52 22 26 50 0 Z'); }
+  .clip-hexagon   { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+  .clip-baguette  { clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%); }
+  .clip-trillion  { clip-path: polygon(50% 0%, 100% 92%, 0% 92%); }
+  .clip-notch     { clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 22px 100%, 0 calc(100% - 22px)); }
+
+  /* ---------- Masks ---------- */
+  .mask-fade-edges {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+  .mask-conic {
+    -webkit-mask-image: conic-gradient(from 180deg, transparent 0deg, black 40deg, black 320deg, transparent 360deg);
+    mask-image: conic-gradient(from 180deg, transparent 0deg, black 40deg, black 320deg, transparent 360deg);
+  }
+  .mask-spot {
+    -webkit-mask-image: radial-gradient(closest-side, black 55%, transparent 100%);
+    mask-image: radial-gradient(closest-side, black 55%, transparent 100%);
+  }
+
+  /* ---------- Numeric readouts ---------- */
+  .nums-tabular { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+  .nums-lining  { font-variant-numeric: lining-nums; }
+}
+
+@layer components {
+  /* ---------- Faceted metal plate ----------
+     The rim highlight is two gradients rather than a border, so it can be
+     brighter on the lit edge than on the shadowed one. */
+  .plate-metal {
+    background-image:
+      linear-gradient(160deg, rgb(var(--surface-raised)) 0%, rgb(var(--surface)) 46%, rgb(var(--surface-sunken)) 100%);
+    box-shadow:
+      inset 0 1px 0 0 rgb(var(--gold-200) / 0.18),
+      inset 0 -1px 0 0 rgb(var(--shadow-color) / 0.35),
+      0 22px 50px -30px rgb(var(--shadow-color) / 0.7);
+    @apply border border-gold-500/15;
+  }
+
+  /* ---------- Engraved / debossed type ---------- */
+  .engraved {
+    color: rgb(var(--text-muted));
+    text-shadow:
+      0 1px 0 rgb(var(--gold-100) / 0.14),
+      0 -1px 1px rgb(var(--shadow-color) / 0.6);
+  }
+  [data-theme='light'] .engraved {
+    text-shadow:
+      0 1px 0 rgb(255 255 255 / 0.85),
+      0 -1px 1px rgb(var(--ink-500) / 0.35);
+  }
+
+  /* ---------- Hairline that travels an edge on hover ---------- */
+  .edge-trace { @apply relative overflow-hidden; }
+  .edge-trace::before {
+    content: '';
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px opacity-0;
+    background: linear-gradient(90deg, transparent, rgb(var(--gold-300)), transparent);
+    animation: hairline-travel 1.6s linear infinite;
+  }
+  .edge-trace:hover::before { @apply opacity-100; }
+
+  /* ---------- Rotating conic rim, for live/active states ---------- */
+  .rim-live { @apply relative; }
+  .rim-live::before {
+    content: '';
+    @apply absolute -inset-px rounded-[inherit];
+    background: conic-gradient(from 0deg, transparent 0%, rgb(var(--gold-400) / 0.9) 14%, transparent 30%);
+    animation: conic-spin 4.5s linear infinite;
+    -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    padding: 1px;
+  }
+
+  /* ---------- Frosted vitrine glass, with a reflection ---------- */
+  .vitrine-glass {
+    @apply relative overflow-hidden;
+    background: linear-gradient(180deg, rgb(var(--hairline) / 0.07), transparent 30%, transparent 70%, rgb(var(--shadow-color) / 0.2));
+  }
+  .vitrine-glass::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(112deg, transparent 34%, rgb(var(--hairline) / 0.07) 46%, transparent 58%);
+  }
+
+  /* ---------- Ticker row ---------- */
+  .ticker-rail {
+    @apply flex items-center gap-8 whitespace-nowrap;
+    animation: marquee 42s linear infinite;
+  }
+  .ticker-rail:hover { animation-play-state: paused; }
+}
+
+@keyframes conic-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

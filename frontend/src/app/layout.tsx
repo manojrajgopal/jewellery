@@ -17,6 +17,8 @@ import KeyboardLayer from '@/components/providers/KeyboardLayer';
 import FilmGrain from '@/components/motion/FilmGrain';
 import GoldDustTrail from '@/components/motion/GoldDustTrail';
 import ClickSparkle from '@/components/motion/ClickSparkle';
+import ScrollVelocitySkew from '@/components/motion/ScrollVelocitySkew';
+import CompareTray from '@/components/ui/CompareTray';
 
 /* ---------------------------------------------------------------------------
    Typography — high-contrast Didone display, roman-capital accent, geometric
@@ -98,12 +100,16 @@ const HOME_SECTIONS = [
   { id: 'pieces', label: 'Signature' },
   { id: 'film', label: 'The Film' },
   { id: 'showcase', label: 'The Stone' },
+  { id: 'stone-school', label: 'The 4Cs' },
   { id: 'craftsmanship', label: 'Atelier' },
   { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
   { id: 'tools', label: 'Tools' },
+  { id: 'bespoke', label: 'Bespoke' },
   { id: 'testimonials', label: 'Patrons' },
+  { id: 'gift-finder', label: 'Concierge' },
   { id: 'services', label: 'Services' },
+  { id: 'boutiques', label: 'Houses' },
   { id: 'contact', label: 'Visit' },
 ];
 
@@ -148,6 +154,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <CustomCursor />
               <GoldDustTrail />
               <ClickSparkle />
+              {/* Writes the scroll-inertia variables; only opted-in elements
+                  read them, so nothing global is ever transformed. */}
+              <ScrollVelocitySkew />
               <ScrollProgress sections={HOME_SECTIONS} />
 
               <Navbar />
@@ -158,6 +167,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               <Footer />
               <BackToTop />
+
+              {/* Shows itself only once something has been added to it. */}
+              <CompareTray />
 
               {/* Projection layer sits above the page, below the cursor. */}
               <FilmGrain />

@@ -5,6 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import SectionHeading from '@/components/ui/SectionHeading';
 import GradientOrb from '@/components/ui/GradientOrb';
+import ParticleField from '@/components/motion/ParticleField';
+import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import { testimonials } from '@/data/testimonials';
 
 const ROTATE_MS = 7000;
@@ -61,6 +63,8 @@ export default function TestimonialsSection() {
     >
       <GradientOrb color="burgundy" size="lg" position="bottom-right" intensity={0.2} />
       <GradientOrb color="gold" size="md" position="top-left" intensity={0.14} />
+      <CausticsCanvas intensity={0.32} lobes={6} speed={28} />
+      <ParticleField count={26} rise />
 
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading

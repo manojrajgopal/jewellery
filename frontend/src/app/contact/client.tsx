@@ -10,6 +10,8 @@ import FAQAccordion from '@/components/ui/FAQAccordion';
 import SectionHeading from '@/components/ui/SectionHeading';
 import GradientOrb from '@/components/ui/GradientOrb';
 import SparkleBurst from '@/components/motion/SparkleBurst';
+import BoutiqueLocator from '@/components/ui/BoutiqueLocator';
+import ParticleField from '@/components/motion/ParticleField';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -332,6 +334,20 @@ export default function ContactClient() {
       </div>
 
       {/* FAQ */}
+      {/* The houses themselves — a map is the right answer to "where are you" */}
+      <section className="relative overflow-hidden py-24">
+        <ParticleField count={30} rise />
+        <div className="relative mx-auto max-w-7xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The Houses"
+            title="Six addresses, one bench in each"
+            highlightWords={['one']}
+            className="mb-14"
+          />
+          <BoutiqueLocator />
+        </div>
+      </section>
+
       <section className="bg-surface-raised/40 py-24">
         <div className="mx-auto max-w-4xl px-6">
           <SectionHeading

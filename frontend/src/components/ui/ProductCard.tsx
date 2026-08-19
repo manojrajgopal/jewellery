@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRight, Eye, Heart } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, Eye, Heart } from 'lucide-react';
 import MotionCard from '@/components/motion/MotionCard';
 import RevealImage from '@/components/motion/RevealImage';
 import Badge from '@/components/ui/Badge';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCompare } from '@/hooks/useCompare';
 import { useToast } from '@/components/providers/ToastProvider';
 import type { Product } from '@/types';
 
@@ -38,8 +39,10 @@ export default function ProductCard({
   active = false,
 }: ProductCardProps) {
   const { has, toggle } = useWishlist();
+  const { has: comparing, toggle: toggleCompare } = useCompare();
   const { toast } = useToast();
   const saved = has(product.id);
+  const inCompare = comparing(product.id);
 
   // Hover still works on its own; `active` only ever reveals things early.
   const revealed = active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100';
@@ -54,6 +57,26 @@ export default function ProductCard({
       kind: nowSaved ? 'luxe' : 'info',
       title: nowSaved ? 'Saved to wishlist' : 'Removed from wishlist',
       message: product.name,
+    });
+  };
+
+  // The tray caps at three, so a fourth pick has to be refused rather than
+  // silently dropping the oldest — quietly evicting someone's first choice is
+  // the more confusing failure.
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const result = toggleCompare(product.id);
+    toast({
+      kind: result === 'full' ? 'info' : result === 'added' ? 'luxe' : 'info',
+      title:
+        result === 'full'
+          ? 'Comparison tray is full'
+          : result === 'added'
+            ? 'Added to comparison'
+            : 'Removed from comparison',
+      message:
+        result === 'full' ? 'Remove a piece before adding another.' : product.name,
     });
   };
 
@@ -93,6 +116,25 @@ export default function ProductCard({
               }`}
             >
               <Heart size={15} strokeWidth={1.8} fill={saved ? 'currentColor' : 'none'} />
+            </motion.button>
+
+            <motion.button
+              onClick={handleCompare}
+              whileTap={{ scale: 0.85 }}
+              aria-label={
+                inCompare
+                  ? `Remove ${product.name} from comparison`
+                  : `Compare ${product.name}`
+              }
+              aria-pressed={inCompare}
+              data-cursor="Compare"
+              className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300 ${
+                inCompare
+                  ? 'border-gold-400/60 bg-gold-500/20 text-gold-300'
+                  : `border-white/15 bg-black/40 text-white/70 hover:text-gold-300 ${revealed}`
+              }`}
+            >
+              <ArrowLeftRight size={15} strokeWidth={1.8} />
             </motion.button>
 
             {onQuickView && (
