@@ -7,6 +7,9 @@ import { ChevronDown, Diamond } from 'lucide-react';
 import SplitText from '@/components/motion/SplitText';
 import DiamondSparkles from '@/components/motion/DiamondSparkles';
 import AuroraBackground from '@/components/motion/AuroraBackground';
+import GodRays from '@/components/motion/GodRays';
+import Typewriter from '@/components/motion/Typewriter';
+import CircularText from '@/components/motion/CircularText';
 import CountUp from '@/components/motion/CountUp';
 import CTAButton from '@/components/ui/CTAButton';
 import GlassPanel from '@/components/ui/GlassPanel';
@@ -37,6 +40,11 @@ export default function HeroSection() {
   // only deepens as the hero scrolls away. It used to start at 0.45 and double
   // as the legibility veil, which is why it could not be strong enough for both.
   const veil = useTransform(smooth, [0, 1], [0, 0.72]);
+  // The light shafts rake further across as the hero leaves, and the whole
+  // frame loses a little focus — a rack-focus pull off the subject.
+  const raysOpacity = useTransform(smooth, [0, 0.7], [1, 0]);
+  const blur = useTransform(smooth, [0, 1], [0, 7]);
+  const contentBlur = useTransform(blur, (b) => `blur(${b}px)`);
 
   return (
     <section
@@ -70,6 +78,13 @@ export default function HeroSection() {
       </motion.div>
 
       <AuroraBackground intensity="medium" parallax={false} className="z-[1]" />
+
+      {/* Shafts of light falling across the plate, fading out as the hero
+          scrolls away so they never sit over the section below. */}
+      <motion.div style={{ opacity: raysOpacity }} className="absolute inset-0 z-[1]">
+        <GodRays intensity="medium" originX={14} originY={-14} parallax={false} />
+      </motion.div>
+
       <DiamondSparkles density={46} shape="mixed" className="z-[2]" />
 
       {/* Corner rules */}
@@ -93,7 +108,7 @@ export default function HeroSection() {
 
       {/* Content */}
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity }}
+        style={{ y: contentY, opacity: contentOpacity, filter: contentBlur }}
         className="relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-6 pb-40 pt-28 md:px-12"
       >
         <div className="max-w-4xl text-center md:text-left">
@@ -134,6 +149,30 @@ export default function HeroSection() {
             world&apos;s most precious materials into enduring legacies.
           </motion.p>
 
+          {/* Rotating specialisms, so the hero says what the house actually
+              makes rather than only how it feels about it. */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 1.25, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-10 flex items-baseline justify-center gap-3 font-accent text-xs uppercase tracking-luxe md:justify-start"
+          >
+            <span className="text-on-media-muted">Specialists in</span>
+            <Typewriter
+              phrases={[
+                'Bridal commissions',
+                'Uncut kundan',
+                'Ceylon sapphires',
+                'Antique restoration',
+                'Bespoke solitaires',
+              ]}
+              speed={52}
+              hold={2200}
+              onView={false}
+              className="text-accent"
+            />
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -148,6 +187,21 @@ export default function HeroSection() {
             </CTAButton>
           </motion.div>
         </div>
+      </motion.div>
+
+      {/* Maker's seal, in the open space beside the subject. Hidden below xl,
+          where the copy column reaches across the full frame. */}
+      <motion.div
+        style={{ opacity: contentOpacity }}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.4, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[6%] top-1/2 z-20 hidden -translate-y-1/2 xl:block"
+      >
+        <CircularText text="Aurum · Est. 1892 · Mumbai" size={210} duration={60}>
+          <span className="font-display text-3xl font-light text-gradient-static">A</span>
+        </CircularText>
       </motion.div>
 
       {/* Floating stat cards */}

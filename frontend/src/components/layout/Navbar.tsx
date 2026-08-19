@@ -9,10 +9,13 @@ import {
   useMotionValueEvent,
   useScroll,
 } from 'framer-motion';
-import { Menu, X, Search, Heart } from 'lucide-react';
+import { Menu, X, Search, Heart, Keyboard } from 'lucide-react';
 import CTAButton from '@/components/ui/CTAButton';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import CinemaToggle from '@/components/ui/CinemaToggle';
 import SearchPalette from '@/components/ui/SearchPalette';
+import AudioAmbience from '@/components/motion/AudioAmbience';
+import { openShortcuts, openWishlist } from '@/components/providers/KeyboardLayer';
 import { useWishlist } from '@/hooks/useWishlist';
 
 const navLinks = [
@@ -152,25 +155,53 @@ export default function Navbar() {
               <kbd className="font-sans text-[10px] tracking-widest text-faint">⌘K</kbd>
             </button>
 
-            <Link
-              href="/collections"
-              aria-label={`Wishlist, ${count} saved`}
-              className="relative flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
+            {/* Opens the saved-pieces drawer rather than navigating. The list
+                is only useful next to the pieces themselves, and sending the
+                visitor to /collections lost whatever they were reading. */}
+            <button
+              onClick={openWishlist}
+              aria-label={`Saved pieces, ${count} saved`}
+              className="group relative flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent"
             >
-              <Heart size={15} strokeWidth={1.7} />
+              <motion.span
+                // Beats once whenever the count changes, so a save registers
+                // even when the drawer is closed.
+                key={count}
+                initial={count > 0 ? { scale: 1.5 } : false}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 14 }}
+              >
+                <Heart
+                  size={15}
+                  strokeWidth={1.7}
+                  className={count > 0 ? 'fill-accent text-accent' : ''}
+                />
+              </motion.span>
+
               <AnimatePresence>
                 {count > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     exit={{ scale: 0 }}
-                    className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-sans text-[9px] font-medium text-onaccent"
+                    className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-sans text-[9px] font-medium text-onaccent tabular-nums"
                   >
                     {count}
                   </motion.span>
                 )}
               </AnimatePresence>
-            </Link>
+            </button>
+
+            <AudioAmbience />
+            <CinemaToggle />
+
+            <button
+              onClick={openShortcuts}
+              aria-label="Keyboard shortcuts"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-muted transition-colors duration-300 hover:border-gold-500/40 hover:text-accent xl:flex"
+            >
+              <Keyboard size={15} strokeWidth={1.7} />
+            </button>
 
             <ThemeToggle />
 
@@ -188,6 +219,23 @@ export default function Navbar() {
             >
               <Search size={18} strokeWidth={1.7} />
             </button>
+            <button
+              onClick={openWishlist}
+              aria-label={`Saved pieces, ${count} saved`}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full text-secondary transition-colors hover:text-accent"
+            >
+              <Heart
+                size={18}
+                strokeWidth={1.7}
+                className={count > 0 ? 'fill-accent text-accent' : ''}
+              />
+              {count > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-sans text-[9px] font-medium text-onaccent tabular-nums">
+                  {count}
+                </span>
+              )}
+            </button>
+            <CinemaToggle className="border-0" />
             <ThemeToggle />
             <button
               onClick={() => setMenuOpen(true)}

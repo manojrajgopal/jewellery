@@ -86,6 +86,10 @@ const config: Config = {
         jewel: "0 0 0 1px rgb(var(--gold-500) / 0.16), 0 24px 60px -28px rgb(var(--gold-500) / 0.55)",
         inset: "inset 0 1px 0 0 rgb(var(--hairline) / 0.12)",
         lift: "0 30px 60px -28px rgb(var(--shadow-color) / 0.55)",
+        "gold-bloom":
+          "0 0 0 1px rgb(var(--gold-500) / 0.22), 0 0 30px -4px rgb(var(--gold-400) / 0.45), 0 0 90px -20px rgb(var(--gold-300) / 0.35)",
+        "inner-gold": "inset 0 0 24px -6px rgb(var(--gold-400) / 0.4)",
+        cinema: "0 40px 120px -40px rgb(0 0 0 / 0.7)",
       },
 
       transitionTimingFunction: {
@@ -107,6 +111,17 @@ const config: Config = {
         "fade-bottom": "linear-gradient(to bottom, rgb(var(--canvas)), transparent)",
         "grid-hairline":
           "linear-gradient(rgb(var(--hairline) / 0.05) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--hairline) / 0.05) 1px, transparent 1px)",
+        // Shafts of light falling across a vitrine.
+        "god-rays":
+          "repeating-linear-gradient(100deg, transparent 0px, rgb(var(--gold-200) / 0.10) 2px, transparent 6px, transparent 42px, rgb(var(--gold-100) / 0.07) 46px, transparent 52px, transparent 96px)",
+        "conic-gold":
+          "conic-gradient(from 0deg, transparent 0%, rgb(var(--gold-500) / 0.55) 12%, transparent 26%, transparent 55%, rgb(var(--gold-300) / 0.4) 68%, transparent 84%)",
+        prism:
+          "linear-gradient(115deg, rgb(var(--amethyst-500) / 0.25), rgb(var(--jade-500) / 0.22) 28%, rgb(var(--gold-300) / 0.3) 52%, rgb(var(--rose-500) / 0.24) 74%, rgb(var(--amethyst-500) / 0.25))",
+        "spotlight-soft":
+          "radial-gradient(60% 50% at 50% 40%, rgb(var(--gold-200) / 0.16), transparent 72%)",
+        vitrine:
+          "linear-gradient(180deg, rgb(var(--hairline) / 0.06), transparent 32%, transparent 68%, rgb(var(--shadow-color) / 0.22))",
       },
 
       backgroundSize: {
@@ -199,6 +214,129 @@ const config: Config = {
           "0%, 45%, 100%": { opacity: "1" },
           "50%, 95%": { opacity: "0" },
         },
+
+        /* ---------- Cinematic atmosphere ---------- */
+        // The grain texture is generated once and jittered, which is far
+        // cheaper than regenerating noise on every frame.
+        "grain-shift": {
+          "0%":   { transform: "translate3d(0,0,0)" },
+          "10%":  { transform: "translate3d(-3%,-4%,0)" },
+          "20%":  { transform: "translate3d(-8%,2%,0)" },
+          "30%":  { transform: "translate3d(4%,-6%,0)" },
+          "40%":  { transform: "translate3d(-2%,7%,0)" },
+          "50%":  { transform: "translate3d(-9%,-3%,0)" },
+          "60%":  { transform: "translate3d(6%,5%,0)" },
+          "70%":  { transform: "translate3d(-5%,-8%,0)" },
+          "80%":  { transform: "translate3d(2%,4%,0)" },
+          "90%":  { transform: "translate3d(-6%,-2%,0)" },
+          "100%": { transform: "translate3d(0,0,0)" },
+        },
+        scanline: {
+          "0%":   { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
+        flicker: {
+          "0%, 100%": { opacity: "1" },
+          "42%": { opacity: "1" },
+          "45%": { opacity: "0.82" },
+          "47%": { opacity: "1" },
+          "72%": { opacity: "0.9" },
+          "74%": { opacity: "1" },
+        },
+        "god-ray": {
+          "0%, 100%": { opacity: "0.28", transform: "translateX(-4%) scaleY(1) skewX(-6deg)" },
+          "50%":      { opacity: "0.62", transform: "translateX(4%) scaleY(1.08) skewX(-2deg)" },
+        },
+        "iris-open": {
+          "0%":   { clipPath: "circle(0% at 50% 50%)" },
+          "100%": { clipPath: "circle(150% at 50% 50%)" },
+        },
+        "letterbox-open": {
+          "0%":   { transform: "scaleY(1)" },
+          "100%": { transform: "scaleY(0)" },
+        },
+
+        /* ---------- Light and metal ---------- */
+        "light-sweep": {
+          "0%":   { transform: "translateX(-130%) skewX(-18deg)", opacity: "0" },
+          "12%":  { opacity: "1" },
+          "88%":  { opacity: "1" },
+          "100%": { transform: "translateX(130%) skewX(-18deg)", opacity: "0" },
+        },
+        "facet-glint": {
+          "0%, 82%, 100%": { opacity: "0", transform: "scale(0.4) rotate(0deg)" },
+          "88%":           { opacity: "1", transform: "scale(1.15) rotate(35deg)" },
+          "94%":           { opacity: "0.2", transform: "scale(0.8) rotate(60deg)" },
+        },
+        refract: {
+          "0%, 100%": { filter: "hue-rotate(0deg) saturate(1)" },
+          "50%":      { filter: "hue-rotate(22deg) saturate(1.35)" },
+        },
+        "conic-spin": {
+          "0%":   { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "prism-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%", filter: "hue-rotate(0deg)" },
+          "50%":      { backgroundPosition: "100% 50%", filter: "hue-rotate(-18deg)" },
+        },
+
+        /* ---------- Entrances ---------- */
+        "blur-in": {
+          "0%":   { opacity: "0", filter: "blur(14px)", transform: "scale(1.04)" },
+          "100%": { opacity: "1", filter: "blur(0px)", transform: "scale(1)" },
+        },
+        "elastic-in": {
+          "0%":   { opacity: "0", transform: "scale(0.72) translateY(28px)" },
+          "62%":  { opacity: "1", transform: "scale(1.045) translateY(-6px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "unfurl-x": {
+          "0%":   { transform: "scaleX(0)", opacity: "0" },
+          "100%": { transform: "scaleX(1)", opacity: "1" },
+        },
+        "flip-in": {
+          "0%":   { opacity: "0", transform: "perspective(1200px) rotateY(-72deg)" },
+          "100%": { opacity: "1", transform: "perspective(1200px) rotateY(0deg)" },
+        },
+
+        /* ---------- Ambient idles ---------- */
+        breathe: {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.55" },
+          "50%":      { transform: "scale(1.06)", opacity: "0.95" },
+        },
+        "drift-x": {
+          "0%, 100%": { transform: "translate3d(-2%,0,0)" },
+          "50%":      { transform: "translate3d(2%,0,0)" },
+        },
+        swing: {
+          "0%, 100%": { transform: "rotate(-3.5deg)" },
+          "50%":      { transform: "rotate(3.5deg)" },
+        },
+        wobble: {
+          "0%, 100%": { transform: "rotate3d(1,1,0,0deg)" },
+          "25%":      { transform: "rotate3d(1,1,0,7deg)" },
+          "75%":      { transform: "rotate3d(1,1,0,-7deg)" },
+        },
+        "zoom-drift": {
+          "0%":   { transform: "scale(1.04) translate3d(1%,1%,0)" },
+          "100%": { transform: "scale(1.16) translate3d(-2%,-2%,0)" },
+        },
+        "dust-rise": {
+          "0%":   { transform: "translateY(0) scale(0.6)", opacity: "0" },
+          "18%":  { opacity: "0.9" },
+          "100%": { transform: "translateY(-140px) scale(1.1)", opacity: "0" },
+        },
+        "pulse-ring": {
+          "0%":   { transform: "scale(0.75)", opacity: "0.7" },
+          "70%":  { opacity: "0" },
+          "100%": { transform: "scale(2.1)", opacity: "0" },
+        },
+        "sparkle-pop": {
+          "0%":   { transform: "scale(0) rotate(0deg)", opacity: "0" },
+          "35%":  { transform: "scale(1.25) rotate(60deg)", opacity: "1" },
+          "100%": { transform: "scale(0.2) rotate(150deg)", opacity: "0" },
+        },
       },
 
       animation: {
@@ -222,6 +360,38 @@ const config: Config = {
         "spin-slow": "spin-slow 18s linear infinite",
         tick: "tick 2.6s ease-in-out infinite",
         "caret-blink": "caret-blink 1.1s steps(1) infinite",
+
+        /* ---------- Cinematic atmosphere ---------- */
+        "grain-shift": "grain-shift 700ms steps(6) infinite",
+        scanline: "scanline 7s linear infinite",
+        flicker: "flicker 6s ease-in-out infinite",
+        "god-ray": "god-ray 14s ease-in-out infinite",
+        "iris-open": "iris-open 1.1s cubic-bezier(0.22,1,0.36,1) forwards",
+        "letterbox-open": "letterbox-open 1.2s cubic-bezier(0.76,0,0.24,1) forwards",
+
+        /* ---------- Light and metal ---------- */
+        "light-sweep": "light-sweep 3.6s cubic-bezier(0.4,0,0.2,1) infinite",
+        "facet-glint": "facet-glint 5.5s ease-in-out infinite",
+        refract: "refract 9s ease-in-out infinite",
+        "conic-spin": "conic-spin 8s linear infinite",
+        "conic-spin-slow": "conic-spin 22s linear infinite",
+        "prism-shift": "prism-shift 12s ease-in-out infinite",
+
+        /* ---------- Entrances ---------- */
+        "blur-in": "blur-in 1s cubic-bezier(0.22,1,0.36,1) both",
+        "elastic-in": "elastic-in 0.9s cubic-bezier(0.34,1.56,0.64,1) both",
+        "unfurl-x": "unfurl-x 0.9s cubic-bezier(0.22,1,0.36,1) both",
+        "flip-in": "flip-in 0.95s cubic-bezier(0.22,1,0.36,1) both",
+
+        /* ---------- Ambient idles ---------- */
+        breathe: "breathe 7s ease-in-out infinite",
+        "drift-x": "drift-x 18s ease-in-out infinite",
+        swing: "swing 5.5s ease-in-out infinite",
+        wobble: "wobble 12s ease-in-out infinite",
+        "zoom-drift": "zoom-drift 30s ease-in-out infinite alternate",
+        "dust-rise": "dust-rise 6s ease-out infinite",
+        "pulse-ring": "pulse-ring 2.8s cubic-bezier(0.22,1,0.36,1) infinite",
+        "sparkle-pop": "sparkle-pop 900ms cubic-bezier(0.22,1,0.36,1) forwards",
       },
     },
   },

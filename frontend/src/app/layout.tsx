@@ -12,6 +12,11 @@ import BackToTop from '@/components/motion/BackToTop';
 import PageTransition from '@/components/motion/PageTransition';
 import ThemeProvider, { themeInitScript } from '@/components/providers/ThemeProvider';
 import ToastProvider from '@/components/providers/ToastProvider';
+import CinemaProvider, { cinemaInitScript } from '@/components/providers/CinemaProvider';
+import KeyboardLayer from '@/components/providers/KeyboardLayer';
+import FilmGrain from '@/components/motion/FilmGrain';
+import GoldDustTrail from '@/components/motion/GoldDustTrail';
+import ClickSparkle from '@/components/motion/ClickSparkle';
 
 /* ---------------------------------------------------------------------------
    Typography — high-contrast Didone display, roman-capital accent, geometric
@@ -82,13 +87,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Order must match the order the sections actually appear in app/page.tsx —
+// the navigator reads scroll position against this list, so a stale entry makes
+// the dots jump.
 const HOME_SECTIONS = [
   { id: 'hero', label: 'Home' },
   { id: 'trust', label: 'Assurance' },
   { id: 'collections', label: 'Collections' },
+  { id: 'coverflow', label: 'Cabinet' },
   { id: 'pieces', label: 'Signature' },
+  { id: 'film', label: 'The Film' },
+  { id: 'showcase', label: 'The Stone' },
   { id: 'craftsmanship', label: 'Atelier' },
+  { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
+  { id: 'tools', label: 'Tools' },
   { id: 'testimonials', label: 'Patrons' },
   { id: 'services', label: 'Services' },
   { id: 'contact', label: 'Visit' },
@@ -98,41 +111,61 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // data-intro defaults to 'seen' so the curtain stays hidden if scripting is
   // unavailable; introInitScript upgrades it to 'playing' before the first paint.
   return (
-    <html lang="en" data-theme="light" data-intro="seen" suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="light"
+      data-intro="seen"
+      data-cinema="off"
+      suppressHydrationWarning
+    >
       <head>
         {/* Paint the stored theme before first frame to avoid a flash. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         {/* Decide before first paint whether this visit gets the intro curtain,
             so it can never appear on top of an already-visible page. */}
         <script dangerouslySetInnerHTML={{ __html: introInitScript }} />
+        {/* Cinema mode grades the page through CSS variables, so the attribute
+            has to land before the first paint or the page renders ungraded and
+            then visibly darkens. */}
+        <script dangerouslySetInnerHTML={{ __html: cinemaInitScript }} />
       </head>
       <body
         className={`${jost.variable} ${playfair.variable} ${marcellus.variable} font-sans antialiased bg-canvas text-primary overflow-x-hidden`}
       >
         <ThemeProvider>
-          <ToastProvider>
-            {/* Skip link for keyboard users */}
-            <a
-              href="#main"
-              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-accent focus:px-5 focus:py-2 focus:font-accent focus:text-sm focus:uppercase focus:tracking-luxe focus:text-onaccent"
-            >
-              Skip to content
-            </a>
+          <CinemaProvider>
+            <ToastProvider>
+              {/* Skip link for keyboard users */}
+              <a
+                href="#main"
+                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[300] focus:rounded-full focus:bg-accent focus:px-5 focus:py-2 focus:font-accent focus:text-sm focus:uppercase focus:tracking-luxe focus:text-onaccent"
+              >
+                Skip to content
+              </a>
 
-            <Preloader />
-            <SmoothScroll />
-            <CustomCursor />
-            <ScrollProgress sections={HOME_SECTIONS} />
+              <Preloader />
+              <SmoothScroll />
+              <CustomCursor />
+              <GoldDustTrail />
+              <ClickSparkle />
+              <ScrollProgress sections={HOME_SECTIONS} />
 
-            <Navbar />
+              <Navbar />
 
-            <main id="main" className="relative">
-              <PageTransition>{children}</PageTransition>
-            </main>
+              <main id="main" className="relative">
+                <PageTransition>{children}</PageTransition>
+              </main>
 
-            <Footer />
-            <BackToTop />
-          </ToastProvider>
+              <Footer />
+              <BackToTop />
+
+              {/* Projection layer sits above the page, below the cursor. */}
+              <FilmGrain />
+
+              {/* Owns the keyboard shortcuts and the two overlays they open. */}
+              <KeyboardLayer />
+            </ToastProvider>
+          </CinemaProvider>
         </ThemeProvider>
       </body>
     </html>

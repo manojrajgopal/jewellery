@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Facebook, Instagram, Mail, MapPin, Phone, Send, Twitter } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Phone, Send, Twitter, Keyboard } from 'lucide-react';
 import SparkleBurst from '@/components/motion/SparkleBurst';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
+import CinemaToggle from '@/components/ui/CinemaToggle';
+import { openShortcuts } from '@/components/providers/KeyboardLayer';
 import { collections } from '@/data/collections';
 import { services } from '@/data/services';
 
@@ -203,8 +205,35 @@ export default function Footer() {
           </form>
         </div>
 
+        {/* Viewing preferences — the two things that change how the site
+            presents itself, put where a visitor goes looking for settings. */}
+        <div className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-hairline pt-8 sm:flex-row">
+          <div className="flex items-center gap-3">
+            <CinemaToggle />
+            <div>
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-muted">
+                Cinema Mode
+              </p>
+              <p className="font-sans text-[11px] font-light text-faint">
+                Film grain, letterbox and a warmer grade
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={openShortcuts}
+            className="group flex items-center gap-2.5 font-sans text-[11px] font-light text-faint transition-colors hover:text-accent"
+          >
+            <Keyboard size={14} strokeWidth={1.7} />
+            Keyboard shortcuts
+            <kbd className="rounded border border-hairline px-1.5 py-0.5 font-sans text-[10px] text-muted transition-colors group-hover:border-gold-500/40 group-hover:text-accent">
+              ?
+            </kbd>
+          </button>
+        </div>
+
         {/* Legal */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-hairline pt-8 font-sans text-xs font-light text-faint md:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-hairline pt-8 font-sans text-xs font-light text-faint md:flex-row">
           <p>© {new Date().getFullYear()} {brandData.name}. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="/contact" className="transition-colors hover:text-accent">
