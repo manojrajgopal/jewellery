@@ -22,6 +22,12 @@ interface ProductCardProps {
   index?: number;
   onQuickView?: (product: Product) => void;
   priority?: boolean;
+  /**
+   * Presents the card as if it were hovered — actions revealed, title in gold.
+   * Grids that spotlight the card nearest the viewport centre use this so the
+   * affordances also reach touch visitors, who never get a hover state.
+   */
+  active?: boolean;
 }
 
 export default function ProductCard({
@@ -29,10 +35,14 @@ export default function ProductCard({
   index = 0,
   onQuickView,
   priority = false,
+  active = false,
 }: ProductCardProps) {
   const { has, toggle } = useWishlist();
   const { toast } = useToast();
   const saved = has(product.id);
+
+  // Hover still works on its own; `active` only ever reveals things early.
+  const revealed = active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100';
 
   const href = `/collections/${product.collection}`;
 
@@ -79,7 +89,7 @@ export default function ProductCard({
               className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-300 ${
                 saved
                   ? 'border-gold-400/60 bg-gold-500/20 text-gold-300'
-                  : 'border-white/15 bg-black/40 text-white/70 opacity-0 group-hover:opacity-100 hover:text-gold-300'
+                  : `border-white/15 bg-black/40 text-white/70 hover:text-gold-300 ${revealed}`
               }`}
             >
               <Heart size={15} strokeWidth={1.8} fill={saved ? 'currentColor' : 'none'} />
@@ -94,7 +104,7 @@ export default function ProductCard({
                 whileTap={{ scale: 0.85 }}
                 aria-label={`Quick view ${product.name}`}
                 data-cursor="View"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/70 opacity-0 backdrop-blur-md transition-all duration-300 hover:text-gold-300 group-hover:opacity-100"
+                className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-black/40 text-white/70 backdrop-blur-md transition-all duration-300 hover:text-gold-300 ${revealed}`}
               >
                 <Eye size={15} strokeWidth={1.8} />
               </motion.button>
@@ -109,7 +119,11 @@ export default function ProductCard({
           </span>
 
           <Link href={href}>
-            <h3 className="mb-1 font-display text-xl text-primary transition-colors duration-300 group-hover:text-accent">
+            <h3
+              className={`mb-1 font-display text-xl transition-colors duration-300 group-hover:text-accent ${
+                active ? 'text-accent' : 'text-primary'
+              }`}
+            >
               {product.name}
             </h3>
           </Link>
@@ -125,7 +139,11 @@ export default function ProductCard({
               className="flex items-center gap-1.5 font-accent text-[10px] uppercase tracking-luxe text-accent transition-colors hover:text-accent-soft"
             >
               View
-              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight
+                className={`h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1 ${
+                  active ? 'translate-x-1' : ''
+                }`}
+              />
             </Link>
           </div>
         </div>

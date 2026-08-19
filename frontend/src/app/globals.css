@@ -180,6 +180,15 @@
     transition: background-color 600ms var(--ease-luxury), color 600ms var(--ease-luxury);
   }
 
+  /* Intro curtain — state is set by introInitScript before the first paint, so
+     repeat visitors never see the markup that ships in the HTML. */
+  html[data-intro='seen'] #aurum-preloader {
+    display: none !important;
+  }
+  html[data-intro='playing'] body {
+    overflow: hidden;
+  }
+
   ::selection {
     background-color: rgb(var(--gold-500) / 0.32);
     color: rgb(var(--text-primary));

@@ -1,12 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import SectionHeading from '@/components/ui/SectionHeading';
 import ProductCard from '@/components/ui/ProductCard';
 import QuickViewModal from '@/components/ui/QuickViewModal';
 import CTAButton from '@/components/ui/CTAButton';
 import GradientOrb from '@/components/ui/GradientOrb';
+import { useCenteredCard } from '@/hooks/useCenteredCard';
 import { products } from '@/data/products';
 import type { Product } from '@/types';
 
@@ -27,6 +28,10 @@ const CATEGORIES = [
 export default function SignaturePieces() {
   const [active, setActive] = useState<string>('all');
   const [quickView, setQuickView] = useState<Product | null>(null);
+  const reduceMotion = useReducedMotion();
+
+  // Whichever card is nearest the middle of the screen gets the spotlight.
+  const { containerRef, activeId } = useCenteredCard<HTMLDivElement>();
 
   const filtered = useMemo(
     () =>
@@ -86,24 +91,46 @@ export default function SignaturePieces() {
           })}
         </div>
 
-        {/* Grid */}
+        {/* Grid — cards hold until they scroll into view, then reveal in turn. */}
         <motion.div
+          ref={containerRef}
           layout
           className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4"
         >
           <AnimatePresence mode="popLayout">
-            {filtered.map((product, idx) => (
-              <motion.div
-                key={product.id}
-                layout
-                initial={{ opacity: 0, scale: 0.92, y: 28, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, scale: 0.92, y: 20, filter: 'blur(6px)' }}
-                transition={{ duration: 0.5, delay: idx * 0.06, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <ProductCard product={product} index={idx} onQuickView={setQuickView} />
-              </motion.div>
-            ))}
+            {filtered.map((product, idx) => {
+              const isFocused = activeId === product.id;
+              return (
+                <motion.div
+                  key={product.id}
+                  layout
+                  data-card-id={product.id}
+                  initial={{ opacity: 0, scale: 0.92, y: 28, filter: 'blur(6px)' }}
+                  whileInView={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, scale: 0.92, y: 20, filter: 'blur(6px)' }}
+                  viewport={{ once: true, amount: 0.2, margin: '0px 0px -8% 0px' }}
+                  // Stagger across the row, not the whole grid — a card near the
+                  // end of the list should not wait half a second to appear.
+                  transition={{ duration: 0.55, delay: (idx % 4) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <motion.div
+                    className="h-full rounded-2xl"
+                    animate={{
+                      scale: reduceMotion || !isFocused ? 1 : 1.03,
+                      opacity: activeId && !isFocused ? 0.68 : 1,
+                    }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <ProductCard
+                      product={product}
+                      index={idx}
+                      onQuickView={setQuickView}
+                      active={isFocused}
+                    />
+                  </motion.div>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </motion.div>
 

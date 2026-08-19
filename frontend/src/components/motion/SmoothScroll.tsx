@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { isScrollControlled } from '@/lib/scrollControl';
+
 /**
  * Lightweight inertial scrolling — no extra dependency.
  * Intercepts wheel input and eases window.scrollY toward a target, which gives
@@ -23,6 +25,12 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
       Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
 
     const loop = () => {
+      // Another component is driving the scroll — stop writing, or the two
+      // fight for the last window.scrollTo of every frame.
+      if (isScrollControlled()) {
+        running = false;
+        return;
+      }
       current += (target - current) * strength;
       if (Math.abs(target - current) < 0.4) {
         current = target;
@@ -45,6 +53,16 @@ export default function SmoothScroll({ strength = 0.085 }: { strength?: number }
     const onWheel = (e: WheelEvent) => {
       // Let modifier gestures (pinch-zoom, horizontal trackpad) behave natively.
       if (e.ctrlKey || e.metaKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+      // Hand over cleanly: drop any momentum still in flight so the section
+      // taking control does not have to scroll against it.
+      if (isScrollControlled()) {
+        cancelAnimationFrame(raf);
+        running = false;
+        target = window.scrollY;
+        current = window.scrollY;
+        return;
+      }
 
       // Respect anything with its own scrollbar (modals, code blocks, tab rails).
       let node = e.target instanceof HTMLElement ? e.target : null;

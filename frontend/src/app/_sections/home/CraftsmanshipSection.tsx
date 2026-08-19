@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import SectionHeading from '@/components/ui/SectionHeading';
+import { useStageStepper } from '@/hooks/useStageStepper';
 
 const STAGES = [
   {
@@ -44,25 +44,27 @@ const STAGES = [
 ];
 
 export default function CraftsmanshipSection() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [activeStage, setActiveStage] = useState(0);
+  const reduceMotion = useReducedMotion();
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end end'],
+  /**
+   * The track is driven by the stage index, never by raw scroll progress.
+   * Bound to progress, the panels came to rest wherever the scroll happened to
+   * stop — half a stage across — and one hard flick jumped several stages at
+   * once. The stepper hands over exactly one stage per gesture instead, so a
+   * panel is always fully framed and none is ever skipped past.
+   */
+  const { containerRef, stage: activeStage } = useStageStepper(STAGES.length, {
+    instant: !!reduceMotion,
   });
-  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 26, restDelta: 0.001 });
 
-  // Five panels: the track travels four viewport widths.
-  const x = useTransform(smooth, [0, 1], ['0%', `-${(STAGES.length - 1) * (100 / STAGES.length)}%`]);
-  const progressWidth = useTransform(smooth, [0, 1], ['0%', '100%']);
+  const trackX = `-${activeStage * (100 / STAGES.length)}%`;
+  const railFill = `${(activeStage / (STAGES.length - 1)) * 100}%`;
 
-  useEffect(() => {
-    const unsub = smooth.on('change', (v) => {
-      setActiveStage(Math.min(STAGES.length - 1, Math.round(v * (STAGES.length - 1))));
-    });
-    return () => unsub();
-  }, [smooth]);
+  // Just past critically damped: the panel arrives quickly and without bounce,
+  // so the time spent between two stages stays short.
+  const settle = reduceMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 120, damping: 21, mass: 0.7 };
 
   return (
     <section id="craftsmanship" className="relative bg-canvas">
@@ -79,10 +81,11 @@ export default function CraftsmanshipSection() {
       {/* Scroll-driven horizontal gallery */}
       <div ref={containerRef} className="relative h-[420vh]">
         <div className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden">
+          {/* One panel per stage, each exactly one viewport wide. */}
           <motion.div
-            style={{ x }}
+            animate={{ x: trackX }}
+            transition={settle}
             className="relative z-10 flex h-full items-center"
-            // One panel per stage, each exactly one viewport wide.
           >
             {STAGES.map((stage, idx) => (
               <div
@@ -143,10 +146,15 @@ export default function CraftsmanshipSection() {
           {/* Progress rail */}
           <div className="absolute inset-x-12 bottom-10 z-20 md:inset-x-24">
             <div className="relative h-px bg-line">
-              <motion.div
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-gold-700 via-gold-400 to-gold-300"
-                style={{ width: progressWidth }}
-              />
+              {/* Inset by half a marker so the fill terminates on the dot
+                  centres rather than the ends of the rail. */}
+              <div className="absolute inset-x-3 top-0 h-full">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-gold-700 via-gold-400 to-gold-300"
+                  animate={{ width: railFill }}
+                  transition={settle}
+                />
+              </div>
 
               <div className="absolute inset-x-0 -top-3 flex justify-between">
                 {STAGES.map((stage, i) => {

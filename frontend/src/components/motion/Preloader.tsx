@@ -4,27 +4,53 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 /**
+ * Runs in <head> before the first paint, so the decision "does this visit get
+ * the intro?" is made before anything renders — never after the page is
+ * already on screen. Writes `data-intro` on <html>:
+ *   playing → this is a fresh visit; the curtain shows and the page is locked
+ *   seen    → already shown this session (or reduced motion); CSS hides the
+ *             curtain markup instantly, with no flash and no exit animation
+ * The session flag is written up front, so a reload mid-intro does not replay.
+ */
+export const introInitScript = `
+(function(){
+  var root = document.documentElement;
+  try {
+    var seen = sessionStorage.getItem('aurum-intro') === '1';
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (seen || reduced) { root.setAttribute('data-intro','seen'); return; }
+    sessionStorage.setItem('aurum-intro','1');
+    root.setAttribute('data-intro','playing');
+  } catch (e) {
+    root.setAttribute('data-intro','seen');
+  }
+})();
+`;
+
+/**
  * First-visit curtain: the AURUM monogram draws itself in gold, a progress
  * hairline fills, then two panels part vertically to reveal the page.
- * Shown once per tab session so internal navigation stays instant.
+ *
+ * The markup is present in the server-rendered HTML so the curtain is the very
+ * first thing painted; `introInitScript` has already decided whether it stays.
+ * Shown once per tab session, so internal navigation stays instant.
  */
 export default function Preloader() {
-  const [visible, setVisible] = useState(false);
+  // Rendered by default — the head script hides it for repeat visits before
+  // paint, and the effect below unmounts it on hydration.
+  const [skip, setSkip] = useState(false);
+  const [visible, setVisible] = useState(true);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem('aurum-intro') === '1';
-    } catch {
-      seen = false;
+    const root = document.documentElement;
+
+    // Repeat visit or reduced motion: drop the markup outright. Unmounting the
+    // whole AnimatePresence skips the exit animation, so nothing flashes.
+    if (root.getAttribute('data-intro') !== 'playing') {
+      setSkip(true);
+      return;
     }
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (seen || reduced) return;
-
-    setVisible(true);
-    document.body.style.overflow = 'hidden';
 
     let frame = 0;
     let raf = 0;
@@ -37,27 +63,27 @@ export default function Preloader() {
     raf = requestAnimationFrame(tick);
 
     const done = window.setTimeout(() => {
+      // 'exiting' releases the scroll lock while the panels are still parting;
+      // 'seen' would hide them mid-animation.
+      root.setAttribute('data-intro', 'exiting');
       setVisible(false);
-      document.body.style.overflow = '';
-      try {
-        sessionStorage.setItem('aurum-intro', '1');
-      } catch {
-        /* session storage unavailable — the intro simply replays */
-      }
     }, 2400);
 
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(done);
-      document.body.style.overflow = '';
+      root.setAttribute('data-intro', 'exiting');
     };
   }, []);
+
+  if (skip) return null;
 
   return (
     <AnimatePresence>
       {visible && (
         <motion.div
           key="preloader"
+          id="aurum-preloader"
           className="fixed inset-0 z-[200] flex items-center justify-center"
           exit={{ pointerEvents: 'none' }}
         >

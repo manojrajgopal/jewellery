@@ -5,7 +5,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ScrollProgress from '@/components/motion/ScrollProgress';
-import Preloader from '@/components/motion/Preloader';
+import Preloader, { introInitScript } from '@/components/motion/Preloader';
 import CustomCursor from '@/components/motion/CustomCursor';
 import SmoothScroll from '@/components/motion/SmoothScroll';
 import BackToTop from '@/components/motion/BackToTop';
@@ -96,11 +96,16 @@ const HOME_SECTIONS = [
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // data-intro defaults to 'seen' so the curtain stays hidden if scripting is
+  // unavailable; introInitScript upgrades it to 'playing' before the first paint.
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" data-intro="seen" suppressHydrationWarning>
       <head>
         {/* Paint the stored theme before first frame to avoid a flash. */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* Decide before first paint whether this visit gets the intro curtain,
+            so it can never appear on top of an already-visible page. */}
+        <script dangerouslySetInnerHTML={{ __html: introInitScript }} />
       </head>
       <body
         className={`${jost.variable} ${playfair.variable} ${marcellus.variable} font-sans antialiased bg-canvas text-primary overflow-x-hidden`}
