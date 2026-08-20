@@ -701,3 +701,374 @@ export const railDrag = {
  * the OS asks for stillness, so a component can keep one code path.
  */
 export const timing = (reduced: boolean | null, t: object) => (reduced ? { duration: 0 } : t);
+
+/* ===========================================================================
+   SHOT LANGUAGE v5
+   v4 covered camera moves, mask reveals and arrivals. This block covers the
+   three things the pages kept hand-rolling afterwards: lens artefacts that
+   belong to a *lens* rather than to a subject, choreography that reads across a
+   grid instead of along a row, and the small physics presets that made every
+   interactive control feel slightly different from its neighbour.
+
+   Nothing above is modified. Everything here is additive, so a section can mix
+   a v3 entrance with a v5 attention state without the timings arguing.
+   =========================================================================== */
+
+/**
+ * Second easing set. Kept separate from `ease` so callers that spread the first
+ * one keep working, and so the two vocabularies stay legible: `ease` is camera
+ * work, `easeMech` is the behaviour of *things* — hinges, weights, springs.
+ */
+export const easeMech = {
+  /** Falls, then stops dead. Weight without bounce. */
+  gravity: [0.55, 0.06, 0.68, 0.19] as const,
+  /** Rubber band. Two overshoots, both small. */
+  elastic: [0.6, -0.28, 0.735, 0.045] as const,
+  /** A hinge swinging shut against a stop. */
+  hinge: [0.86, 0, 0.07, 1] as const,
+  /** Slow in, slow out, long middle — for anything mechanical and heavy. */
+  vault: [0.83, 0, 0.17, 1] as const,
+  /** Reads as a shutter blade: instant, then a fraction of settle. */
+  blade: [0.9, 0.02, 0.16, 1] as const,
+} as const;
+
+/**
+ * Spring presets, named for the object they belong to. Retyping stiffness and
+ * damping per component is how a site ends up with nine slightly different
+ * hover feels; import one of these instead.
+ */
+export const springs = {
+  /** Default for plates, cards and panels. */
+  plate: { type: 'spring' as const, stiffness: 240, damping: 24, mass: 1 },
+  /** Small controls: chips, toggles, dots. */
+  chip: { type: 'spring' as const, stiffness: 420, damping: 26, mass: 0.6 },
+  /** Anything being dragged or thrown. */
+  drag: { type: 'spring' as const, stiffness: 180, damping: 22, mass: 1.2 },
+  /** Heavy: a door, a lid, a tray. */
+  heavy: { type: 'spring' as const, stiffness: 120, damping: 20, mass: 2.4 },
+  /** Bouncy, for confirmations only — it overshoots visibly. */
+  pop: { type: 'spring' as const, stiffness: 520, damping: 18, mass: 0.5 },
+  /** Cursor-followers and magnetic fields; heavily damped on purpose. */
+  follow: { type: 'spring' as const, stiffness: 300, damping: 40, mass: 0.8 },
+} as const;
+
+/* ---------------------------------------------------------------------------
+   Lens artefacts
+--------------------------------------------------------------------------- */
+
+/** Zoom blur: arrives scaled with a radial smear, resolves sharp. */
+export const zoomBlurIn: Variants = {
+  hidden: { opacity: 0, scale: 1.35, filter: 'blur(22px) saturate(1.35)' },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px) saturate(1)',
+    transition: { duration: dur.cinematic, ease: ease.camera },
+  },
+};
+
+/** Anamorphic squeeze — the frame is compressed horizontally, then released. */
+export const anamorphicRelease: Variants = {
+  hidden: { opacity: 0, scaleX: 1.18, scaleY: 0.86, filter: 'blur(10px)' },
+  visible: {
+    opacity: 1,
+    scaleX: 1,
+    scaleY: 1,
+    filter: 'blur(0px)',
+    transition: { duration: dur.slow, ease: ease.luxury },
+  },
+};
+
+/** Slit-scan: the subject arrives sheared, as if the sensor read it line by line. */
+export const slitScan: Variants = {
+  hidden: { opacity: 0, skewY: 6, scaleY: 1.14, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    skewY: 0,
+    scaleY: 1,
+    filter: 'blur(0px)',
+    transition: { duration: dur.slow, ease: easeMech.blade },
+  },
+};
+
+/** Depth of field: this one resolves. Pair with `defocus` on its siblings. */
+export const focusIn: Variants = {
+  hidden: { filter: 'blur(9px) brightness(0.82)', scale: 0.985 },
+  visible: {
+    filter: 'blur(0px) brightness(1)',
+    scale: 1,
+    transition: { duration: dur.base, ease: ease.luxury },
+  },
+};
+
+/** The other half of a rack focus — what the plane of focus leaves behind. */
+export const defocus: Variants = {
+  visible: { filter: 'blur(0px) brightness(1)', transition: { duration: dur.base } },
+  away: {
+    filter: 'blur(7px) brightness(0.76)',
+    transition: { duration: dur.base, ease: ease.luxury },
+  },
+};
+
+/** Bloom: overexposes on arrival and settles back to correct exposure. */
+export const bloomIn: Variants = {
+  hidden: { opacity: 0, filter: 'brightness(2.4) saturate(0.4) blur(14px)' },
+  visible: {
+    opacity: 1,
+    filter: 'brightness(1) saturate(1) blur(0px)',
+    transition: { duration: dur.cinematic, ease: ease.camera },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Projection furniture
+--------------------------------------------------------------------------- */
+
+/** Letterbox bars closing in from both edges. Drive the bars, not the frame. */
+export const letterboxClose: Variants = {
+  hidden: { scaleY: 0 },
+  visible: { scaleY: 1, transition: { duration: dur.slow, ease: easeMech.blade } },
+};
+
+/** A title card: rises, holds, then lifts away. Three states, not two. */
+export const titleCard: Variants = {
+  hidden: { opacity: 0, y: 26, letterSpacing: '0.5em', filter: 'blur(10px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    letterSpacing: '0.28em',
+    filter: 'blur(0px)',
+    transition: { duration: dur.cinematic, ease: ease.luxury },
+  },
+  away: {
+    opacity: 0,
+    y: -24,
+    letterSpacing: '0.42em',
+    transition: { duration: dur.base, ease: ease.curtain },
+  },
+};
+
+/** Countdown leader: a hard cut in, a hold, a hard cut out. */
+export const leaderFlash: Variants = {
+  hidden: { opacity: 0, scale: 1.4 },
+  visible: {
+    opacity: [0, 1, 1, 0],
+    scale: [1.4, 1, 1, 0.94],
+    transition: { duration: 0.9, times: [0, 0.18, 0.7, 1], ease: 'linear' },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Choreography across a grid
+--------------------------------------------------------------------------- */
+
+/**
+ * Delay for a cell in a grid, measured as distance from an origin corner or
+ * from the middle. Framer staggers along child order, which reads as a
+ * typewriter across a grid rather than as a wave through it — this fixes that
+ * without every caller hard-coding its own row width.
+ */
+export const gridDelay = (
+  index: number,
+  cols: number,
+  total: number,
+  from: 'top-left' | 'centre' | 'bottom-right' = 'top-left',
+  step = 0.055
+) => {
+  const rows = Math.max(1, Math.ceil(total / cols));
+  const r = Math.floor(index / cols);
+  const c = index % cols;
+  if (from === 'centre') {
+    const dr = r - (rows - 1) / 2;
+    const dc = c - (cols - 1) / 2;
+    return Math.hypot(dr, dc) * step;
+  }
+  if (from === 'bottom-right') return (rows - 1 - r + (cols - 1 - c)) * step;
+  return (r + c) * step;
+};
+
+/** Grid cell arrival. Pair with gridDelay through the `custom` prop. */
+export const gridCell: Variants = {
+  hidden: { opacity: 0, scale: 0.82, y: 22, filter: 'blur(6px)' },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: dur.base, delay, ease: ease.luxury },
+  }),
+};
+
+/** A tile that turns over as it lands — for mosaics assembling into an image. */
+export const tileFlip: Variants = {
+  hidden: { opacity: 0, rotateY: 92, scale: 0.9, transformPerspective: 900 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    rotateY: 0,
+    scale: 1,
+    transformPerspective: 900,
+    transition: { duration: dur.slow, delay, ease: ease.luxury },
+  }),
+};
+
+/** Diagonal cascade for lists that read as a pile of paper rather than a grid. */
+export const cascadeDelay = (index: number, step = 0.07, skew = 0.4) =>
+  index * step + (index % 2) * step * skew;
+
+/* ---------------------------------------------------------------------------
+   Objects, continued
+--------------------------------------------------------------------------- */
+
+/** Swings in on a hinge fixed to its left edge, like a case opening. */
+export const hingeOpen: Variants = {
+  hidden: { rotateY: -104, opacity: 0, transformOrigin: 'left center', transformPerspective: 1400 },
+  visible: {
+    rotateY: 0,
+    opacity: 1,
+    transformOrigin: 'left center',
+    transformPerspective: 1400,
+    transition: { duration: dur.cinematic, ease: easeMech.hinge },
+  },
+};
+
+/** Two leaves parting — pass -1 for the left one, 1 for the right. */
+export const vaultLeaf = (dir: -1 | 1): Variants => ({
+  hidden: { x: '0%', filter: 'brightness(1)' },
+  visible: {
+    x: `${dir * 102}%`,
+    filter: 'brightness(0.82)',
+    transition: { duration: dur.epic, ease: easeMech.vault },
+  },
+});
+
+/** Spirals in while unrolling — for seals, monograms and hallmarks. */
+export const spiralIn: Variants = {
+  hidden: { opacity: 0, rotate: -140, scale: 0.35 },
+  visible: {
+    opacity: 1,
+    rotate: 0,
+    scale: 1,
+    transition: { duration: dur.cinematic, ease: ease.spring },
+  },
+};
+
+/** A pendulum settling, hinged above its own top edge. */
+export const pendulumSettle: Variants = {
+  hidden: { rotate: -13, opacity: 0, transformOrigin: 'top center' },
+  visible: {
+    rotate: 0,
+    opacity: 1,
+    transformOrigin: 'top center',
+    transition: { type: 'spring', stiffness: 90, damping: 9, mass: 1.4 },
+  },
+};
+
+/** Poured: fills from the bottom edge. Drives a clip, so the subject never moves. */
+export const pourFill: Variants = {
+  hidden: { clipPath: 'inset(100% 0 0 0)' },
+  visible: {
+    clipPath: 'inset(0% 0 0 0)',
+    transition: { duration: dur.epic, ease: easeMech.gravity },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Attention states — for things already on screen
+--------------------------------------------------------------------------- */
+
+/** Breathes. For live badges and anything claiming to be current. */
+export const breathe = (scale = 1.04, seconds = 3.4): Variants => ({
+  visible: {
+    scale: [1, scale, 1],
+    opacity: [0.85, 1, 0.85],
+    transition: { duration: seconds, repeat: Infinity, ease: 'easeInOut' },
+  },
+});
+
+/** A single, small shudder — for a rejected input, never for an accepted one. */
+export const shudder: Variants = {
+  visible: {
+    x: [0, -7, 6, -4, 2, 0],
+    transition: { duration: 0.42, ease: 'easeOut' },
+  },
+};
+
+/** Confirmation pop that leaves the element on its own baseline. */
+export const confirmPop: Variants = {
+  visible: {
+    scale: [1, 1.14, 0.98, 1],
+    transition: { duration: 0.5, ease: ease.spring },
+  },
+};
+
+/** Slow drift for anything meant to feel suspended rather than placed. */
+export const drift = (px = 10, seconds = 9): Variants => ({
+  visible: {
+    x: [0, px, 0, -px, 0],
+    y: [0, -px * 0.6, 0, px * 0.6, 0],
+    transition: { duration: seconds, repeat: Infinity, ease: 'easeInOut' },
+  },
+});
+
+/** A travelling highlight across metal or glass. Drives backgroundPosition only. */
+export const sheenTravel = (seconds = 4.5): Variants => ({
+  visible: {
+    backgroundPosition: ['-150% 50%', '250% 50%'],
+    transition: { duration: seconds, repeat: Infinity, repeatDelay: 1.4, ease: 'linear' },
+  },
+});
+
+/* ---------------------------------------------------------------------------
+   Interaction states, continued
+--------------------------------------------------------------------------- */
+
+/** Tilts toward the pointer without needing a per-card pointer listener. */
+export const tiltHover = {
+  rest: { rotateX: 0, rotateY: 0, scale: 1, transformPerspective: 1200 },
+  hover: {
+    rotateX: -4,
+    rotateY: 5,
+    scale: 1.025,
+    transformPerspective: 1200,
+    transition: springs.plate,
+  },
+  tap: { scale: 0.99, transition: { duration: dur.instant } },
+};
+
+/** For a control that should read as a switch being thrown. */
+export const throwSwitch = {
+  rest: { rotate: 0, y: 0 },
+  hover: { rotate: -1.5, y: -3, transition: springs.chip },
+  tap: { rotate: 2, y: 2, transition: { duration: dur.instant } },
+};
+
+/** Reveals a hidden second layer by sliding the first one off upward. */
+export const slideSwap = {
+  rest: { y: '0%' },
+  hover: { y: '-100%', transition: { duration: dur.fast, ease: ease.curtain } },
+};
+
+/* ---------------------------------------------------------------------------
+   Scroll helpers
+--------------------------------------------------------------------------- */
+
+/**
+ * Maps a 0–1 scroll progress onto a value range with a dead zone at each end, so
+ * a scene holds its first and last frame instead of snapping out of them the
+ * instant the section crosses the viewport edge. Returns the two arrays
+ * useTransform wants, in order.
+ */
+export const holdRange = (
+  from: number,
+  to: number,
+  hold = 0.15
+): [number[], number[]] => [
+  [0, hold, 1 - hold, 1],
+  [from, from, to, to],
+];
+
+/** The viewport contract for scenes that must be fully committed before running. */
+export const onceInViewFull = { once: true, margin: '-30% 0px -30% 0px' } as const;
+
+/** For rails and marquees: fires early and re-fires, because they loop. */
+export const alwaysInView = { once: false, margin: '10% 0px 10% 0px' } as const;

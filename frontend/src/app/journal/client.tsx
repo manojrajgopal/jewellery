@@ -16,8 +16,42 @@ import CylinderMarquee from '@/components/motion/CylinderMarquee';
 import RippleGrid from '@/components/motion/RippleGrid';
 import FoilCard from '@/components/motion/FoilCard';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
+import InkBleedReveal from '@/components/motion/InkBleedReveal';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import HoverPeelCard from '@/components/motion/HoverPeelCard';
 
 import { journal, journalTopics, type JournalEntry } from '@/data/editorial';
+
+/**
+ * The four stages of the print run. The front of each card is the claim; the sheet
+ * underneath is what the claim costs, which is the half that makes it credible.
+ */
+const PRESS_RUN = [
+  {
+    stage: 'One',
+    title: 'Written at the bench',
+    detail:
+      'Nobody on the shop floor writes for it. Every piece is by whoever did the work, transcribed where it has to be, and edited only for length — which is why the grammar is uneven and the technical detail is right.',
+  },
+  {
+    stage: 'Two',
+    title: 'Set in metal type',
+    detail:
+      'Composed by a two-person shop four streets away that still holds a full case of Caslon. A page takes them most of a day to set and about four minutes to print.',
+  },
+  {
+    stage: 'Three',
+    title: 'Printed damp',
+    detail:
+      'The paper is dampened so the type bites into it rather than sitting on top. Damp paper then has to dry flat under weight for five days, and those five days are the whole reason this is quarterly rather than monthly.',
+  },
+  {
+    stage: 'Four',
+    title: 'Posted, never emailed',
+    detail:
+      'Nine hundred copies, hand-addressed. There is no digital edition and no list to join online — ask at the boutique, or leave an address with the concierge.',
+  },
+] as const;
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
@@ -184,6 +218,69 @@ export default function JournalClient() {
             )}
           </div>
         </section>
+
+        {/* ---- The press run ----
+             The journal is printed and posted rather than emailed, which the site
+             claimed and never showed. Four stages, each hiding its own cost under a
+             lifted corner, beside a proof soaking up the way the real ones do. */}
+        <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <div className="mb-14 max-w-2xl">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                How It Is Made
+              </p>
+              <h2 className="font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl">
+                Six pages, letterpress, four times a year
+              </h2>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-muted">
+                Lift a corner on any stage to read what it costs us. The reason the journal is
+                quarterly is under the third one.
+              </p>
+            </div>
+
+            <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+              <div className="grid gap-5 sm:grid-cols-2">
+                {PRESS_RUN.map((step) => (
+                  <HoverPeelCard
+                    key={step.stage}
+                    className="min-h-[10rem]"
+                    corner={{ rest: 24, open: 118 }}
+                    underside={
+                      <p className="font-sans text-sm font-light leading-relaxed text-secondary">
+                        {step.detail}
+                      </p>
+                    }
+                  >
+                    <div className="p-6">
+                      <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                        Stage {step.stage}
+                      </span>
+                      <h3 className="mt-2 font-display text-2xl leading-tight text-primary">
+                        {step.title}
+                      </h3>
+                    </div>
+                  </HoverPeelCard>
+                ))}
+              </div>
+
+              <figure>
+                <InkBleedReveal
+                  src="/images/collections/everyday.jpg"
+                  alt="A proof page coming off the press"
+                  ratio={3 / 4}
+                  roughness={22}
+                  className="rounded-2xl border border-hairline"
+                />
+                <figcaption className="mt-4 font-sans text-xs font-light leading-relaxed text-muted">
+                  A proof, wet. The ink edge is displaced fractal noise on the mask alone &mdash; the
+                  type behind it stays as sharp as the press left it.
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+
+        <GoldRibbonWeave className="px-6" height={100} />
 
         {/* ---- The pull-quote drum ---- */}
         <section className="relative border-y border-hairline bg-surface-raised/30 py-16 md:py-24">

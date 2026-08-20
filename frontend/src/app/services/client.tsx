@@ -14,6 +14,9 @@ import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ScrollStackCards from '@/components/motion/ScrollStackCards';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import RippleGrid from '@/components/motion/RippleGrid';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
+import RepairTriage from '@/components/ui/RepairTriage';
 import SavingsPlanner from '@/components/ui/SavingsPlanner';
 import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
@@ -312,6 +315,30 @@ export default function ServicesClient() {
           </div>
         </div>
       </section>
+
+      {/* ---- Triage ----
+           The lead times above say what the workshop does and how long each job takes.
+           They cannot answer the question people actually walk in with, which is
+           whether the thing they have noticed is serious. Nine complaints in the words
+           they are said in, and what each one really is. */}
+      <CinematicLetterbox slate="Is This Serious" slateNote="Nine complaints, translated" barHeight={0.08}>
+        <section className="relative overflow-hidden bg-canvas-alt py-24 md:py-32">
+          <RippleGrid spacing={46} reach={160} push={9} />
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Triage"
+              title="Three of these mean take it off now"
+              highlightWords={['now']}
+              subtitle="Described the way it is described at the counter, answered with what it actually is, what happens to it, roughly what it costs and how long it takes."
+              align="center"
+              className="mb-14"
+            />
+            <RepairTriage />
+          </div>
+        </section>
+      </CinematicLetterbox>
+
+      <GoldRibbonWeave className="px-6" height={100} />
 
       {/* Paying for it over time */}
       <section className="relative overflow-hidden py-24 md:py-32">

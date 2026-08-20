@@ -1,5 +1,6 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { CalendarClock, Clock, FileText, Gem, Hammer, PenTool, Truck } from 'lucide-react';
 
 import PageBanner from '@/components/ui/PageBanner';
@@ -20,6 +21,9 @@ import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
 import FlipClock from '@/components/motion/FlipClock';
 import FoilCard from '@/components/motion/FoilCard';
 import RippleGrid from '@/components/motion/RippleGrid';
+import VaultDoorReveal from '@/components/motion/VaultDoorReveal';
+import SilkWave from '@/components/motion/SilkWave';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 
 const JOURNEY = [
   {
@@ -201,6 +205,124 @@ export default function BespokeClient() {
            The studio above settles the metal, the stone and the setting. This is the
            last decision, and the only one that cannot be undone afterwards — so it
            gets its own section rather than a field in the configurator. */}
+      {/* ---- The four moments ----
+           The journey strip above is what the house does across sixteen weeks. This is
+           what the client actually sees in that time, which is four things and no more.
+           Worth stating plainly: the commonest anxiety in a commission is silence, and
+           the answer to it is knowing in advance how much silence there will be. */}
+      <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="What You Will See"
+            title="Four moments in sixteen weeks"
+            highlightWords={['Four']}
+            subtitle="Between them, nothing — and that is deliberate. A bench interrupted for progress photographs is a bench working to a camera rather than to a piece."
+            align="center"
+            className="mb-16"
+          />
+
+          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+            <ol className="space-y-5">
+              {[
+                {
+                  week: 'Week 2',
+                  title: 'The gouache',
+                  body: 'A painted rendering at actual size, by hand, on grey card. Nothing is cut until you have signed the back of it.',
+                },
+                {
+                  week: 'Week 4',
+                  title: 'The wax, in your hand',
+                  body: 'A carved wax you can wear. It is the only chance to change proportion — after casting, a millimetre costs three weeks.',
+                },
+                {
+                  week: 'Week 9',
+                  title: 'The stone, with its paper',
+                  body: 'Bought against your specification rather than from stock. You see the certificate before we take possession of it.',
+                },
+                {
+                  week: 'Week 16',
+                  title: 'The piece, on the cloth',
+                  body: 'Laid out, turned once under the light, and then left with you. If it is wrong, it goes back to the bench and nobody discusses money.',
+                },
+              ].map((moment, i) => (
+                <motion.li
+                  key={moment.week}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-8%' }}
+                  transition={{ duration: 0.55, delay: i * 0.09, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex gap-5"
+                >
+                  <span className="rail-node mt-1 grid h-11 w-11 flex-shrink-0 place-items-center rounded-full bg-canvas">
+                    <span className="font-accent text-[9px] uppercase tracking-luxe text-accent">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </span>
+                  <span>
+                    <span className="font-accent text-[10px] uppercase tracking-luxer text-accent nums-tabular">
+                      {moment.week}
+                    </span>
+                    <span className="mt-1 block font-display text-2xl leading-tight text-primary">
+                      {moment.title}
+                    </span>
+                    <span className="mt-2 block font-sans text-sm font-light leading-relaxed text-secondary">
+                      {moment.body}
+                    </span>
+                  </span>
+                </motion.li>
+              ))}
+            </ol>
+
+            <div>
+              <SilkWave
+                src="/images/products/ring.jpg"
+                alt="The finished commission, uncovered on the cloth"
+                ratio={3 / 4}
+                panels={12}
+                className="rounded-3xl border border-hairline shadow-lift"
+              />
+              <p className="mt-4 font-accent text-[10px] uppercase tracking-luxer text-faint">
+                Week sixteen. The cloth comes off once.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <GoldRibbonWeave className="px-6" height={100} />
+
+      {/* ---- Where it waits ----
+           A commission spends most of sixteen weeks not being worked on, and the
+           honest answer to where it is on a given Tuesday night is a door. */}
+      <section className="relative bg-canvas-alt py-6">
+        <VaultDoorReveal
+          label="Your Stone"
+          note="Logged in by weight every night it is not on a bench."
+          minHeight="min-h-[80vh]"
+        >
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-20">
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Between The Moments
+            </p>
+            <h2 className="mt-5 font-display text-3xl font-light leading-tight text-primary sm:text-4xl md:text-5xl">
+              Bought in week nine, set in week fourteen
+            </h2>
+            <div className="mx-auto mt-6 max-w-2xl space-y-4 font-sans text-base font-light leading-relaxed text-secondary">
+              <p>
+                Your stone is in the building for about five weeks before anyone touches it, because
+                the mount has to be finished, hallmarked and polished first &mdash; a stone set into
+                an unfinished mount is a stone that comes out again for the polisher.
+              </p>
+              <p>
+                It is logged out by weight in the morning and logged back in at night, filings
+                included. Ask to see the day book at your week-nine appointment; it is not a secret,
+                and it is the reason the house has never lost one.
+              </p>
+            </div>
+          </div>
+        </VaultDoorReveal>
+      </section>
+
       <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
         <RippleGrid spacing={46} reach={190} dot={1.1} />
 

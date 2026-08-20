@@ -10,7 +10,13 @@ import BirthstoneWheel from '@/components/ui/BirthstoneWheel';
 import MetalComparator from '@/components/ui/MetalComparator';
 import ProvenanceMap from '@/components/ui/ProvenanceMap';
 
+import CaratScaleComparator from '@/components/ui/CaratScaleComparator';
+import HallmarkDecoder from '@/components/ui/HallmarkDecoder';
+
 import MorphGemPath from '@/components/motion/MorphGemPath';
+import MosaicShuffle from '@/components/motion/MosaicShuffle';
+import PrismDispersion from '@/components/motion/PrismDispersion';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import JewellerLoupe from '@/components/motion/JewellerLoupe';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import RippleGrid from '@/components/motion/RippleGrid';
@@ -177,6 +183,78 @@ export default function GemstonesClient() {
                   </div>
                 ))}
               </dl>
+            </div>
+          </div>
+        </section>
+
+        {/* ---- Size against weight ----
+             Placed directly before the metals bench: the two questions a customer
+             asks after choosing a stone are how big it will look and what will hold
+             it, in that order. */}
+        <section className="relative border-y border-hairline bg-canvas-alt py-20 md:py-28">
+          <PrismDispersion at={{ x: 0.14, y: 0.28 }} size={140} rays={28} />
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Weight Is Not Size"
+              title="What a carat actually covers"
+              highlightWords={['actually']}
+              subtitle="Two stones of identical weight can differ by a fifth in the size they look, because weight hides in the pavilion where nobody sees it. Calibrate the ruler against a coin and everything below is drawn at true size."
+              align="center"
+              className="mb-14"
+            />
+
+            <CaratScaleComparator />
+          </div>
+        </section>
+
+        {/* ---- The stamp ----
+             The assurance half of the page. It sits after the reference material
+             because a hallmark is the answer to "how do I know", and nobody asks
+             that until they have decided they want the thing. */}
+        <section className="relative py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Stamp"
+              title="Four marks, one of them a guarantee"
+              highlightWords={['guarantee']}
+              subtitle="Everything struck into a hallmarked piece is about a millimetre across and unreadable in the hand. Here it is at forty times the size, with what each mark proves."
+              align="center"
+              className="mb-14"
+            />
+
+            <HallmarkDecoder />
+          </div>
+        </section>
+
+        <GoldRibbonWeave className="px-6" height={100} />
+
+        {/* ---- The rough, assembling ----
+             A single stone reassembled out of its own contact sheet. Placed as a
+             breath between the two dense interactive blocks above and the metals
+             bench below. */}
+        <section className="relative overflow-hidden bg-canvas py-16 md:py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:px-12">
+            <MosaicShuffle
+              src="/images/collections/gemstone.jpg"
+              alt="A single stone, reassembled from the grading sheet"
+              columns={8}
+              ratio={4 / 3}
+              from="bottom-right"
+              className="rounded-3xl border border-hairline"
+            />
+            <div>
+              <h3 className="font-display text-3xl leading-tight text-primary">
+                Every stone arrives as <span className="text-spectral">forty photographs</span>
+              </h3>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                A stone is bought on paper long before anyone holds it: the certificate, a plot of
+                the inclusions, and a contact sheet shot from every axis under three light
+                temperatures. We buy against that sheet, then re-check the stone against it on
+                arrival — and about one parcel in nine goes back.
+              </p>
+              <p className="mt-4 font-accent text-[10px] uppercase tracking-luxer text-faint">
+                Hover a tile to lift it out of the sheet
+              </p>
             </div>
           </div>
         </section>

@@ -12,6 +12,9 @@ import CTAButton from '@/components/ui/CTAButton';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import SplitText from '@/components/motion/SplitText';
 import ParticleField from '@/components/motion/ParticleField';
+import InkBleedReveal from '@/components/motion/InkBleedReveal';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import HoverPeelCard from '@/components/motion/HoverPeelCard';
 import { journal } from '@/data/editorial';
 
 const fmtDate = (iso: string) =>
@@ -202,6 +205,62 @@ export default function ArticleClient({ slug }: { slug: string }) {
       </div>
 
       <GoldDivider variant="jewel" />
+
+      {/* ---- As it was printed ----
+           Every entry here appeared in the quarterly first, and the printed version is
+           the one the bench actually signed off. Showing the plate as a wet proof is
+           not decoration: it is the difference between a blog with a serif font and a
+           journal that exists on paper. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-16 md:py-24">
+        <div className="mx-auto grid max-w-5xl items-center gap-12 px-6 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
+          <div>
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              In Print First
+            </p>
+            <h2 className="mt-4 font-display text-2xl font-light leading-tight text-primary md:text-3xl">
+              This one ran on paper before it ran here
+            </h2>
+            <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+              Six pages, letterpress, nine hundred copies, hand-addressed. The plate opposite is
+              the proof as it came off the press &mdash; damp, because ink sits differently on damp
+              stock and a plate approved dry comes back half a stop darker.
+            </p>
+
+            <div className="mt-7">
+              <HoverPeelCard
+                className="min-h-[8.5rem]"
+                corner={{ rest: 22, open: 112 }}
+                underside={
+                  <p className="font-sans text-sm font-light leading-relaxed text-secondary">
+                    Ask at the boutique or leave an address with the concierge. There is no digital
+                    edition and no list to join online &mdash; which is deliberate, and is why the
+                    print run has not grown in nine years.
+                  </p>
+                }
+              >
+                <div className="p-6">
+                  <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                    How to get a copy
+                  </span>
+                  <p className="mt-2 font-display text-xl leading-snug text-primary">
+                    Not by subscribing
+                  </p>
+                </div>
+              </HoverPeelCard>
+            </div>
+          </div>
+
+          <InkBleedReveal
+            src={entry.image}
+            alt={`${entry.title}, as printed`}
+            ratio={4 / 3}
+            roughness={20}
+            className="rounded-3xl border border-hairline"
+          />
+        </div>
+      </section>
+
+      <GoldRibbonWeave className="px-6" height={100} />
 
       {/* ---- Related ---- */}
       {related.length > 0 && (

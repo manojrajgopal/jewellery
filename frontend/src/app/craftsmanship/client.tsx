@@ -21,6 +21,10 @@ import ScrollStackCards from '@/components/motion/ScrollStackCards';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import LiquidDistortHover from '@/components/motion/LiquidDistortHover';
 import RippleGrid from '@/components/motion/RippleGrid';
+import MoltenPour from '@/components/motion/MoltenPour';
+import VaultDoorReveal from '@/components/motion/VaultDoorReveal';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import PrismDispersion from '@/components/motion/PrismDispersion';
 import { Reveal } from '@/components/animations/Reveal';
 
 /** Hotspots along the pan. `at` is a fraction of the strip's full width. */
@@ -425,6 +429,96 @@ export default function CraftsmanshipClient() {
             <ScrollStackCards cards={FAILURE_MODES} offset={22} shrink={0.05} />
           </div>
         </div>
+      </section>
+
+      {/* ---- The pour ----
+           The one operation on this page that is irreversible while you watch it.
+           Placed after the failure modes on purpose: the section above explains what
+           can go wrong, and this is the ninety seconds in which most of it does. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <PrismDispersion at={{ x: 0.82, y: 0.3 }} size={130} rays={22} interactive={false} />
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <MoltenPour word="Cast" note="1,064°C · ninety seconds of no second chances" />
+
+          <div className="mx-auto mt-14 grid max-w-4xl gap-8 md:grid-cols-3">
+            {[
+              {
+                figure: '1,064',
+                unit: '°C',
+                line:
+                  'The melting point of pure gold. Alloyed to 22K it moves a little, and the crucible is held forty degrees above it — hot enough to stay liquid across the pour, cool enough not to burn the alloy off.',
+              },
+              {
+                figure: '90',
+                unit: 'seconds',
+                line:
+                  'From tilting the crucible to the tree being quenched. Slow the pour and it freezes mid-sprue; rush it and the metal folds air into itself, which shows up as a pinhole on a finished shank three weeks later.',
+              },
+              {
+                figure: '1 in 6',
+                unit: 'trees',
+                line:
+                  'Comes off the wax tree with something wrong enough to scrap. It goes back into the crucible, which is the only part of this trade where a mistake costs time and not material.',
+              },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.figure}
+                initial={{ opacity: 0, y: 26 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-10%' }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="rounded-2xl border border-hairline bg-surface-raised/50 p-6"
+              >
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-display text-4xl text-accent nums-tabular">
+                    {stat.figure}
+                  </span>
+                  <span className="font-accent text-[10px] uppercase tracking-luxe text-faint">
+                    {stat.unit}
+                  </span>
+                </span>
+                <p className="mt-3 font-sans text-sm font-light leading-relaxed text-secondary">
+                  {stat.line}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <GoldRibbonWeave className="px-6" height={110} ribbons={4} />
+
+      {/* ---- The strongroom ----
+           Where work-in-progress sleeps. A mechanism rather than a paragraph,
+           because the honest answer to "where is my piece tonight" is a door. */}
+      <section className="relative bg-canvas py-6">
+        <VaultDoorReveal
+          label="Overnight"
+          note="Your commission is behind this every night it is not being worked on."
+          minHeight="min-h-[80vh]"
+        >
+          <div className="mx-auto max-w-3xl px-6 py-16 text-center md:py-20">
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              The Strongroom
+            </p>
+            <h2 className="mt-5 font-display text-3xl font-light leading-tight text-primary sm:text-4xl md:text-5xl">
+              Nothing sleeps on a bench
+            </h2>
+            <div className="mx-auto mt-6 max-w-2xl space-y-4 font-sans text-base font-light leading-relaxed text-secondary">
+              <p>
+                Every piece in progress is logged out to an artisan in the morning and logged back
+                in at night, by weight. A shank that leaves the strongroom at 6.42 grams comes back
+                at 6.42 grams or somebody explains the difference — filings included, which are
+                swept, collected and refined.
+              </p>
+              <p>
+                It is a tedious ritual and it is the reason the house has never lost a stone in four
+                generations. Ask to see the day book when you visit; it is not a secret.
+              </p>
+            </div>
+          </div>
+        </VaultDoorReveal>
       </section>
 
       {/* Techniques, as plates that warp under the pointer */}

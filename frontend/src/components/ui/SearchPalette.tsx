@@ -38,6 +38,20 @@ const PAGES: Entry[] = [
   { id: 'p-stones', title: 'Stone Library', subtitle: 'Every gem, honestly graded', href: '/gemstones', group: 'Pages' },
   { id: 'p-care', title: 'Care & Sizing', subtitle: 'The ritual, and how to measure', href: '/care', group: 'Pages' },
   { id: 'p-bespoke', title: 'Bespoke', subtitle: 'Commission a piece', href: '/bespoke', group: 'Pages' },
+  {
+    id: 'p-experiences',
+    title: 'Experiences',
+    subtitle: 'The bench, a grading class, the room after hours',
+    href: '/experiences',
+    group: 'Pages',
+  },
+  {
+    id: 'p-vault',
+    title: 'Your Vault',
+    subtitle: 'Everything saved, compared and remembered',
+    href: '/vault',
+    group: 'Pages',
+  },
 ];
 
 const GROUP_ICON = {

@@ -16,6 +16,10 @@ import VelvetTray from '@/components/motion/VelvetTray';
 import RippleGrid from '@/components/motion/RippleGrid';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import FlipClock from '@/components/motion/FlipClock';
+import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
+import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
+import InkBleedReveal from '@/components/motion/InkBleedReveal';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 
 import { lookbookLeaves, contactSheet } from '@/data/editorial';
 import { collections } from '@/data/collections';
@@ -120,7 +124,7 @@ export default function LookbookClient() {
               eyebrow="Bound"
               title="Turn the leaves"
               highlightWords={['leaves']}
-              subtitle="Six spreads, hinged and shadowed. Click either side of the gutter, or use the arrow keys once the book has focus."
+              subtitle="Six spreads, hinged and shadowed. Take hold of a page and drag it across, press either side of the gutter, or use the arrow keys."
               align="center"
               className="mb-14"
             />
@@ -266,6 +270,93 @@ export default function LookbookClient() {
         </section>
 
         {/* ---- Onward ---- */}
+        {/* ---- The pattern study ----
+             Where the endpapers come from. Every season's printed matter takes its
+             repeat from one detail of one piece, run through mirrors until it stops
+             looking like jewellery — and the plates opposite are the same three
+             details as wet proofs. A page about a printed book should show how the
+             printing was decided. */}
+        <CinematicLetterbox slate="Endpapers" slateNote="Three details, mirrored" barHeight={0.09}>
+          <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+            <div className="relative z-10 mx-auto max-w-6xl px-6">
+              <SectionHeading
+                eyebrow="The Repeat"
+                title="Every season's paper comes out of one detail"
+                highlightWords={['one']}
+                subtitle="A kundan collet, a woven chain link, a pavé field. Turned through mirrors until the repeat stops reading as jewellery and starts reading as pattern."
+                align="center"
+                className="mb-16"
+              />
+
+              <div className="grid gap-10 md:grid-cols-3">
+                {[
+                  {
+                    src: '/images/collections/heritage.jpg',
+                    segments: 12,
+                    label: 'Kundan collet',
+                    note: 'Twelve mirrors. The foil behind an uncut stone is what throws the colour back, and it is the warmest of the three.',
+                  },
+                  {
+                    src: '/images/products/necklace.jpg',
+                    segments: 16,
+                    label: 'Woven link',
+                    note: 'Sixteen. A hand-woven chain already repeats, so the mirrors are doubling a rhythm rather than inventing one.',
+                  },
+                  {
+                    src: '/images/collections/gemstone.jpg',
+                    segments: 20,
+                    label: 'Pavé field',
+                    note: 'Twenty, which is past the point of legibility — and the endpaper we chose, because at this density it reads as texture.',
+                  },
+                ].map((study) => (
+                  <figure key={study.label} className="flex flex-col items-center">
+                    <KaleidoscopeGem
+                      src={study.src}
+                      segments={study.segments}
+                      spin={5}
+                      caption={`${study.segments} mirrors`}
+                      className="w-full max-w-[16rem]"
+                    />
+                    <figcaption className="mt-5 text-center">
+                      <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                        {study.label}
+                      </span>
+                      <p className="mt-2 font-sans text-xs font-light leading-relaxed text-muted">
+                        {study.note}
+                      </p>
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+
+              <div className="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+                <div>
+                  <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                    Proofed Wet
+                  </p>
+                  <h3 className="mt-4 font-display text-3xl font-light leading-tight text-primary">
+                    The plate is signed off damp, not dry
+                  </h3>
+                  <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                    Ink sits differently on damp stock, and a plate approved dry comes back from the
+                    press half a stop darker. So every plate in the book is passed while the proof is
+                    still wet at the edges &mdash; which is the state this one is in.
+                  </p>
+                </div>
+                <InkBleedReveal
+                  src="/images/collections/statement.jpg"
+                  alt="A lookbook plate, proofed wet"
+                  ratio={16 / 10}
+                  roughness={20}
+                  className="rounded-3xl border border-hairline"
+                />
+              </div>
+            </div>
+          </section>
+        </CinematicLetterbox>
+
+        <GoldRibbonWeave className="px-6" height={110} ribbons={4} />
+
         <section className="relative px-6 py-24 text-center md:py-32">
           <SectionHeading
             eyebrow="Or Begin"

@@ -5,7 +5,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUpRight, BookOpen, ChevronDown, Gem, Newspaper, Sparkles } from 'lucide-react';
+import {
+  ArrowUpRight,
+  BookOpen,
+  ChevronDown,
+  Gem,
+  Newspaper,
+  Sparkles,
+  Ticket,
+  Vault,
+} from 'lucide-react';
 
 export interface DiscoverEntry {
   label: string;
@@ -43,6 +52,18 @@ export const DISCOVER: DiscoverEntry[] = [
     href: '/care',
     blurb: 'The ritual, adapted to your stone. Rings and chains sized.',
     icon: Sparkles,
+  },
+  {
+    label: 'Experiences',
+    href: '/experiences',
+    blurb: 'An hour at the bench, a grading class, the room after hours.',
+    icon: Ticket,
+  },
+  {
+    label: 'Your Vault',
+    href: '/vault',
+    blurb: 'Everything you have saved, compared and asked us to remember.',
+    icon: Vault,
   },
 ];
 

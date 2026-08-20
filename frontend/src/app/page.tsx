@@ -25,6 +25,9 @@ import JournalSection from '@/app/_sections/home/JournalSection';
 import PresentationSection from '@/app/_sections/home/PresentationSection';
 import PrivateViewSection from '@/app/_sections/home/PrivateViewSection';
 import MoodboardSection from '@/app/_sections/home/MoodboardSection';
+import LightStudySection from '@/app/_sections/home/LightStudySection';
+import StylingSection from '@/app/_sections/home/StylingSection';
+import ExperienceInviteSection from '@/app/_sections/home/ExperienceInviteSection';
 import GoldDivider from '@/components/ui/GoldDivider';
 
 /**
@@ -67,6 +70,11 @@ export default function Home() {
       {/* The stone itself — drawn, lit and turnable */}
       <ShowcaseSection />
 
+      {/* The physics before the vocabulary. A visitor who has just watched a stone
+          turn is looking at fire and scintillation without having names for them,
+          and the grading dials below are far more legible once they do. */}
+      <LightStudySection />
+
       {/* Having just watched one turn, the visitor is handed the grading dials */}
       <StoneSchoolSection />
 
@@ -108,6 +116,11 @@ export default function Home() {
       {/* Four questions, scored against the catalogue */}
       <GiftFinderSection />
 
+      {/* The wearer's own three constraints, answered in inches and outlines. The
+          gift finder above scores pieces against an occasion; this scores pieces
+          against the person wearing them, which is a different question. */}
+      <StylingSection />
+
       <ServicesSection />
 
       {/* Everything the visitor has saved, arranged by them, plus the two guides
@@ -117,6 +130,9 @@ export default function Home() {
 
       {/* The three questions about timing — the doors, the money, the occasion */}
       <PrivateViewSection />
+
+      {/* What the room is actually like, before the address of it */}
+      <ExperienceInviteSection />
 
       {/* Somewhere concrete for the appointment form to point at */}
       <BoutiqueSection />

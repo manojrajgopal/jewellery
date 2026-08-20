@@ -15,6 +15,9 @@ import ParticleField from '@/components/motion/ParticleField';
 import RippleGrid from '@/components/motion/RippleGrid';
 import FlipClock from '@/components/motion/FlipClock';
 import OccasionReminder from '@/components/ui/OccasionReminder';
+import VisitChecklist from '@/components/ui/VisitChecklist';
+import AtelierLiveStatus from '@/components/ui/AtelierLiveStatus';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -441,6 +444,31 @@ export default function ContactClient() {
           </div>
         </div>
       </section>
+
+      {/* ---- What to bring, and who is in today ----
+           The two questions a visitor has once they have decided to come: is there
+           anybody at the bench today, and what will I need in my bag. Neither was
+           answerable from this page before, and a wasted journey for want of a
+           certificate is the most common one in the trade. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Come Prepared"
+            title="What to bring, and who is in today"
+            highlightWords={['today']}
+            subtitle="Every line on the checklist says what the visit costs without it, which is the only version anybody acts on. The ticks stay in your browser, so you can pack from it the night before."
+            align="center"
+            className="mb-14"
+          />
+
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+            <VisitChecklist />
+            <AtelierLiveStatus />
+          </div>
+        </div>
+      </section>
+
+      <GoldRibbonWeave className="px-6" height={100} />
 
       {/* Dates we should know about */}
       <section className="relative overflow-hidden py-24">

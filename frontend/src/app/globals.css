@@ -1159,14 +1159,41 @@ html[data-theme='light'][data-cinema='on'] {
 
   /* ---------- The lookbook ----------
      Pages are stacked in a preserve-3d parent and hinge on their inner edge. */
+  /* The camera on the book.
+     2200px was too close. A leaf hinged at the spine swings its outer edge a full
+     half-width toward the viewer, and at that distance the perspective divisor
+     magnified it by about 30% at the midpoint — so a turning page visibly ballooned
+     out past the board it is supposedly bound into. Pulling the camera back to
+     3400px halves that, and the component cancels most of what is left with a
+     counter-scale keyed to the same angle. */
   .book-stage {
-    perspective: 2200px;
-    perspective-origin: 50% 46%;
+    perspective: 3400px;
+    perspective-origin: 50% 50%;
   }
+  /* The hinged leaf.
+     `backface-visibility` deliberately does NOT belong here. It belongs on the two
+     faces inside. Put it on the rotating container and the container itself turns
+     away from the viewer past 90°, which hides both of its children — so the leaf
+     blinks out in the middle of every turn. */
   .book-leaf {
     transform-style: preserve-3d;
     transform-origin: left center;
+    /* The leaf is the only thing on the page that animates for a full second at a
+       time, so it is worth the layer for the duration. */
+    will-change: transform;
+  }
+  /* The two faces. These are the surfaces that must hide their own backs. */
+  .book-face {
+    position: absolute;
+    inset: 0;
     backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+  /* The verso reads correctly only once it has been pre-flipped about its centre,
+     so that the leaf's own −180° turn cancels it out. */
+  .book-face-verso {
+    transform: rotateY(180deg);
   }
   /* The gutter shadow. Two gradients so the crease darkens on both leaves
      rather than only the one that happens to be on top. */
@@ -1408,5 +1435,491 @@ html[data-theme='light'][data-cinema='on'] {
   .svg-origin-left {
     transform-box: fill-box;
     transform-origin: left center;
+  }
+}
+
+/* ==========================================================================
+   v5 — MATERIALS, MECHANISMS AND LIGHT
+   The v4 layer above covers paper, velvet, foil and the loupe. This layer adds
+   the three material families the newer sections need — refracting glass,
+   molten metal and enamel/marble plate — plus the mechanisms (vault doors,
+   blinds, peeling corners) and the light events (prism fans, travelling beams,
+   spectral type) they are lit by.
+
+   Everything is new. Nothing above is edited, so an older section keeps
+   rendering exactly as it did.
+   ========================================================================== */
+@layer components {
+  /* ---------- Prism ----------
+     A refracting edge. Two stacked gradients at opposing angles is what sells
+     it: one is the spectrum passing through, the other is the bright edge of
+     the glass the spectrum is leaving. */
+  .prism-edge {
+    position: relative;
+  }
+  .prism-edge::before {
+    content: '';
+    @apply pointer-events-none absolute inset-0 rounded-[inherit];
+    background-image:
+      linear-gradient(
+        104deg,
+        transparent 34%,
+        rgb(var(--amethyst-500) / 0.22) 42%,
+        rgb(var(--jade-500) / 0.2) 48%,
+        rgb(var(--gold-300) / 0.28) 54%,
+        rgb(var(--rose-500) / 0.22) 60%,
+        transparent 68%
+      ),
+      linear-gradient(96deg, transparent 46%, rgb(255 255 255 / 0.5) 50%, transparent 54%);
+    background-size: 260% 100%, 260% 100%;
+    mix-blend-mode: screen;
+    animation: prism-shift 9s ease-in-out infinite;
+  }
+  [data-theme='light'] .prism-edge::before {
+    mix-blend-mode: multiply;
+    opacity: 0.55;
+  }
+
+  /* Spectral type. Distinct from .text-gradient-gold: this one moves through
+     the full dispersion rather than along the gold ramp, so it is reserved for
+     words about light itself. */
+  .text-spectral {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      96deg,
+      rgb(var(--gold-400)),
+      rgb(var(--rose-500)) 22%,
+      rgb(var(--amethyst-500)) 42%,
+      rgb(var(--jade-500)) 62%,
+      rgb(var(--champagne-300)) 80%,
+      rgb(var(--gold-400))
+    );
+    background-size: 320% 100%;
+    animation: spectrum-pan 11s linear infinite;
+  }
+
+  /* ---------- Molten gold ----------
+     The pour. A vertical gradient for the body of the metal and a hot band that
+     travels across it, because still molten metal reads as plastic. */
+  .molten-body {
+    background-image:
+      linear-gradient(
+        178deg,
+        rgb(var(--gold-100) / 0.95),
+        rgb(var(--gold-400)) 24%,
+        rgb(var(--gold-600)) 58%,
+        rgb(var(--gold-800)) 100%
+      ),
+      radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.55), transparent 62%);
+    background-blend-mode: screen, normal;
+  }
+  .molten-hot {
+    position: relative;
+    overflow: hidden;
+  }
+  .molten-hot::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0;
+    background-image: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgb(255 244 214 / 0.75) 48%,
+      rgb(255 255 255 / 0.9) 52%,
+      rgb(255 244 214 / 0.7) 56%,
+      transparent 74%
+    );
+    background-size: 240% 100%;
+    animation: molten-flow 5.5s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  /* ---------- Enamel and marble ----------
+     Two plate finishes the pages did not have. Enamel is glossy and opaque with
+     a single specular streak; marble is veined and matte. Both are drawn rather
+     than photographed so they retint with the theme. */
+  .plate-enamel {
+    background-image:
+      linear-gradient(158deg, rgb(var(--burgundy-500) / 0.9), rgb(var(--burgundy-900)) 72%),
+      radial-gradient(90% 50% at 22% 8%, rgb(255 255 255 / 0.4), transparent 58%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      inset 0 -18px 30px -22px rgb(0 0 0 / 0.8),
+      0 20px 46px -26px rgb(var(--shadow-color) / 0.7);
+  }
+  .plate-marble {
+    background-color: rgb(var(--surface-raised));
+    background-image:
+      linear-gradient(122deg, rgb(var(--hairline) / 0.06) 0 2px, transparent 2px 34px),
+      linear-gradient(78deg, rgb(var(--hairline) / 0.045) 0 1px, transparent 1px 52px),
+      radial-gradient(60% 40% at 30% 20%, rgb(var(--gold-200) / 0.12), transparent 70%),
+      radial-gradient(50% 60% at 78% 76%, rgb(var(--champagne-300) / 0.1), transparent 72%);
+  }
+
+  /* ---------- Pavé ----------
+     A field of set stones. Rendered as two offset dot grids with a highlight on
+     each, which is enough to read as bead-set at any size a page uses. */
+  .pave-field {
+    background-image:
+      radial-gradient(circle at 50% 40%, rgb(255 255 255 / 0.55) 0 1px, transparent 1.6px),
+      radial-gradient(circle at 50% 50%, rgb(var(--gold-300) / 0.5) 0 2.4px, transparent 3px);
+    background-size: 11px 11px, 11px 11px;
+    background-position: 0 0, 0 0;
+  }
+  /* The rope-and-bead edge on a traditional setting. */
+  .milgrain-edge {
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--gold-400) / 0.4),
+      inset 0 0 0 2px rgb(var(--gold-800) / 0.25);
+    background-image: radial-gradient(circle at 2px 2px, rgb(var(--gold-200) / 0.55) 0 1px, transparent 1.4px);
+    background-size: 4px 4px;
+    background-clip: border-box;
+  }
+
+  /* ---------- The vault ----------
+     A mechanism, so the parts are named for the mechanism: the two leaves that
+     part, the dial that turns, and the seam of light between them. */
+  .vault-leaf {
+    background-image:
+      linear-gradient(92deg, rgb(var(--ink-900)) 0%, rgb(var(--ink-700)) 40%, rgb(var(--ink-900)) 100%),
+      repeating-linear-gradient(
+        90deg,
+        rgb(var(--hairline) / 0.05) 0 1px,
+        transparent 1px 9px
+      );
+    box-shadow:
+      inset 0 0 0 1px rgb(var(--gold-500) / 0.18),
+      inset 0 0 80px -20px rgb(0 0 0 / 0.9);
+  }
+  .vault-dial {
+    background-image:
+      conic-gradient(
+        from 0deg,
+        rgb(var(--gold-700) / 0.9) 0deg 8deg,
+        rgb(var(--gold-300) / 0.75) 8deg 16deg
+      ),
+      radial-gradient(circle at 38% 32%, rgb(255 255 255 / 0.5), transparent 60%);
+    box-shadow:
+      0 0 0 2px rgb(var(--gold-500) / 0.5),
+      0 18px 40px -18px rgb(0 0 0 / 0.8),
+      inset 0 0 22px -6px rgb(0 0 0 / 0.7);
+  }
+  .vault-seam {
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--gold-200) / 0.85) 45%,
+      rgb(255 255 255 / 0.95) 50%,
+      rgb(var(--gold-200) / 0.85) 55%,
+      transparent
+    );
+    animation: vault-glint 3.6s ease-in-out infinite;
+  }
+
+  /* ---------- Blinds ----------
+     A slatted reveal. The slats are children, so the count is the component's
+     business; the rotation and the shading are this class's. */
+  .blind-slat {
+    transform-origin: center top;
+    background-image: linear-gradient(
+      180deg,
+      rgb(var(--canvas)) 0%,
+      rgb(var(--canvas-alt)) 60%,
+      rgb(var(--surface-sunken)) 100%
+    );
+    box-shadow: 0 6px 12px -8px rgb(var(--shadow-color) / 0.7);
+  }
+
+  /* ---------- The peeling corner ----------
+     A page lifting at its lower-right corner to show what is underneath. The
+     triangle is a gradient rather than an image so it tints with the theme, and
+     it is masked to a corner clip by the component. */
+  .peel-corner {
+    background-image: linear-gradient(
+      315deg,
+      rgb(var(--surface-raised)) 0%,
+      rgb(var(--surface)) 42%,
+      rgb(var(--gold-200) / 0.5) 76%,
+      rgb(var(--gold-500) / 0.35) 100%
+    );
+    box-shadow: -6px -6px 18px -8px rgb(var(--shadow-color) / 0.65);
+  }
+
+  /* ---------- Ink ----------
+     A wet edge. The blur is on a pseudo-element rather than the subject so the
+     subject stays crisp while its boundary bleeds. */
+  .ink-wet::before {
+    content: '';
+    @apply pointer-events-none absolute inset-0 rounded-[inherit];
+    background-image: radial-gradient(
+      75% 65% at 50% 50%,
+      rgb(var(--ink-900) / 0.16),
+      transparent 72%
+    );
+    filter: blur(14px);
+    animation: ink-bleed 7s ease-in-out infinite;
+  }
+
+  /* ---------- Live status ----------
+     A chip that has to look like it is reporting rather than decorating. */
+  .chip-live {
+    @apply relative inline-flex items-center gap-2 rounded-full px-3 py-1;
+    border: 1px solid rgb(var(--jade-500) / 0.35);
+    background-color: rgb(var(--jade-900) / 0.16);
+  }
+  .chip-live::before {
+    content: '';
+    @apply h-1.5 w-1.5 rounded-full;
+    background-color: rgb(var(--jade-300));
+    box-shadow: 0 0 0 0 rgb(var(--jade-300) / 0.6);
+    animation: beacon-ping 2.2s ease-out infinite;
+  }
+
+  /* ---------- Travelling beam ----------
+     A shaft of light crossing a plate on a timer, for sections that need
+     movement while nothing is being interacted with. */
+  .beam-sweep {
+    @apply relative overflow-hidden;
+  }
+  .beam-sweep::after {
+    content: '';
+    @apply pointer-events-none absolute inset-y-[-40%] w-[24%];
+    left: -30%;
+    background-image: linear-gradient(
+      100deg,
+      transparent,
+      rgb(var(--gold-100) / 0.28) 45%,
+      rgb(255 255 255 / 0.4) 50%,
+      rgb(var(--gold-100) / 0.28) 55%,
+      transparent
+    );
+    transform: rotate(9deg);
+    animation: beam-cross 7.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  /* ---------- Kinetic underline ----------
+     Distinct from .link-underline, which scales a static rule. This one draws a
+     gradient that keeps travelling while hovered, for the primary link in a
+     section rather than for every link. */
+  .underline-kinetic {
+    @apply relative;
+  }
+  .underline-kinetic::after {
+    content: '';
+    @apply absolute -bottom-1 left-0 h-px w-full;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--accent)) 30%,
+      rgb(var(--gold-200)) 50%,
+      rgb(var(--accent)) 70%,
+      transparent
+    );
+    background-size: 220% 100%;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 520ms var(--ease-luxury);
+  }
+  .underline-kinetic:hover::after,
+  .underline-kinetic:focus-visible::after {
+    transform: scaleX(1);
+    animation: spectrum-pan 2.4s linear infinite;
+  }
+
+  /* ---------- Timeline rail ----------
+     A vertical spine with a lit head, for step sequences that are not the
+     heritage timeline (which owns its own component). */
+  .rail-spine {
+    background-image: linear-gradient(
+      180deg,
+      transparent,
+      rgb(var(--accent) / 0.5) 8%,
+      rgb(var(--accent) / 0.5) 92%,
+      transparent
+    );
+  }
+  .rail-node {
+    box-shadow:
+      0 0 0 1px rgb(var(--accent) / 0.5),
+      0 0 0 6px rgb(var(--canvas)),
+      0 0 18px -2px rgb(var(--gold-500) / 0.55);
+  }
+
+  /* ---------- Ledger card ----------
+     Ruled stock, for anything presented as a record: a note, a valuation, a
+     receipt. The rule spacing is the line height so text sits on it. */
+  .stock-ruled {
+    background-color: rgb(var(--surface-raised));
+    background-image: repeating-linear-gradient(
+      180deg,
+      transparent 0 27px,
+      rgb(var(--gold-500) / 0.12) 27px 28px
+    );
+  }
+  .stock-perforated {
+    mask-image:
+      radial-gradient(circle 6px at 0 50%, transparent 98%, black 100%),
+      radial-gradient(circle 6px at 100% 50%, transparent 98%, black 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+@layer utilities {
+  /* ---------- Blend and light utilities ---------- */
+  .blend-screen { mix-blend-mode: screen; }
+  .blend-overlay { mix-blend-mode: overlay; }
+  .blend-soft-light { mix-blend-mode: soft-light; }
+  .blend-luminosity { mix-blend-mode: luminosity; }
+  .isolate-blend { isolation: isolate; }
+
+  /* Three-dimensional gold type. Stacked shadows rather than a texture, so it
+     stays sharp at any size and retints with the theme. */
+  .text-3d-gold {
+    color: rgb(var(--gold-300));
+    text-shadow:
+      0 1px 0 rgb(var(--gold-500)),
+      0 2px 0 rgb(var(--gold-600)),
+      0 3px 0 rgb(var(--gold-700)),
+      0 4px 0 rgb(var(--gold-800)),
+      0 6px 14px rgb(var(--shadow-color) / 0.55);
+  }
+  [data-theme='light'] .text-3d-gold {
+    color: rgb(var(--gold-400));
+    text-shadow:
+      0 1px 0 rgb(var(--gold-600)),
+      0 2px 0 rgb(var(--gold-700)),
+      0 3px 0 rgb(var(--gold-800)),
+      0 5px 12px rgb(var(--shadow-color) / 0.32);
+  }
+
+  /* Hairline caps for pull quotes and figure numbers. */
+  .text-caps-hair {
+    @apply font-accent uppercase;
+    letter-spacing: 0.34em;
+    font-weight: 400;
+  }
+
+  /* ---------- Masks, continued ---------- */
+  .mask-iris {
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, black 42%, transparent 72%);
+    mask-image: radial-gradient(circle at 50% 50%, black 42%, transparent 72%);
+  }
+  .mask-blinds {
+    -webkit-mask-image: repeating-linear-gradient(180deg, black 0 14px, transparent 14px 18px);
+    mask-image: repeating-linear-gradient(180deg, black 0 14px, transparent 14px 18px);
+  }
+  .mask-corner-tr {
+    -webkit-mask-image: linear-gradient(225deg, transparent 0 12%, black 26%);
+    mask-image: linear-gradient(225deg, transparent 0 12%, black 26%);
+  }
+  .mask-arc-b {
+    -webkit-mask-image: radial-gradient(120% 100% at 50% 0%, black 70%, transparent 100%);
+    mask-image: radial-gradient(120% 100% at 50% 0%, black 70%, transparent 100%);
+  }
+
+  /* ---------- Clips, continued ---------- */
+  .clip-cathedral {
+    clip-path: polygon(0% 18%, 50% 0%, 100% 18%, 100% 100%, 0% 100%);
+  }
+  .clip-shield {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 66%, 50% 100%, 0% 66%);
+  }
+  .clip-bezel {
+    clip-path: polygon(
+      50% 0%, 82% 8%, 100% 34%, 100% 66%, 82% 92%, 50% 100%, 18% 92%, 0% 66%, 0% 34%, 18% 8%
+    );
+  }
+  .clip-ingot {
+    clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
+  }
+
+  /* ---------- Scroll-driven helpers ----------
+     Set by components through inline style; declared here so the intent is
+     documented in one place rather than inferred from a style attribute. */
+  .scene-depth {
+    transform: translate3d(0, var(--scene-y, 0px), 0) scale(var(--scene-scale, 1));
+  }
+  .scene-fade { opacity: var(--scene-opacity, 1); }
+
+  /* Anything that must sit above the film grain but below the cursor. */
+  .z-projection { z-index: 60; }
+
+  /* Container-relative squares, for mosaics that must stay square while their
+     column count changes. */
+  .cell-square { aspect-ratio: 1 / 1; }
+  .cell-portrait { aspect-ratio: 3 / 4; }
+  .cell-cinema-wide { aspect-ratio: 2.76 / 1; }
+}
+
+/* ==========================================================================
+   v5 KEYFRAMES
+   ========================================================================== */
+@keyframes prism-shift {
+  0%, 100% { background-position: -60% 50%, -40% 50%; opacity: 0.7; }
+  50%      { background-position: 160% 50%, 180% 50%; opacity: 1; }
+}
+
+@keyframes spectrum-pan {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 320% 50%; }
+}
+
+@keyframes molten-flow {
+  0%, 100% { background-position: -140% 50%; }
+  50%      { background-position: 240% 50%; }
+}
+
+@keyframes vault-glint {
+  0%, 100% { opacity: 0.25; transform: scaleX(0.6); }
+  50%      { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes beacon-ping {
+  0%   { box-shadow: 0 0 0 0 rgb(var(--jade-300) / 0.55); }
+  70%  { box-shadow: 0 0 0 7px rgb(var(--jade-300) / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(var(--jade-300) / 0); }
+}
+
+@keyframes beam-cross {
+  0%   { left: -30%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { left: 120%; opacity: 0; }
+}
+
+@keyframes ink-bleed {
+  0%, 100% { transform: scale(1); opacity: 0.75; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes pendulum-swing {
+  0%, 100% { transform: rotate(-4deg); }
+  50%      { transform: rotate(4deg); }
+}
+
+@keyframes breathe-soft {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50%      { transform: scale(1.035); opacity: 1; }
+}
+
+@keyframes dial-turn {
+  0%   { transform: rotate(0deg); }
+  55%  { transform: rotate(288deg); }
+  70%  { transform: rotate(252deg); }
+  100% { transform: rotate(396deg); }
+}
+
+/* The v5 layer is atmosphere on top of atmosphere, so it comes off wholesale
+   under a reduced-motion preference — the same contract v4 follows. */
+@media (prefers-reduced-motion: reduce) {
+  .prism-edge::before,
+  .text-spectral,
+  .molten-hot::after,
+  .vault-seam,
+  .chip-live::before,
+  .beam-sweep::after,
+  .ink-wet::before,
+  .underline-kinetic:hover::after {
+    animation: none !important;
   }
 }

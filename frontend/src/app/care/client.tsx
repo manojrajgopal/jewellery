@@ -21,6 +21,10 @@ import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ImageCompare from '@/components/motion/ImageCompare';
 import CountUp from '@/components/motion/CountUp';
 import Marquee from '@/components/motion/Marquee';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import PrismDispersion from '@/components/motion/PrismDispersion';
+
+import StorageAdvisor from '@/components/ui/StorageAdvisor';
 
 /** The five stories every jeweller has. Rendered as warnings, not as anecdotes. */
 const DISASTERS = [
@@ -193,6 +197,28 @@ export default function CareClient() {
         <GoldDivider variant="jewel" />
 
         {/* ---- The five disasters ---- */}
+        {/* ---- The drawer ----
+             The ritual above is what happens for twenty-four minutes a month. This is
+             what happens for the other forty-three thousand: a drawer, in the dark,
+             with everything touching everything else. Most damage we see arrives that
+             way rather than from wear. */}
+        <section className="relative border-y border-hairline bg-canvas py-20 md:py-28">
+          <PrismDispersion at={{ x: 0.86, y: 0.24 }} size={120} rays={20} interactive={false} />
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Other Forty Thousand Hours"
+              title="Nothing is damaged as often as it is stored"
+              highlightWords={['stored']}
+              subtitle="Hardness decides who may share a compartment, and humidity decides which compartment that is. Tick what you own and the drawer rearranges itself."
+              align="center"
+              className="mb-14"
+            />
+            <StorageAdvisor />
+          </div>
+        </section>
+
+        <GoldRibbonWeave className="px-6" height={100} />
+
         <section className="relative bg-canvas-alt py-20 md:py-28">
           <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
             <SectionHeading

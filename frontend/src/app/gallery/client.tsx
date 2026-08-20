@@ -14,6 +14,10 @@ import JewellerLoupe from '@/components/motion/JewellerLoupe';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import CylinderMarquee from '@/components/motion/CylinderMarquee';
 import RippleGrid from '@/components/motion/RippleGrid';
+import InkBleedReveal from '@/components/motion/InkBleedReveal';
+import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
+import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
+import SilkWave from '@/components/motion/SilkWave';
 import { contactSheet } from '@/data/editorial';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
@@ -200,6 +204,89 @@ export default function GalleryClient() {
           </div>
         </div>
       </section>
+
+      {/* ---- The darkroom ----
+           The gallery above is the finished portfolio. This is how the frames come
+           out of it: printed wet, mirrored on the light table, and finally covered
+           over. Three ways of looking at pictures that are not "a grid of them",
+           which is what every other section of this page already is. */}
+      <CinematicLetterbox slate="The Darkroom" slateNote="Contact prints, wet" barHeight={0.09}>
+        <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-12 lg:px-24">
+            <div className="mb-14 max-w-2xl">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Off The Line
+              </p>
+              <h2 className="font-display text-3xl font-light leading-[1.12] text-primary sm:text-4xl">
+                Three ways to look at a photograph that is not a grid
+              </h2>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-muted">
+                A print soaking up from the bottom of the paper, the same frame through
+                fourteen mirrors on the light table, and a plate under the cloth it is
+                stored beneath.
+              </p>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-3">
+              <figure>
+                <InkBleedReveal
+                  src="/images/collections/heritage.jpg"
+                  alt="A heritage suite, printed wet"
+                  ratio={4 / 5}
+                  className="rounded-2xl border border-hairline"
+                />
+                <figcaption className="mt-4">
+                  <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                    Wet print
+                  </span>
+                  <p className="mt-1 font-sans text-xs font-light leading-relaxed text-muted">
+                    The edge is where ink meets damp fibre. Displaced noise on the mask, never on
+                    the photograph — the picture behind it stays perfectly sharp.
+                  </p>
+                </figcaption>
+              </figure>
+
+              <figure className="flex flex-col items-center justify-center rounded-2xl border border-hairline bg-surface-sunken/40 p-6">
+                <KaleidoscopeGem
+                  src="/images/products/earrings.jpg"
+                  segments={14}
+                  spin={8}
+                  caption="Fourteen mirrors"
+                  className="w-full max-w-[18rem]"
+                />
+                <figcaption className="mt-4 text-center">
+                  <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                    Light table
+                  </span>
+                  <p className="mt-1 font-sans text-xs font-light leading-relaxed text-muted">
+                    Alternate wedges are mirrored rather than repeated, which is the difference
+                    between a kaleidoscope and a pinwheel.
+                  </p>
+                </figcaption>
+              </figure>
+
+              <figure>
+                <SilkWave
+                  src="/images/collections/statement.jpg"
+                  alt="A statement piece under its storage cloth"
+                  ratio={4 / 5}
+                  panels={12}
+                  className="rounded-2xl border border-hairline"
+                />
+                <figcaption className="mt-4">
+                  <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                    Under cloth
+                  </span>
+                  <p className="mt-1 font-sans text-xs font-light leading-relaxed text-muted">
+                    Every plate in the archive lives under tissue. The panels release from the
+                    middle outward, the way hanging fabric actually falls.
+                  </p>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+      </CinematicLetterbox>
 
       {/* What is in the frame, on a drum */}
       <section className="relative overflow-hidden border-t border-hairline py-16 md:py-20">

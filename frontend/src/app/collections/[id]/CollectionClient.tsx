@@ -15,6 +15,9 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import CurtainReveal from '@/components/motion/CurtainReveal';
 import JewellerLoupe from '@/components/motion/JewellerLoupe';
 import VelvetTray from '@/components/motion/VelvetTray';
+import MosaicShuffle from '@/components/motion/MosaicShuffle';
+import SilkWave from '@/components/motion/SilkWave';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import GradientOrb from '@/components/ui/GradientOrb';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
@@ -192,6 +195,50 @@ export default function CollectionClient({ id }: { id: string }) {
               </div>
             </div>
           )}
+
+          {/* ---- How this one was shot ----
+               The loupe above answers "is the piece as described". This answers "is
+               the photograph", which is the other half of buying anything from a
+               screen. Both halves belong on a collection page and only one of them
+               was here. */}
+          <div className="mb-32">
+            <SectionHeading
+              eyebrow="The Shoot"
+              title="One afternoon, one light, no retouching"
+              highlightWords={['no']}
+              subtitle="A collection is photographed in a single session so its metals can be trusted against each other. Two sessions means two colour temperatures, and a rose gold that looks warmer than the piece it will be worn beside."
+              align="center"
+              className="mb-14"
+            />
+
+            <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-center">
+              <MosaicShuffle
+                src={collection.image}
+                alt={`${collection.name}, assembled from the contact sheet`}
+                columns={8}
+                ratio={16 / 10}
+                from="centre"
+                className="rounded-3xl border border-hairline"
+              />
+
+              <div className="space-y-6">
+                <SilkWave
+                  src={hero?.images?.[0] ?? hero?.image ?? collection.image}
+                  alt={`${collection.name} under the storage cloth`}
+                  ratio={4 / 5}
+                  panels={12}
+                  className="rounded-2xl border border-hairline"
+                />
+                <p className="font-sans text-xs font-light leading-relaxed text-muted">
+                  Every plate in the archive lives under tissue between shoots, and every frame in
+                  this collection was taken at the same window on the same afternoon. Hover a tile
+                  on the left to lift it out of the sheet.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <GoldRibbonWeave className="mb-24" height={100} ribbons={4} />
 
           {/* Related */}
           <div>

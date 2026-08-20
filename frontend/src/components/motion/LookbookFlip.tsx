@@ -1,9 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
-import { motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import {
+  animate,
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+  type AnimationPlaybackControls,
+} from 'framer-motion';
+import { BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface LookbookLeaf {
   id: string;
@@ -32,69 +40,382 @@ interface LookbookFlipProps {
   title?: string;
 }
 
+/** A leaf in flight: which one, and which way it is going. */
+interface Turn {
+  dir: 1 | -1;
+  leaf: number;
+}
+
+/** Seconds for a full 180° turn. Partial turns are scaled from this. */
+const TURN_S = 0.95;
+
+/**
+ * The turn's curve.
+ *
+ * Paper has weight, so the shape matters more than the duration. This is an
+ * ease-in-out with a long tail: a little inertia while the leaf is lifted off the
+ * stack, fastest as it passes vertical, then a decelerating settle onto the other
+ * side. Sampling the previous curve — a high first control point — showed it
+ * covering three quarters of the arc in the first third of the time and then
+ * crawling the last twenty degrees, which reads as a snap followed by a stall
+ * rather than as a page falling over.
+ */
+const TURN_EASE = [0.5, 0.02, 0.22, 1] as const;
+/** Fraction of the arc a drag must cover before releasing commits the turn. */
+const COMMIT_AT = 0.4;
+
 /**
  * A bound lookbook whose leaves actually turn.
  *
- * The geometry is the thing worth explaining. Every leaf lives in the right half
- * of the spread, hinged on its left edge, and turning it sweeps it 180° into the
- * left half — so a turned leaf shows its verso and an unturned one shows its
- * recto. Stacking is explicit and mirrored either side of the hinge: unturned
- * leaves stack front-to-back from the top of the pile, turned ones stack the
- * other way, or the leaf mid-turn passes *through* the pages it should be
- * passing over.
+ * ---------------------------------------------------------------------------
+ * Why a settled index plus an in-flight turn, and not one "pages turned" counter
+ * ---------------------------------------------------------------------------
+ * The obvious model — a single `turned` index with both halves of the spread
+ * rendered from it — produces a book that jump-cuts. The index changes the instant
+ * the gesture starts, so both halves immediately show the *destination* spread and
+ * the rotating leaf is then animated over the top of pages the reader can already
+ * see. The turn becomes decoration painted over a cut.
  *
- * Turning is one leaf per gesture on purpose. A book that flips three pages on
- * a trackpad flick is a book nobody can read.
+ * A real turn is asymmetric, and that asymmetry is the entire mechanism:
+ *
+ *   Turning forward, the incoming right-hand page lies *underneath* the leaf, so it
+ *   is uncovered immediately — correctly. But the incoming left-hand page is printed
+ *   on the *back of the leaf itself*, so it must not appear until the leaf has
+ *   landed on top of the old one.
+ *
+ *   Turning backward the mirror holds: the left half uncovers at once, and the right
+ *   half must wait for the leaf to arrive.
+ *
+ * So one half commits when the gesture starts and the other when the animation ends.
+ * There is no way to get that from a single counter, which is why this component
+ * carries `settled` and `turn` separately.
+ *
+ * ---------------------------------------------------------------------------
+ * Why the angle is a MotionValue rather than a variant
+ * ---------------------------------------------------------------------------
+ * Four things must stay locked to the leaf's real rotation: the shadow it casts on
+ * the page it is uncovering, the shading across its own surface, the specular line
+ * on its leading edge, and the gutter crease. Driving those from a boolean on a
+ * timer makes them peak when the timer says rather than when the leaf is actually
+ * edge-on, and linger after it has landed. Deriving all four from the one angle
+ * makes desynchronisation impossible — and it is the only way the same code can
+ * also serve a drag, where there is no timeline to key off at all.
  */
-export default function LookbookFlip({ leaves, className = '', title = 'The Lookbook' }: LookbookFlipProps) {
-  // Number of leaves turned. 0 is the cover spread, leaves.length is the back.
-  const [turned, setTurned] = useState(0);
-  const [flipping, setFlipping] = useState(false);
+export default function LookbookFlip({
+  leaves,
+  className = '',
+  title = 'The Lookbook',
+}: LookbookFlipProps) {
+  const total = leaves.length;
+
+  /** Leaves fully turned and at rest. 0 is the opening spread, `total` the back. */
+  const [settled, setSettled] = useState(0);
+  /** The leaf currently in flight, if any. */
+  const [turn, setTurn] = useState<Turn | null>(null);
+
   const reduced = useReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
-  const cooldown = useRef(0);
 
-  const total = leaves.length;
+  /** Live angle of the leaf in flight. 0° = lying in the right half, −180° = left. */
+  const angle = useMotionValue(0);
+  const playback = useRef<AnimationPlaybackControls | null>(null);
+
+  /* ---------------------------------------------------------------------------
+     Everything visual about the turn, derived from that one angle
+  --------------------------------------------------------------------------- */
+  const arc = useTransform(angle, (a) => Math.abs(a) / 180);
+  /** Peaks when the leaf is edge-on, which is when a real page casts furthest. */
+  const castOpacity = useTransform(arc, [0, 0.5, 1], [0, 0.45, 0]);
+  /** The leaf's own surface darkens as it turns out of the room's light. */
+  const leafShade = useTransform(arc, [0, 0.5, 1], [0, 0.36, 0]);
+  /** A specular line down the leading edge — the tell that the sheet has thickness. */
+  const curlOpacity = useTransform(arc, [0, 0.3, 0.7, 1], [0, 0.6, 0.6, 0]);
+  /** The crease deepens while a leaf is standing up out of it. */
+  const creaseOpacity = useTransform(arc, [0, 0.5, 1], [0.24, 0.62, 0.24]);
+  /**
+   * Counter-scale against perspective magnification.
+   *
+   * A leaf hinged at the spine swings its outer edge a half-width toward the camera,
+   * and the perspective divisor makes it bigger as it comes — so without this the
+   * turning page grows visibly past the board it is bound into, which is the one
+   * thing that gives away a fake book. Cancelling it completely would look wrong too
+   * (the lift is real and worth seeing), so this removes most of it and leaves a few
+   * per cent of genuine growth at the midpoint.
+   */
+  const counterScale = useTransform(arc, [0, 0.5, 1], [1, 0.9, 1]);
+  const leafShadeBg = useMotionTemplate`linear-gradient(90deg, rgb(var(--shadow-color) / ${leafShade}), transparent 64%)`;
+
+  /* ---------------------------------------------------------------------------
+     Which faces each half shows
+  --------------------------------------------------------------------------- */
+
+  /**
+   * Bottom-to-top leaf indices for each half.
+   *
+   * The neighbour underneath stays mounted at all times rather than being added when
+   * a turn begins. Mounting it late means its photograph starts downloading at the
+   * exact moment it is uncovered — a blank page for as long as the fetch takes. It is
+   * also simply what a book is: a stack, with the next page already under this one.
+   */
+  const rightStack = useMemo(() => {
+    // Forward: the leaf at `settled` has lifted off, exposing the page beneath.
+    if (turn?.dir === 1) return [settled + 1];
+    // Otherwise the current recto stays on top. During a backward turn the arriving
+    // leaf carries its own recto, so this half must not pre-empt it.
+    return [settled + 1, settled];
+  }, [settled, turn]);
+
+  const leftStack = useMemo(() => {
+    // Backward: the leaf at `settled − 1` has lifted, exposing the verso beneath.
+    if (turn?.dir === -1) return [settled - 2];
+    // Forward: the old verso stays until the leaf lands on top of it.
+    return [settled - 2, settled - 1];
+  }, [settled, turn]);
+
+  /* ---------------------------------------------------------------------------
+     Turning
+  --------------------------------------------------------------------------- */
+
+  const finish = useCallback(
+    (t: Turn, commit: boolean) => {
+      if (commit) setSettled((s) => s + t.dir);
+      setTurn(null);
+      angle.set(0);
+    },
+    [angle]
+  );
+
+  /** Animate the in-flight leaf home, then either commit the turn or abandon it. */
+  const release = useCallback(
+    (t: Turn, commit: boolean) => {
+      const to = commit ? (t.dir === 1 ? -180 : 0) : t.dir === 1 ? 0 : -180;
+
+      if (reduced) {
+        finish(t, commit);
+        return;
+      }
+
+      // Scaled by the distance still to travel, so a leaf released near the end of
+      // its arc falls the last few degrees quickly instead of taking a full second.
+      const remaining = Math.abs(to - angle.get()) / 180;
+
+      playback.current?.stop();
+      playback.current = animate(angle, to, {
+        duration: Math.max(0.2, TURN_S * remaining),
+        // A leaf released part-way is already moving, so it should not ease *in*
+        // again from a standstill — only the tail of the curve applies.
+        ease: remaining > 0.9 ? [...TURN_EASE] : [0.22, 0.61, 0.24, 1],
+        onComplete: () => finish(t, commit),
+      });
+    },
+    [angle, reduced, finish]
+  );
+
+  /**
+   * A turn started by a click or a key, as opposed to a drag.
+   *
+   * The animation is not started here. It is started by the effect below, once the
+   * leaf has actually mounted at its start angle — kicking it off in the same tick
+   * as `setTurn` means the value is already moving before the element exists to
+   * follow it, and the first frames of the turn are lost.
+   */
+  const pending = useRef<Turn | null>(null);
 
   const go = useCallback(
     (dir: 1 | -1) => {
-      // A turn takes ~1.1s and overlapping turns look like a shuffle, so the
-      // gesture is gated rather than queued.
-      const now = Date.now();
-      if (now < cooldown.current) return;
-      setTurned((t) => {
-        const next = t + dir;
-        if (next < 0 || next > total) return t;
-        cooldown.current = now + (reduced ? 0 : 700);
-        setFlipping(true);
-        window.setTimeout(() => setFlipping(false), reduced ? 0 : 760);
-        return next;
-      });
+      // Gated on the real in-flight state, not on a timer. The previous version used
+      // a 700ms cooldown against a 1050ms animation, so a second turn could begin
+      // while the first was still visibly moving.
+      if (turn) return;
+      const next = settled + dir;
+      if (next < 0 || next > total) return;
+
+      if (reduced) {
+        setSettled(next);
+        return;
+      }
+
+      const t: Turn = { dir, leaf: dir === 1 ? settled : settled - 1 };
+      angle.set(dir === 1 ? 0 : -180);
+      pending.current = t;
+      setTurn(t);
     },
-    [total, reduced]
+    [turn, settled, total, angle, reduced]
   );
 
-  // Keyboard, but only while the book itself holds focus — arrow keys belong to
-  // the page otherwise.
+  useEffect(() => {
+    if (!turn || pending.current !== turn) return;
+    pending.current = null;
+    release(turn, true);
+  }, [turn, release]);
+
+  useEffect(() => () => playback.current?.stop(), []);
+
+  /* ---------------------------------------------------------------------------
+     Drag, swipe and tap
+  --------------------------------------------------------------------------- */
+
+  const drag = useRef<{
+    id: number;
+    startX: number;
+    startY: number;
+    /** Half the stage's width — the travel that maps to a full 180°. */
+    reach: number;
+    dir: 1 | -1;
+    /** Set once the gesture has proved itself a horizontal page drag. */
+    locked: boolean;
+    /** Set once we have handed the gesture back, e.g. it was a scroll. */
+    abandoned: boolean;
+    turn: Turn | null;
+  } | null>(null);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (turn || e.button !== 0) return;
+    const el = stageRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    // Which half was grabbed decides the direction — reaching for the right-hand
+    // page turns forward, the left-hand page turns back.
+    const dir: 1 | -1 = e.clientX - r.left > r.width / 2 ? 1 : -1;
+    const next = settled + dir;
+    if (next < 0 || next > total) return;
+
+    drag.current = {
+      id: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      reach: r.width / 2,
+      dir,
+      locked: false,
+      abandoned: false,
+      turn: null,
+    };
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId || d.abandoned) return;
+
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+
+    if (!d.locked) {
+      // Direction lock. Until a gesture proves itself horizontal it belongs to the
+      // page, so a vertical swipe over the book scrolls instead of tearing at a leaf.
+      // `touch-action: pan-y` on the stage is the other half of this contract.
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) {
+        d.abandoned = true;
+        return;
+      }
+      if (Math.abs(dx) < 8) return;
+      // A forward turn is a leftward drag and vice versa. Dragging the wrong way is
+      // not a turn — hand it back rather than starting one that cannot commit.
+      if ((d.dir === 1 && dx > 0) || (d.dir === -1 && dx < 0)) {
+        d.abandoned = true;
+        return;
+      }
+
+      d.locked = true;
+
+      // The turn is set up *before* capture is attempted, and capture is wrapped.
+      // `setPointerCapture` throws NotFoundError whenever the pointer is no longer
+      // active — a fast flick whose pointerup has already been delivered, a
+      // synthesised event, some pen and touch stacks. Calling it first meant that
+      // throw escaped the handler and left `d.locked` true with `d.turn` still null,
+      // so the release path fell through to "this was a tap" and turned a whole page
+      // for what the reader intended as a short drag. Capture is a nicety here; the
+      // handlers are on the stage and the gesture survives without it.
+      const t: Turn = { dir: d.dir, leaf: d.dir === 1 ? settled : settled - 1 };
+      d.turn = t;
+      angle.set(d.dir === 1 ? 0 : -180);
+      setTurn(t);
+
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      } catch {
+        /* pointer already gone — the drag still tracks via the stage handlers */
+      }
+    }
+
+    // Horizontal travel across half the book maps onto the full arc.
+    const travelled = Math.min(Math.abs(dx) / d.reach, 1);
+    angle.set(d.dir === 1 ? -180 * travelled : -180 * (1 - travelled));
+  };
+
+  const endDrag = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    drag.current = null;
+
+    if (d.abandoned) return;
+
+    // Never travelled far enough to lock, so it was a tap on that half. Readers
+    // reach for a page far more often than they drag it, so this is the common path.
+    if (!d.locked || !d.turn) {
+      go(d.dir);
+      return;
+    }
+
+    // How far the leaf actually got, measured in the direction of travel. Getting
+    // this the wrong way round for backward turns is easy: a backward turn *starts*
+    // at a full arc of 1 and works down toward 0, so its progress is the complement.
+    const arcNow = Math.abs(angle.get()) / 180;
+    const travelled = d.dir === 1 ? arcNow : 1 - arcNow;
+    release(d.turn, travelled > COMMIT_AT);
+  };
+
+  /* ---------------------------------------------------------------------------
+     Keyboard
+  --------------------------------------------------------------------------- */
   useEffect(() => {
     const el = stageRef.current;
     if (!el) return;
     const onKey = (e: KeyboardEvent) => {
       if (!el.contains(document.activeElement)) return;
-      if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        go(1);
-      }
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        go(-1);
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'PageDown':
+          e.preventDefault();
+          go(1);
+          break;
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          go(-1);
+          break;
+        case 'Home':
+          e.preventDefault();
+          if (!turn) setSettled(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          if (!turn) setSettled(total);
+          break;
+        default:
+          break;
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go]);
+  }, [go, turn, total]);
 
-  const progress = total === 0 ? 0 : turned / total;
+  /* ---------------------------------------------------------------------------
+     Labels
+  --------------------------------------------------------------------------- */
+
+  // A spread shows the verso of leaf settled−1 on the left and the recto of leaf
+  // settled on the right — printed pages 2·settled and 2·settled+1.
+  const leftPage = settled === 0 ? null : settled * 2;
+  const rightPage = settled === total ? null : settled * 2 + 1;
+  const spreadLabel =
+    leftPage && rightPage
+      ? `Pages ${leftPage} and ${rightPage} of ${total * 2}`
+      : rightPage
+        ? `Front endpaper and page ${rightPage} of ${total * 2}`
+        : `Page ${leftPage} of ${total * 2}, and the back endpaper`;
+
+  const progress = total === 0 ? 0 : settled / total;
+  const flying = turn ? leaves[turn.leaf] : null;
 
   return (
     <div className={`relative ${className}`}>
@@ -107,124 +428,182 @@ export default function LookbookFlip({ leaves, className = '', title = 'The Look
           </span>
         </div>
         <span className="nums-tabular font-sans text-[11px] font-light text-faint">
-          {String(Math.min(turned * 2 + 1, total * 2)).padStart(2, '0')} —{' '}
-          {String(total * 2).padStart(2, '0')}
+          {leftPage ? String(leftPage).padStart(2, '0') : '—'}
+          {' · '}
+          {rightPage ? String(rightPage).padStart(2, '0') : '—'}
+          <span className="ml-2 opacity-70">of {String(total * 2).padStart(2, '0')}</span>
         </span>
       </div>
+
+      {/* The spread, announced politely so a reader turning several pages in a row is
+          not interrupted on every one. */}
+      <p aria-live="polite" className="sr-only">
+        {spreadLabel}
+      </p>
 
       <div
         ref={stageRef}
         tabIndex={0}
         role="group"
         aria-roledescription="lookbook"
-        aria-label={`${title}, ${turned} of ${total} leaves turned`}
-        className="book-stage relative mx-auto aspect-[3/2] w-full max-w-5xl rounded-2xl outline-none ring-offset-4 ring-offset-canvas focus-visible:ring-1 focus-visible:ring-gold-500/50"
+        aria-label={`${title}. ${spreadLabel}. Drag a page, click either side, or use the arrow keys.`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        // pan-y, not none: vertical scrolling over the book has to keep working, and
+        // the direction lock above claims only horizontal gestures.
+        style={{ touchAction: 'pan-y' }}
+        className="book-stage relative mx-auto aspect-[3/2] w-full max-w-5xl cursor-grab-x select-none rounded-2xl outline-none ring-offset-4 ring-offset-canvas focus-visible:ring-1 focus-visible:ring-gold-500/50"
       >
-        {/* Board and gutter. The board is what gives the leaves something to
-            cast onto — a book without one reads as floating cards. */}
-        <div className="book-gutter absolute inset-0 overflow-hidden rounded-2xl border border-hairline bg-surface-sunken shadow-cinema">
+        {/* Board. The leaves need something to cast onto, or they read as floating
+            cards rather than as bound paper. */}
+        <div className="absolute inset-0 overflow-hidden rounded-2xl border border-hairline bg-surface-sunken shadow-cinema">
           <div aria-hidden="true" className="absolute inset-0 paper-stock opacity-70" />
-          <div
+        </div>
+
+        {/* ---- Left half ----
+            `data-book` marks the three surfaces whose *timing* is the mechanism of
+            this component: the two settled halves and the leaf between them. They are
+            here so the asymmetric commit — left waits for the leaf, right uncovers at
+            once — can be asserted from outside rather than eyeballed. */}
+        <div
+          data-book="left"
+          className="absolute inset-y-0 left-0 z-10 w-1/2 overflow-hidden rounded-l-2xl"
+        >
+          {leftStack.map((i) => (
+            <div key={`l-${i}`} className="absolute inset-0">
+              {i >= 0 && i < total ? (
+                <Face face={leaves[i].verso} side="left" page={i * 2 + 2} />
+              ) : i < 0 ? (
+                <EndPaper side="left" label={title} />
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {/* ---- Right half ---- */}
+        <div
+          data-book="right"
+          className="absolute inset-y-0 right-0 z-10 w-1/2 overflow-hidden rounded-r-2xl"
+        >
+          {rightStack.map((i) => (
+            <div key={`r-${i}`} className="absolute inset-0">
+              {i >= 0 && i < total ? (
+                <Face face={leaves[i].recto} side="right" page={i * 2 + 1} />
+              ) : i >= total ? (
+                <EndPaper side="right" label="Fin" />
+              ) : null}
+            </div>
+          ))}
+        </div>
+
+        {/* ---- Cast shadow ----
+            What the standing leaf throws across the page it is uncovering. It belongs
+            to the half being revealed, so it sits above the settled pages and below
+            the leaf, and it is anchored at the gutter. */}
+        {turn && (
+          <motion.div
             aria-hidden="true"
-            className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-gold-500/25 to-transparent"
+            className={`pointer-events-none absolute inset-y-0 z-20 w-1/2 ${
+              turn.dir === 1 ? 'right-0' : 'left-0'
+            }`}
+            style={{
+              opacity: castOpacity,
+              background:
+                turn.dir === 1
+                  ? 'linear-gradient(90deg, rgb(var(--shadow-color) / 0.9), transparent 58%)'
+                  : 'linear-gradient(270deg, rgb(var(--shadow-color) / 0.9), transparent 58%)',
+            }}
           />
-        </div>
+        )}
 
-        {/* Left half: the backs of turned leaves. Rendered separately from the
-            hinged stack so the settled pages are flat, cheap and always crisp. */}
-        <div className="absolute inset-y-0 left-0 w-1/2 overflow-hidden rounded-l-2xl">
-          {turned > 0 ? (
-            <Face face={leaves[turned - 1].verso} side="left" index={turned * 2} />
-          ) : (
-            <EndPaper side="left" label={title} />
-          )}
-        </div>
+        {/* ---- The leaf in flight ----
+            Exactly one, and only while a turn is happening. The previous version kept
+            two leaves permanently mounted at their resting angles, which duplicated
+            whatever the static halves were already showing and left two compositor
+            layers rotating where one belongs. */}
+        {flying && turn && (
+          <motion.div
+            key={flying.id}
+            aria-hidden="true"
+            data-book="leaf"
+            data-dir={turn.dir}
+            className="book-leaf pointer-events-none absolute inset-y-0 left-1/2 z-30 w-1/2"
+            style={{ rotateY: angle, scale: counterScale }}
+          >
+            {/* The faces are square-cornered on purpose. Rounding them put a notch at
+                the spine, where a bound page is cut straight — and which local corner
+                maps to the outer edge differs between the recto and the mirrored
+                verso, so "round the outside" is not one rule. The rounded silhouette
+                belongs to the settled halves, which are not transformed. */}
+            <div className="book-face">
+              <Face face={flying.recto} side="right" page={turn.leaf * 2 + 1} />
+            </div>
 
-        {/* Right half: the fronts of untured leaves. */}
-        <div className="absolute inset-y-0 right-0 w-1/2 overflow-hidden rounded-r-2xl">
-          {turned < total ? (
-            <Face face={leaves[turned].recto} side="right" index={turned * 2 + 1} />
-          ) : (
-            <EndPaper side="right" label="Fin" />
-          )}
-        </div>
+            {/* Verso — pre-flipped so the leaf's own −180° leaves it readable */}
+            <div className="book-face book-face-verso">
+              <Face face={flying.verso} side="left" page={turn.leaf * 2 + 2} />
+            </div>
 
-        {/* The hinged stack. Only the leaf adjacent to the hinge on each side
-            animates; the rest sit at their resting angle and hold the stacking
-            order so a turn passes over them rather than through them. */}
-        {leaves.map((leaf, i) => {
-          const isTurned = i < turned;
-          // The two leaves either side of the hinge are the only ones that can
-          // ever be mid-flight, so everything else can skip compositing.
-          const live = i === turned || i === turned - 1;
-          if (!live) return null;
+            {/* Shading across the leaf's own surface */}
+            <motion.span
+              className="pointer-events-none absolute inset-0"
+              style={{ background: leafShadeBg }}
+            />
 
-          return (
-            <motion.div
-              key={leaf.id}
-              aria-hidden="true"
-              className="book-leaf pointer-events-none absolute inset-y-0 left-1/2 w-1/2"
-              initial={false}
-              animate={{ rotateY: isTurned ? -180 : 0 }}
-              transition={
-                reduced
-                  ? { duration: 0 }
-                  : { duration: 1.05, ease: [0.65, 0, 0.35, 1] }
-              }
-              style={{ zIndex: isTurned ? 30 : 40 }}
-            >
-              {/* Recto — faces the reader before the turn */}
-              <div className="absolute inset-0 backface-hidden overflow-hidden rounded-r-2xl">
-                <Face face={leaf.recto} side="right" index={i * 2 + 1} />
-              </div>
+            {/* Specular line on the leading edge */}
+            <motion.span
+              className="pointer-events-none absolute inset-y-0 right-0 w-[3px] bg-gradient-to-l from-gold-100/80 to-transparent"
+              style={{ opacity: curlOpacity }}
+            />
+          </motion.div>
+        )}
 
-              {/* Verso — pre-rotated so it reads the right way round after the turn */}
-              <div className="absolute inset-0 rotate-y-180 backface-hidden overflow-hidden rounded-l-2xl">
-                <Face face={leaf.verso} side="left" index={i * 2 + 2} />
-              </div>
-
-              {/* Paper shadow that deepens through the middle of the arc, which
-                  is what stops the leaf reading as a flat rotating rectangle. */}
-              <motion.span
-                className="pointer-events-none absolute inset-0"
-                animate={{ opacity: flipping ? 0.5 : 0 }}
-                transition={{ duration: 0.5, ease: 'easeInOut' }}
-                style={{
-                  background:
-                    'linear-gradient(90deg, rgb(var(--shadow-color) / 0.7), transparent 55%)',
-                }}
-              />
-            </motion.div>
-          );
-        })}
+        {/* ---- Gutter crease ----
+            Above the pages so it creases them, below the leaf so a leaf standing out
+            of the gutter is not darkened by the crease it has just left. */}
+        <motion.div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-1/2 z-[25] w-24 -translate-x-1/2"
+          style={{ opacity: creaseOpacity }}
+        >
+          <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-l from-ink-950/45 to-transparent" />
+          <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-ink-950/45 to-transparent" />
+          <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-gold-500/25 to-transparent" />
+        </motion.div>
 
         {/* Page-edge stack, so the book has visible thickness on both sides */}
-        <Edges side="left" count={turned} />
-        <Edges side="right" count={total - turned} />
+        <Edges side="left" count={settled} />
+        <Edges side="right" count={total - settled} />
 
-        {/* Hit targets. Full-height halves rather than small buttons: a book is
-            turned by reaching for the page, not by finding a control. */}
-        <button
-          onClick={() => go(-1)}
-          disabled={turned === 0}
-          aria-label="Previous spread"
-          className="absolute inset-y-0 left-0 z-50 w-[22%] cursor-w-resize disabled:cursor-default"
+        {/* Reach affordances. Cursor and hover hint only — deliberately *not*
+            buttons with click handlers. A transparent button over the leaf would fire
+            its own click after a drag released on top of it, turning two pages for one
+            gesture. Taps are handled by the pointer handlers on the stage, which
+            already know whether the gesture became a drag. */}
+        <div
+          aria-hidden="true"
           data-cursor="Back"
+          className={`absolute inset-y-0 left-0 z-[26] w-[20%] ${
+            settled === 0 ? '' : 'cursor-w-resize'
+          }`}
         />
-        <button
-          onClick={() => go(1)}
-          disabled={turned === total}
-          aria-label="Next spread"
-          className="absolute inset-y-0 right-0 z-50 w-[22%] cursor-e-resize disabled:cursor-default"
+        <div
+          aria-hidden="true"
           data-cursor="Turn"
+          className={`absolute inset-y-0 right-0 z-[26] w-[20%] ${
+            settled === total ? '' : 'cursor-e-resize'
+          }`}
         />
       </div>
 
-      {/* Controls and a ribbon progress bar */}
+      {/* Controls and a ribbon that rides the progress */}
       <div className="mx-auto mt-7 flex max-w-5xl items-center gap-5">
         <button
+          type="button"
           onClick={() => go(-1)}
-          disabled={turned === 0}
+          disabled={settled === 0 || Boolean(turn)}
           aria-label="Previous spread"
           className="group flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-hairline text-muted transition-all duration-300 hover:border-gold-500/50 hover:text-accent disabled:opacity-30 disabled:hover:border-hairline disabled:hover:text-muted"
         >
@@ -237,23 +616,27 @@ export default function LookbookFlip({ leaves, className = '', title = 'The Look
 
         <div className="relative h-px flex-1 bg-line">
           <motion.span
-            className="absolute inset-y-0 left-0 origin-left bg-gradient-to-r from-gold-600 via-gold-300 to-gold-500"
+            className="absolute inset-y-0 left-0 w-full origin-left bg-gradient-to-r from-gold-600 via-gold-300 to-gold-500"
             animate={{ scaleX: progress }}
-            style={{ width: '100%' }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           />
-          {/* The bookmark ribbon rides the progress */}
-          <motion.span
+          {/* The bookmark rides a full-width carrier on `x`, so the percentage
+              resolves against the rail and the whole thing stays a transform.
+              Animating the marker's own `left` meant a layout pass per frame. */}
+          <motion.div
             aria-hidden="true"
-            className="absolute -top-2 h-4 w-1.5 rounded-b-sm bg-accent shadow-gold"
-            animate={{ left: `${progress * 100}%` }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          />
+            className="absolute inset-y-0 left-0 w-full"
+            animate={{ x: `${progress * 100}%` }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <span className="absolute -top-2 left-0 h-4 w-1.5 -translate-x-1/2 rounded-b-sm bg-accent shadow-gold" />
+          </motion.div>
         </div>
 
         <button
+          type="button"
           onClick={() => go(1)}
-          disabled={turned === total}
+          disabled={settled === total || Boolean(turn)}
           aria-label="Next spread"
           className="group flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-hairline text-muted transition-all duration-300 hover:border-gold-500/50 hover:text-accent disabled:opacity-30 disabled:hover:border-hairline disabled:hover:text-muted"
         >
@@ -264,6 +647,10 @@ export default function LookbookFlip({ leaves, className = '', title = 'The Look
           />
         </button>
       </div>
+
+      <p className="mx-auto mt-4 max-w-5xl text-center font-sans text-[10px] font-light italic text-faint">
+        Drag a page across, press either side, or use the arrow keys.
+      </p>
     </div>
   );
 }
@@ -273,11 +660,11 @@ export default function LookbookFlip({ leaves, className = '', title = 'The Look
 function Face({
   face,
   side,
-  index,
+  page,
 }: {
   face: LookbookFace;
   side: 'left' | 'right';
-  index: number;
+  page: number;
 }) {
   const imageOnly = Boolean(face.image) && !face.title && !face.body && !face.quote;
 
@@ -289,20 +676,16 @@ function Face({
             src={face.image}
             alt={face.title ?? face.plate ?? 'Lookbook plate'}
             fill
-            sizes="50vw"
-            className={`object-cover ${imageOnly ? '' : 'opacity-95'}`}
+            sizes="(max-width: 1024px) 50vw, 512px"
+            draggable={false}
+            className={`drag-none object-cover ${imageOnly ? '' : 'opacity-95'}`}
           />
           {!imageOnly && <div className="media-veil-soft absolute inset-0" />}
         </>
       )}
 
-      {/* Editorial content */}
       {!imageOnly && (
-        <div
-          className={`relative flex h-full flex-col justify-end p-6 sm:p-8 md:p-10 ${
-            side === 'left' ? 'items-start text-left' : 'items-start text-left'
-          }`}
-        >
+        <div className="relative flex h-full flex-col items-start justify-end p-6 text-left sm:p-8 md:p-10">
           {face.kicker && (
             <span className="mb-3 font-accent text-[9px] uppercase tracking-luxest text-accent">
               {face.kicker}
@@ -311,9 +694,9 @@ function Face({
 
           {face.title && (
             <h3
-              className={`mb-3 font-display font-light leading-[1.1] ${
+              className={`mb-3 font-display text-xl font-light leading-[1.1] sm:text-2xl md:text-3xl ${
                 face.image ? 'text-on-media' : 'text-primary'
-              } text-xl sm:text-2xl md:text-3xl`}
+              }`}
             >
               {face.title}
             </h3>
@@ -356,13 +739,13 @@ function Face({
         </div>
       )}
 
-      {/* Plate number, printed in the outer margin the way a catalogue does */}
+      {/* Folio, printed in the outer margin the way a catalogue does */}
       <span
         className={`nums-tabular pointer-events-none absolute bottom-4 font-accent text-[9px] uppercase tracking-luxe ${
           face.image ? 'text-on-media-muted' : 'text-faint'
         } ${side === 'left' ? 'left-5' : 'right-5'}`}
       >
-        {face.plate ?? String(index).padStart(2, '0')}
+        {face.plate ?? String(page).padStart(2, '0')}
       </span>
     </div>
   );
@@ -394,21 +777,37 @@ function EndPaper({ side, label }: { side: 'left' | 'right'; label: string }) {
   );
 }
 
-/** Stacked page edges, drawn as hairlines so the book has real thickness. */
+/**
+ * Stacked page edges, so the book has visible thickness that grows as it is read.
+ *
+ * Drawn *inside* the outer margin rather than outside it. The previous version
+ * offset them negatively, which put every hairline beyond the board's own edge where
+ * nothing was rendered — the block was invisible at every position, so the book
+ * always looked one page thick.
+ */
 function Edges({ side, count }: { side: 'left' | 'right'; count: number }) {
-  const shown = Math.min(count, 6);
+  const shown = Math.min(count, 5);
+  if (shown === 0) return null;
+
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-y-3 z-[45] ${
+      className={`pointer-events-none absolute inset-y-2 z-[15] ${
         side === 'left' ? 'left-0' : 'right-0'
       }`}
     >
       {Array.from({ length: shown }).map((_, i) => (
         <span
           key={i}
-          className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-gold-500/20 to-transparent"
-          style={{ [side]: `${-i * 1.6 - 1}px` } as React.CSSProperties}
+          className="absolute inset-y-0 w-px bg-gradient-to-b from-transparent via-gold-200/30 to-transparent"
+          style={
+            {
+              // Innermost line faintest, so the block recedes rather than reading as
+              // a set of evenly-weighted rules.
+              [side]: `${i * 1.8 + 1}px`,
+              opacity: 1 - i * 0.16,
+            } as React.CSSProperties
+          }
         />
       ))}
     </div>

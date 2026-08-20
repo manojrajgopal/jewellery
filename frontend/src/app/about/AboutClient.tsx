@@ -22,7 +22,44 @@ import CylinderMarquee from '@/components/motion/CylinderMarquee';
 import RippleGrid from '@/components/motion/RippleGrid';
 import FoilCard from '@/components/motion/FoilCard';
 import FlipClock from '@/components/motion/FlipClock';
+import InkBleedReveal from '@/components/motion/InkBleedReveal';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
+import MosaicShuffle from '@/components/motion/MosaicShuffle';
 import { brandData } from '@/data/brand';
+
+/**
+ * The four portraits, and the one decision each generation is remembered for.
+ * Dates match the heritage timeline above; the faces are the part a timeline
+ * cannot carry. Named PORTRAITS rather than GENERATIONS because the stack-card
+ * table further down already owns that name and carries the arguments instead.
+ */
+const PORTRAITS = [
+  {
+    year: '1892',
+    name: 'Raghunath',
+    src: '/images/hero/craftsmanship.jpg',
+    line: 'Opened with one bench, a foot-treadle lathe and a borrowed safe.',
+  },
+  {
+    year: '1934',
+    name: 'Sharada',
+    src: '/images/collections/heritage.jpg',
+    line: 'Took the house through two currency collapses without selling a stone.',
+  },
+  {
+    year: '1971',
+    name: 'Anand',
+    src: '/images/collections/bridal.jpg',
+    line: 'Added the setting bench, and the rule that filings are weighed back in.',
+  },
+  {
+    year: '2008',
+    name: 'Ila',
+    src: '/images/collections/statement.jpg',
+    line: 'Published the lead times, including the eighteen-month one.',
+  },
+] as const;
 
 const VALUES = [
   {
@@ -310,6 +347,96 @@ export default function AboutClient() {
                 </p>
               </div>
             </FoilCard>
+          </div>
+        </section>
+
+        {/* ---- Four generations, as four photographs ----
+             The timeline earlier on this page is dates. This is faces, and the two do
+             different work: a date tells you the house is old, a photograph tells you
+             it is the same family. Printed wet, because the originals are. */}
+        <CinematicLetterbox
+          slate="The Family, In Four Prints"
+          slateNote="1892 / 1934 / 1971 / 2008"
+          barHeight={0.09}
+        >
+          <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+            <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+              <SectionHeading
+                eyebrow="The Same Hands"
+                title="Four generations, four prints, one bench"
+                highlightWords={['one']}
+                subtitle="Every one of these was taken at the same window, because it is the only good light in the building and nobody has ever moved the bench out of it."
+                align="center"
+                className="mb-16"
+              />
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {PORTRAITS.map((gen, i) => (
+                  <motion.figure
+                    key={gen.year}
+                    initial={{ opacity: 0, y: 26 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-8%' }}
+                    transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <InkBleedReveal
+                      src={gen.src}
+                      alt={`${gen.name}, ${gen.year}`}
+                      ratio={3 / 4}
+                      duration={1.6 + i * 0.2}
+                      className="rounded-2xl border border-hairline"
+                    />
+                    <figcaption className="mt-4">
+                      <span className="font-accent text-[10px] uppercase tracking-luxer text-accent nums-tabular">
+                        {gen.year}
+                      </span>
+                      <span className="mt-1 block font-display text-xl text-primary">
+                        {gen.name}
+                      </span>
+                      <span className="mt-1.5 block font-sans text-xs font-light leading-relaxed text-muted">
+                        {gen.line}
+                      </span>
+                    </figcaption>
+                  </motion.figure>
+                ))}
+              </div>
+            </div>
+          </section>
+        </CinematicLetterbox>
+
+        <GoldRibbonWeave className="px-6" height={110} ribbons={4} />
+
+        {/* ---- The archive wall ----
+             One photograph from the archive, assembling out of its own tiles. Sits
+             between the family prints and the countdown as the page's one wordless
+             beat. */}
+        <section className="relative overflow-hidden py-16 md:py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:px-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <div>
+              <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                The Archive
+              </p>
+              <h3 className="mt-4 font-display text-3xl font-light leading-tight text-primary">
+                Eleven thousand commissions, and a drawing for every one
+              </h3>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                Every piece the house has made exists twice: once in somebody&rsquo;s drawer and
+                once as a gouache in the archive. Bring in something of ours from any decade and we
+                can usually put the original drawing on the counter beside it &mdash; which is how a
+                restoration gets done properly rather than approximately.
+              </p>
+              <p className="mt-4 font-accent text-[10px] uppercase tracking-luxer text-faint">
+                Hover a tile to lift it out of the wall
+              </p>
+            </div>
+            <MosaicShuffle
+              src="/images/hero/hero-main.jpg"
+              alt="The archive wall, assembling"
+              columns={9}
+              ratio={16 / 10}
+              from="top-left"
+              className="rounded-3xl border border-hairline"
+            />
           </div>
         </section>
 

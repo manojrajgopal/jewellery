@@ -15,6 +15,9 @@ import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import CylinderMarquee from '@/components/motion/CylinderMarquee';
 import VelvetTray from '@/components/motion/VelvetTray';
 import RippleGrid from '@/components/motion/RippleGrid';
+import MosaicShuffle from '@/components/motion/MosaicShuffle';
+import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import PriceLadder from '@/components/ui/PriceLadder';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
 import { products } from '@/data/products';
@@ -242,6 +245,56 @@ export default function CollectionsClient() {
           </section>
 
           {/* Categories, on a drum */}
+          {/* ---- The ladder ----
+               Filters sort the wall by collection and category; neither answers the
+               question a visitor arrives with, which is what a particular number
+               buys. Built from the live catalogue, so a new piece moves a rung
+               without anyone maintaining a second table. */}
+          <section className="mt-24">
+            <SectionHeading
+              eyebrow="What It Buys"
+              title="Four rungs, and what each one is for"
+              highlightWords={['for']}
+              subtitle="Set the figure you have in mind. The bands above it stay on the ladder rather than disappearing — a price you are not spending is still worth knowing."
+              align="center"
+              className="mb-14"
+            />
+            <PriceLadder />
+          </section>
+
+          <GoldRibbonWeave className="mt-24" height={100} ribbons={4} />
+
+          {/* ---- One collection, assembling ----
+               A wordless beat between the ladder and the advisory block below. The
+               tiles are one image, offset per cell, so this costs a single request. */}
+          <section className="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+            <MosaicShuffle
+              src="/images/collections/bridal.jpg"
+              alt="A bridal suite, assembled from its own contact sheet"
+              columns={8}
+              ratio={16 / 10}
+              from="centre"
+              className="rounded-3xl border border-hairline"
+            />
+            <div>
+              <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Photographed Once
+              </p>
+              <h3 className="mt-4 font-display text-3xl font-light leading-tight text-primary">
+                Every collection is shot in a single afternoon
+              </h3>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                One light, one bench, one afternoon &mdash; so the metals in a collection can be
+                trusted against each other. Two shoots on two days means two colour temperatures,
+                and a rose gold that looks warmer than it is beside a piece it will actually be
+                worn with.
+              </p>
+              <p className="mt-4 font-accent text-[10px] uppercase tracking-luxer text-faint">
+                Hover a tile to lift it out of the sheet
+              </p>
+            </div>
+          </section>
+
           <section className="mt-24">
             <p className="mb-8 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
               What we make
