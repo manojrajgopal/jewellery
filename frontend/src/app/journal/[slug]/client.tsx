@@ -16,6 +16,9 @@ import InkBleedReveal from '@/components/motion/InkBleedReveal';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import HoverPeelCard from '@/components/motion/HoverPeelCard';
 import { journal } from '@/data/editorial';
+import { QueueToggle } from '@/components/ui/ReadingQueue';
+import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
+import StitchPathReveal from '@/components/motion/StitchPathReveal';
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -29,6 +32,29 @@ const fmtDate = (iso: string) =>
  * second is the common implementation and it always reads as though the article is
  * longer than it is.
  */
+/**
+ * The entry reduced to its joints: the standfirst, the pull-quote if there is one,
+ * and the first sentence of each paragraph.
+ *
+ * Derived rather than authored, on purpose. A hand-written summary beside a
+ * hand-written article is two texts that disagree with each other within a month
+ * of one of them being edited — and the first sentence of a well-written
+ * paragraph is its claim, which is exactly what a rack-focus reading wants.
+ */
+const argumentOf = (entry: (typeof journal)[number]) => {
+  const claims = entry.body
+    .map((para) => {
+      // First sentence, found rather than split on a lookbehind: this project
+      // compiles below the target lookbehinds need, and a search is one
+      // character of arithmetic either way.
+      const stop = para.search(/[.?!]\s/);
+      return (stop > 0 ? para.slice(0, stop + 1) : para).trim();
+    })
+    .filter((line) => line.length > 24);
+
+  return [entry.standfirst, ...claims, ...(entry.pull ? [entry.pull] : [])].slice(0, 6);
+};
+
 export default function ArticleClient({ slug }: { slug: string }) {
   const entry = journal.find((j) => j.slug === slug);
   const articleRef = useRef<HTMLDivElement>(null);
@@ -50,6 +76,8 @@ export default function ArticleClient({ slug }: { slug: string }) {
   const heroScale = useTransform(heroScroll, [0, 1], [1, 1.14]);
 
   if (!entry) return null;
+
+  const argument = argumentOf(entry);
 
   const index = journal.findIndex((j) => j.id === entry.id);
   const next = journal[(index + 1) % journal.length];
@@ -124,6 +152,12 @@ export default function ArticleClient({ slug }: { slug: string }) {
               <Clock size={11} strokeWidth={1.8} />
               {entry.read} minute read
             </span>
+
+            {/* In the meta row rather than at the foot: somebody who arrives at a
+                four-minute read without four minutes decides here, before they
+                have started, and a control at the bottom of the article is a
+                control they never reach. */}
+            <QueueToggle slug={entry.slug} title={entry.title} minutes={entry.read} />
           </motion.div>
         </div>
 
@@ -205,6 +239,38 @@ export default function ArticleClient({ slug }: { slug: string }) {
       </div>
 
       <GoldDivider variant="jewel" />
+
+      {/* ---- The argument, one line at a time ----
+             The body above is the entry as written. This is the same argument
+             reduced to its joints, in the one treatment on the site that is
+             exclusive rather than cumulative — bringing the third line into focus
+             takes the second out of it again, so a reader can only be in one
+             place at a time. On a piece that is making a case rather than
+             describing a thing, that is the honest way to read it back. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-20 md:py-28">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+            The short version
+          </p>
+
+          <div className="mt-10 grid gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] lg:items-start">
+            <ScrollBlurFocus lines={argument} depth={0.85} />
+
+            <div className="rounded-2xl border border-hairline bg-surface-raised/35 p-6 lg:sticky lg:top-28">
+              <StitchPathReveal motif="vine" pitch={5} duration={2.8}>
+                <p className="mt-4 font-accent text-[10px] uppercase tracking-luxe text-accent">
+                  Filed by {entry.author}
+                </p>
+                <p className="mt-2 font-sans text-xs font-light leading-relaxed text-secondary">
+                  Nothing in this journal is written by anybody who does not also make things. It
+                  is the reason the entries are short, and the reason several of them disagree with
+                  each other.
+                </p>
+              </StitchPathReveal>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ---- As it was printed ----
            Every entry here appeared in the quarterly first, and the printed version is

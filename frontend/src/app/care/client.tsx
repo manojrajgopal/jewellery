@@ -32,6 +32,12 @@ import EchoTrailText from '@/components/motion/EchoTrailText';
 import StorageAdvisor from '@/components/ui/StorageAdvisor';
 import SkinToneMatcher from '@/components/ui/SkinToneMatcher';
 import AppraisalKit from '@/components/ui/AppraisalKit';
+import WristFitCalculator from '@/components/ui/WristFitCalculator';
+import EarringComfortAdvisor from '@/components/ui/EarringComfortAdvisor';
+import PatinaTimeline from '@/components/ui/PatinaTimeline';
+import ElasticRail from '@/components/motion/ElasticRail';
+import StitchPathReveal from '@/components/motion/StitchPathReveal';
+import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 
 /** The five stories every jeweller has. Rendered as warnings, not as anecdotes. */
 const DISASTERS = [
@@ -97,6 +103,30 @@ const CARE_FAQ = [
  * to hand; splitting rings and chains across two pages means the chain never gets
  * measured at all.
  */
+/**
+ * The care year, one job a month.
+ *
+ * Written as twelve small obligations rather than as a seasonal routine, because
+ * a seasonal routine is four things nobody does and twelve one-minute jobs are
+ * twelve things that get done. Every entry is timed honestly — the longest is
+ * eleven minutes — and several are deliberately "look at it and do nothing",
+ * which is a real instruction and the hardest one to follow.
+ */
+const CARE_YEAR = [
+  { month: 'January', job: 'Check every clasp', why: 'Cold weather means layers, and layers are what open a spring ring without anybody noticing.', minutes: 4 },
+  { month: 'February', job: 'Wash the diamonds', why: 'Warm water, a drop of dish soap, a soft brush behind the stone rather than on it. This is where the light went.', minutes: 8 },
+  { month: 'March', job: 'Look at the claws under a light', why: 'Not a loupe — a bright lamp and a good look. A lifted claw catches the light differently from the other three.', minutes: 3 },
+  { month: 'April', job: 'Rotate what is in the drawer', why: 'Whatever has been at the bottom for a year is being pressed by everything above it. Move it up.', minutes: 5 },
+  { month: 'May', job: 'Do nothing at all', why: 'Genuinely. Pearls and opals want humidity and this is the month they have it — leave them out of the safe and in the room.', minutes: 0 },
+  { month: 'June', job: 'Dry everything properly', why: 'Monsoon. Silver tarnishes fastest now, and a closed box with damp in it is worse than an open shelf.', minutes: 6 },
+  { month: 'July', job: 'Photograph what you own', why: 'On a plain sheet, in daylight, with a ruler beside it. An insurer will not accept a claim on a memory.', minutes: 11 },
+  { month: 'August', job: 'Re-tie any strung pearls', why: 'Silk stretches. If the knots between the pearls have gone slack, the string is a year from breaking in a lift.', minutes: 2 },
+  { month: 'September', job: 'Check the ring against your finger', why: 'Fingers change size over a year, mostly upward. A ring that spins is a ring that will be caught on something.', minutes: 2 },
+  { month: 'October', job: 'Bring in anything set with a soft stone', why: 'Festival season is when pieces are worn hardest. Emeralds and opals should be looked at before that rather than after.', minutes: 5 },
+  { month: 'November', job: 'Polish only what should be polished', why: 'Gold and silver, yes. Platinum, no — read the panel above before reaching for a cloth.', minutes: 7 },
+  { month: 'December', job: 'Write down what changed', why: 'One line per piece. In ten years this is the only record of when a stone was reset or a clasp replaced.', minutes: 4 },
+] as const;
+
 export default function CareClient() {
   return (
     <>
@@ -202,6 +232,93 @@ export default function CareClient() {
         </section>
 
         <GoldDivider variant="jewel" />
+
+        {/* ---- The wrist ----
+             Rings are sized by diameter and chains by where they fall, both of
+             which the section above covers. The wrist is the gap, and it is the
+             one that most needs explaining: the same 165mm wrist wants four
+             different figures depending on what is going round it, and one of
+             them is not measured at the wrist at all. */}
+        <section className="relative py-20 md:py-28">
+          <BokehDrift count={9} className="opacity-50" />
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Third Measurement"
+              title="One wrist, four different numbers"
+              highlightWords={['four']}
+              subtitle="A tennis bracelet, a chain, a rigid bangle and a cuff all sit on the same wrist and none of them is sized to it the same way — the bangle is not sized to the wrist at all. Each allowance is a structural requirement rather than a preference, and getting one wrong is why bracelets end up in drawers."
+              align="center"
+              className="mb-14"
+            />
+            <WristFitCalculator />
+          </div>
+        </section>
+
+        <GoldRibbonWeave className="px-6" height={90} />
+
+        {/* ---- The lobe ----
+             The quietest failure in jewellery: an earring that goes on perfectly
+             and then is never chosen again. Nobody returns them, so nobody in the
+             trade hears about it, and the cause is almost always the fitting
+             rather than the earring. */}
+        <section className="relative border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Grams, Not Taste"
+              title="The earring that goes on perfectly and is never worn again"
+              highlightWords={['never']}
+              subtitle="Nobody returns a heavy earring. It simply stops being chosen, and the wearer concludes heavy earrings do not suit them — when what happened is that a four-gram pair was sold on a two-gram fitting. Six fittings, with what each one actually carries all day."
+              align="center"
+              className="mb-14"
+            />
+            <EarringComfortAdvisor />
+          </div>
+        </section>
+
+        {/* ---- Twenty years ----
+             Every care page on the internet explains how to keep jewellery
+             looking new. Three of these five metals are not trying to, and one of
+             them is actively ruined by the attempt — which is the more useful and
+             much less frequently published half of the subject. */}
+        <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+          <SmokeVeil className="opacity-40" />
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="What Twenty Years Does"
+              title="Two of these want polishing. One is destroyed by it"
+              highlightWords={['destroyed']}
+              subtitle="A platinum patina takes fifteen years to acquire and forty seconds to remove, and collectors pay for it. Drag the years and watch five metals age — then read which of them is asking to be left alone."
+              align="center"
+              className="mb-14"
+            />
+
+            <PatinaTimeline />
+
+            <div className="mt-20 grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)] lg:items-center">
+              <ScrollBlurFocus
+                lines={[
+                  'A scratch on gold removes metal.',
+                  'A scratch on platinum moves it sideways.',
+                  'That is the whole difference, and it decides everything else.',
+                ]}
+                depth={0.9}
+              />
+
+              <div className="rounded-2xl border border-hairline bg-surface-raised/35 p-7">
+                <StitchPathReveal motif="chevron" pitch={6} duration={2.4}>
+                  <p className="mt-4 font-accent text-[10px] uppercase tracking-luxe text-accent">
+                    On every case we make
+                  </p>
+                  <p className="mt-2 font-sans text-xs font-light leading-relaxed text-secondary">
+                    The chevron is stitched into the lining edge of every case that leaves this
+                    bench, and it is there for a practical reason: it is where the thread ends,
+                    and a lining that comes away takes the piece against bare board.
+                  </p>
+                </StitchPathReveal>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ---- The five disasters ---- */}
         {/* ---- The drawer ----
@@ -330,6 +447,42 @@ export default function CareClient() {
             />
 
             <OccasionReminder />
+
+            {/* The year, as a rail rather than as a list. A care calendar is
+                twelve short instructions and a list of twelve makes none of them
+                feel like an appointment — thrown sideways, each is one card the
+                reader has to pass. */}
+            <div className="mt-16">
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                And the year itself
+              </p>
+              <p className="mt-2 max-w-2xl font-sans text-sm font-light leading-relaxed text-secondary">
+                Twelve months of it, thrown rather than listed. Drag it — there is real weight in
+                the rail, and it springs back at both ends.
+              </p>
+
+              <ElasticRail label="The care year, month by month" className="mt-8" gap={20}>
+                {CARE_YEAR.map((month, i) => (
+                  <article
+                    key={month.month}
+                    className="w-64 flex-shrink-0 rounded-2xl border border-hairline bg-surface-raised/40 p-5"
+                  >
+                    <p className="nums-tabular font-accent text-[10px] uppercase tracking-luxe text-faint">
+                      {String(i + 1).padStart(2, '0')} · {month.month}
+                    </p>
+                    <p className="mt-2.5 font-display text-xl leading-tight text-primary">
+                      {month.job}
+                    </p>
+                    <p className="mt-2 font-sans text-xs font-light leading-relaxed text-secondary">
+                      {month.why}
+                    </p>
+                    <p className="mt-3 border-t border-hairline pt-3 nums-tabular font-accent text-[9px] uppercase tracking-luxe text-accent">
+                      {month.minutes} minutes
+                    </p>
+                  </article>
+                ))}
+              </ElasticRail>
+            </div>
           </div>
         </section>
 

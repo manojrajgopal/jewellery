@@ -26,6 +26,9 @@ import BokehDrift from '@/components/motion/BokehDrift';
 import SmokeVeil from '@/components/motion/SmokeVeil';
 
 import { journal, journalTopics, type JournalEntry } from '@/data/editorial';
+import ReadingQueue, { QueueToggle } from '@/components/ui/ReadingQueue';
+import ElasticRail from '@/components/motion/ElasticRail';
+import TypeOnPath from '@/components/motion/TypeOnPath';
 
 /**
  * The four stages of the print run. The front of each card is the claim; the sheet
@@ -69,6 +72,38 @@ const fmtDate = (iso: string) =>
  * making explicitly — a journal where every entry is the same size is a list, and a
  * reader has no way in.
  */
+/**
+ * Who writes the journal.
+ *
+ * `filed` is counted off the entries rather than hard-coded, because a hand-typed
+ * count is a number that is wrong within a month. `note` is what each person
+ * actually does at the bench, which is the only interesting thing about a byline
+ * on a house journal — the point of this rail is that none of these people work
+ * in marketing.
+ */
+const BYLINES = Array.from(new Set(journal.map((entry) => entry.author))).map((name) => {
+  const filed = journal.filter((entry) => entry.author === name).length;
+  const roles: Record<string, { role: string; note: string }> = {
+    'Meera Krishnan': {
+      role: 'Head of stones',
+      note: 'Buys every rough that enters the building and decides how it is cut. Has refused more parcels than she has bought.',
+    },
+    'Arun Deshpande': {
+      role: 'Master setter',
+      note: 'Twenty-nine years at the same bench, under the same window. Seats four claws in about forty minutes and will not be hurried.',
+    },
+    'Kavita Rao': {
+      role: 'Restoration',
+      note: 'Takes apart pieces made by people who died before she was born, and puts them back the way they were rather than the way she would have made them.',
+    },
+  };
+  const entry = roles[name] ?? {
+    role: 'At the bench',
+    note: 'Writes when there is something worth writing down, which is not often and is the reason these are worth reading.',
+  };
+  return { name, filed, ...entry };
+});
+
 export default function JournalClient() {
   const [topic, setTopic] = useState<string>('All');
 
@@ -224,6 +259,68 @@ export default function JournalClient() {
           </div>
         </section>
 
+
+        {/* ---- Put aside ----
+             Placed straight after the grid rather than at the foot of the page,
+             because this is the exact moment the problem exists: a reader has
+             just passed a wall of headlines, three of them are interesting, and
+             every one of them is a four-minute read. Without somewhere to put
+             them, they read none.
+
+             The total is stated in minutes owed rather than as a count. "Four
+             entries" is a number nobody weighs; "nineteen minutes" is a
+             decision. */}
+        <section className="relative border-y border-hairline bg-canvas-alt py-16 md:py-20">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
+              <ReadingQueue />
+
+              <div>
+                <TypeOnPath
+                  text="Not now, but not lost"
+                  curve="rise"
+                  size={54}
+                  travel
+                  className="max-w-sm"
+                />
+                <p className="mt-4 font-sans text-xs font-light leading-relaxed text-secondary">
+                  Nothing here is written to be skimmed — several of these entries argue with each
+                  other, and the order they are read in changes the argument. So the list keeps
+                  what has been read as well as what has not.
+                </p>
+              </div>
+            </div>
+
+            {/* Who writes them. Thrown sideways rather than listed, because a
+                masthead is the least interesting possible layout for the most
+                interesting fact about this journal: none of these people work in
+                marketing. */}
+            <div className="mt-16">
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                Written at the bench, by the bench
+              </p>
+              <ElasticRail label="The people who write the journal" className="mt-6" gap={20}>
+                {BYLINES.map((byline) => (
+                  <article
+                    key={byline.name}
+                    className="w-72 flex-shrink-0 rounded-2xl border border-hairline bg-surface-raised/40 p-5"
+                  >
+                    <p className="font-display text-xl leading-tight text-primary">{byline.name}</p>
+                    <p className="mt-1 font-accent text-[9px] uppercase tracking-luxe text-accent">
+                      {byline.role}
+                    </p>
+                    <p className="mt-3 font-sans text-xs font-light leading-relaxed text-secondary">
+                      {byline.note}
+                    </p>
+                    <p className="mt-3 border-t border-hairline pt-3 nums-tabular font-accent text-[9px] uppercase tracking-luxe text-faint">
+                      {byline.filed} filed
+                    </p>
+                  </article>
+                ))}
+              </ElasticRail>
+            </div>
+          </div>
+        </section>
 
         {/* ---- The standing position ----
              The grid above is what the house has written; this is why it writes
@@ -428,6 +525,13 @@ function EntryCard({ entry, index }: { entry: JournalEntry; index: number }) {
         <p className="mt-3 line-clamp-3 font-sans text-sm font-light leading-relaxed text-muted">
           {entry.standfirst}
         </p>
+
+        {/* The bookmark. On the card rather than only on the entry, because
+            the decision to save something for later is made here — at the point
+            of not having time for it. */}
+        <div className="mt-4">
+          <QueueToggle slug={entry.slug} title={entry.title} minutes={entry.read} />
+        </div>
 
         <div className="mt-auto flex items-center justify-between gap-4 border-t border-hairline pt-4 mt-5">
           <span className="font-sans text-[10px] font-light text-faint">

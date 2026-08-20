@@ -20,6 +20,9 @@ import EngravingStudio from '@/components/ui/EngravingStudio';
 import SettingExplorer from '@/components/ui/SettingExplorer';
 import BandProfileSelector from '@/components/ui/BandProfileSelector';
 import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
+import CommissionBrief from '@/components/ui/CommissionBrief';
+import WaxSealReveal from '@/components/motion/WaxSealReveal';
+import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import FlipClock from '@/components/motion/FlipClock';
 import FoilCard from '@/components/motion/FoilCard';
 import RippleGrid from '@/components/motion/RippleGrid';
@@ -211,6 +214,50 @@ export default function BespokeClient() {
            The studio above settles the metal, the stone and the setting. This is the
            last decision, and the only one that cannot be undone afterwards — so it
            gets its own section rather than a field in the configurator. */}
+      {/* ---- The brief ----
+           Every bespoke page on every jeweller's site ends in a box marked "tell
+           us about your project", which is the hardest possible way to ask this.
+           Nobody can answer it cold, so what arrives is two sentences and a
+           budget, and the first meeting is spent extracting the other five things
+           in the wrong order.
+
+           So the six questions a designer actually asks, in the order they are
+           asked, with the reason for each one visible — and no send button, because
+           a brief the client owns is a brief the client can change their mind
+           about. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-28">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Before The First Meeting"
+            title="The question we should ask first is almost never asked first"
+            highlightWords={['first']}
+            subtitle="Not the metal, the stone or the budget. Who wears it, and what their hands do all day — because a platinum bezel and a high-set solitaire are answers to different lives rather than to different tastes."
+            align="center"
+            className="mb-14"
+          />
+
+          <ScrollBlurFocus
+            lines={[
+              'Most people cannot describe what they want.',
+              'Every one of them can describe what they would hate.',
+              'A brief that rules out four things is worth more than one that asks for one.',
+            ]}
+            depth={0.9}
+            className="mb-16"
+          />
+
+          <WaxSealReveal
+            monogram="AB"
+            invitation="Six questions, sealed"
+            action="Break the seal to begin"
+          >
+            <div className="pt-6">
+              <CommissionBrief />
+            </div>
+          </WaxSealReveal>
+        </div>
+      </section>
+
       {/* ---- The four moments ----
            The journey strip above is what the house does across sixteen weeks. This is
            what the client actually sees in that time, which is four things and no more.

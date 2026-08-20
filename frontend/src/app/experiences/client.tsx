@@ -32,6 +32,10 @@ import EchoTrailText from '@/components/motion/EchoTrailText';
  * rather than as a feature list, because the argument for coming in person is that
  * a screen only carries one of the four.
  */
+import PerspectiveCorridor from '@/components/motion/PerspectiveCorridor';
+import WaxSealReveal from '@/components/motion/WaxSealReveal';
+import TypeOnPath from '@/components/motion/TypeOnPath';
+
 const SENSES = [
   {
     icon: Eye,
@@ -285,6 +289,86 @@ export default function ExperiencesClient() {
               </div>
             </div>
           </VertigoZoom>
+        </section>
+
+        {/* ---- The walk in ----
+             Everything above this is a description of a room. This is the walk to
+             it, and it is deliberately the only section on the page with nothing
+             to operate: sixty-four steps from the front door to the first bench,
+             read one arch at a time.
+
+             A page arguing that a screen cannot carry a room should at some point
+             stop describing the room and simply move the visitor through it. */}
+        <PerspectiveCorridor
+          arches={15}
+          length={2.6}
+          marks={[
+            { at: 0.14, label: 'The door', line: 'is heavier than it looks. It was hung in 1953.' },
+            { at: 0.34, label: 'The cases', line: 'on your left, and nothing in them is priced on the ticket.' },
+            { at: 0.52, label: 'The window', line: 'which is the only good light in the building.' },
+            { at: 0.7, label: 'The bench', line: 'where somebody is working and will not look up.' },
+            { at: 0.88, label: 'The cloth', line: 'and whatever you asked to see, already laid on it.' },
+          ]}
+        >
+          <div className="mx-auto max-w-2xl">
+            <TypeOnPath
+              text="Sixty-four steps"
+              curve="arch"
+              size={84}
+              travel
+              className="mx-auto max-w-lg"
+            />
+            <p className="mt-2 font-accent text-[10px] uppercase tracking-luxe text-faint">
+              Front door to first bench
+            </p>
+          </div>
+        </PerspectiveCorridor>
+
+        {/* ---- The invitation ----
+             Sealed, because an invitation is addressed to whoever opens it and
+             every other reveal on this site happens to a spectator. This one has
+             to be broken by hand, which is the whole difference. */}
+        <section className="relative overflow-hidden bg-canvas-alt py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-3xl px-6">
+            <WaxSealReveal
+              monogram="A"
+              invitation="Addressed to whoever opens it"
+              action="Break the seal"
+            >
+              <div className="stock-ruled paper-stock rounded-2xl border border-hairline p-8 md:p-12">
+                <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                  The house of Aurum
+                </p>
+                <p className="mt-6 font-display text-2xl leading-snug text-primary md:text-3xl">
+                  You are asked to come and stand in the room the photographs were taken in.
+                </p>
+                <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                  There is no charge for any of the four visits on this page, no minimum spend
+                  attached to any of them, and nobody will follow you round the cases. An advisor
+                  will lay a piece on the cloth, turn it once under the light, and then leave it
+                  alone while you look at it — they are told not to fill that silence and they are
+                  told why.
+                </p>
+                <p className="mt-5 font-sans text-sm font-light leading-relaxed text-secondary">
+                  Bring the list from your vault if you have made one. Bring the piece you have
+                  been meaning to ask about for two years. Bring nothing at all, on a Tuesday
+                  morning, and watch the raising bench for half an hour.
+                </p>
+                <p className="mt-8 border-t border-hairline pt-6 font-display text-lg italic text-accent">
+                  The doors are open six days a week and the seventh by arrangement.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <CTAButton variant="primary" href="#diary" size="md" showArrow>
+                    Ask for a day
+                  </CTAButton>
+                  <CTAButton variant="secondary" href="/contact" size="md">
+                    Six addresses
+                  </CTAButton>
+                </div>
+              </div>
+            </WaxSealReveal>
+          </div>
         </section>
 
         {/* ---- Close ---- */}

@@ -10,6 +10,9 @@ import StackBuilder from '@/components/ui/StackBuilder';
 import HouseCircle from '@/components/ui/HouseCircle';
 import AnniversaryDial from '@/components/ui/AnniversaryDial';
 import OccasionReminder from '@/components/ui/OccasionReminder';
+import OwnershipLedger from '@/components/ui/OwnershipLedger';
+import ReadingQueue from '@/components/ui/ReadingQueue';
+import StitchPathReveal from '@/components/motion/StitchPathReveal';
 
 import MosaicShuffle from '@/components/motion/MosaicShuffle';
 import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
@@ -218,6 +221,49 @@ export default function VaultClient() {
 
 
         <GoldDivider variant="wide" className="px-6" />
+
+        {/* ---- Afterwards ----
+             Every other list on this page is about deciding: pieces saved, pieces
+             compared, dates worth keeping. This is the only one that assumes the
+             decision was made years ago — three pieces bought over a decade, no
+             records anywhere, and a claw that has been slowly opening since 2019
+             with nothing to warn anybody about it.
+
+             The interval is computed rather than asked for, from the two things
+             an owner definitely knows. A field asking somebody to nominate a
+             service interval gets a guess, and the guess is always too long. */}
+        <section className="relative py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="After The Buying"
+              title="It is almost never the metal that fails"
+              highlightWords={['never']}
+              subtitle="Record what you own and the interval works itself out — how often it is worn and whether it has stones in it are the only two questions, and the second halves the answer. Held in this browser and nowhere else."
+              align="center"
+              className="mb-14"
+            />
+
+            <OwnershipLedger />
+
+            <div className="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+              <ReadingQueue />
+
+              <div className="rounded-2xl border border-hairline bg-surface-raised/35 p-7">
+                <StitchPathReveal motif="grid" pitch={5} duration={3}>
+                  <p className="mt-4 font-accent text-[10px] uppercase tracking-luxe text-accent">
+                    The tray bed
+                  </p>
+                  <p className="mt-2 font-sans text-xs font-light leading-relaxed text-secondary">
+                    Quilted rather than flat, and the reason is mechanical: a quilted bed grips a
+                    piece enough that it does not travel when the drawer is closed. Everything on
+                    the ledger above is a consequence of pieces moving against each other in the
+                    dark.
+                  </p>
+                </StitchPathReveal>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* ---- Standing ----
              The vault is the one page addressed to somebody who has already

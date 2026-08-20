@@ -17,6 +17,9 @@ import FlipClock from '@/components/motion/FlipClock';
 import OccasionReminder from '@/components/ui/OccasionReminder';
 import VisitChecklist from '@/components/ui/VisitChecklist';
 import AtelierLiveStatus from '@/components/ui/AtelierLiveStatus';
+import DutyEstimator from '@/components/ui/DutyEstimator';
+import MagneticFieldLines from '@/components/motion/MagneticFieldLines';
+import TypeOnPath from '@/components/motion/TypeOnPath';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import BokehDrift from '@/components/motion/BokehDrift';
 import SmokeVeil from '@/components/motion/SmokeVeil';
@@ -567,6 +570,38 @@ export default function ContactClient() {
       </section>
 
       <GoldRibbonWeave className="px-6" height={100} />
+
+      {/* ---- Sending it somewhere else ----
+           Six addresses in one country and international consignments every week.
+           The question is never what the ring costs, it is what arrives to pay
+           when it lands — and the answer is almost never the headline duty rate,
+           because the consumption tax usually compounds on the duty-inclusive
+           value and the insurance is part of the taxable sum rather than separate
+           from it. Both facts are invisible until somebody does the arithmetic. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24">
+        <MagneticFieldLines lines={16} radius={240} strength={26} vertical className="opacity-60" />
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <TypeOnPath
+            text="What arrives to pay"
+            curve="dip"
+            size={62}
+            travel
+            className="mx-auto mb-6 max-w-2xl"
+          />
+
+          <SectionHeading
+            eyebrow="Across A Border"
+            title="The duty rate is never the number"
+            highlightWords={['never']}
+            subtitle="Itemised in the order a customs computation actually runs, which is the only way the figure stops being a surprise — the tax compounds on the duty, and the insurance premium is taxed along with the piece. Six destinations, with the local rule that catches people out in each."
+            align="center"
+            className="mb-14"
+          />
+
+          <DutyEstimator />
+        </div>
+      </section>
 
       {/* Dates we should know about */}
       <section className="relative overflow-hidden py-24">

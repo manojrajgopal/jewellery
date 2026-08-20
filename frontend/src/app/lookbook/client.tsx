@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import PageBanner from '@/components/ui/PageBanner';
 import SectionHeading from '@/components/ui/SectionHeading';
 import GoldDivider from '@/components/ui/GoldDivider';
@@ -28,6 +29,9 @@ import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 
 import { lookbookLeaves, contactSheet } from '@/data/editorial';
 import { collections } from '@/data/collections';
+import GravityChainRail from '@/components/motion/GravityChainRail';
+import ElasticRail from '@/components/motion/ElasticRail';
+import TypeOnPath from '@/components/motion/TypeOnPath';
 import { products } from '@/data/products';
 
 /** The chapters, as a pile of cards that stack up while the reader scrolls. */
@@ -361,6 +365,98 @@ export default function LookbookClient() {
               it is underneath \u2014 the setting, the profile of the band, and the forty minutes at
               the bench that none of this shows.
             </p>
+          </div>
+        </section>
+
+        {/* ---- The wire ----
+             How a season is actually assembled before it is bound: the plates are
+             pegged to a wire across the studio, in order, and moved along it until
+             the sequence reads. The book upstairs is the finished object; this is
+             the thing it was chosen on.
+
+             The wire genuinely hangs — a catenary rather than a parabola — and it
+             swings with the page's own scroll velocity, so the section establishes
+             that its subject is a physical object under load before a word of it
+             is read. */}
+        <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-12">
+            <GravityChainRail
+              className="mb-14"
+              links={52}
+              sag={0.2}
+              height={250}
+              charms={[
+                { at: 0.18, label: 'Plate I' },
+                { at: 0.4, label: 'Plate IV' },
+                { at: 0.62, label: 'Plate VII' },
+                { at: 0.84, label: 'Plate XII' },
+              ]}
+            />
+
+            <div className="mb-12 max-w-2xl">
+              <TypeOnPath
+                text="Pegged, then moved"
+                curve="dip"
+                size={58}
+                travel
+                className="mb-6 max-w-md"
+              />
+              <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Before The Binding
+              </p>
+              <h2 className="mt-4 font-display text-3xl leading-tight text-primary md:text-4xl">
+                A season is chosen on a wire, not on a screen
+              </h2>
+              <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                Twelve plates pegged across the studio in order, and then moved along it for a
+                week until the sequence reads. Below is the same run as it stood on the Friday —
+                take hold of it and throw it, the way it was actually handled.
+              </p>
+            </div>
+
+            <ElasticRail label="The season as it stood on the wire" gap={18}>
+              {/* A leaf is two faces and the recto is the one seen before it is
+                  turned, so that is the face pegged to the wire. Falling back to
+                  the verso covers the one spread whose recto is a quote plate. */}
+              {lookbookLeaves.map((leaf, i) => {
+                const face = leaf.recto.image ? leaf.recto : leaf.verso;
+                return (
+                <figure
+                  key={leaf.id}
+                  className="w-72 flex-shrink-0 rounded-2xl border border-hairline bg-surface-raised/40 p-4"
+                >
+                  <span className="relative block h-80 overflow-hidden rounded-xl">
+                    <Image
+                      src={face.image ?? '/images/collections/statement.jpg'}
+                      alt={face.title ?? `Plate ${i + 1}`}
+                      fill
+                      sizes="288px"
+                      className="object-cover"
+                    />
+                    <span aria-hidden="true" className="absolute inset-0 bg-vitrine" />
+                    {/* The peg. Two of them, at the top corners, because that is
+                        how a plate hangs off a wire without curling. */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-4 top-2 flex justify-between"
+                    >
+                      <span className="block h-2 w-2 rounded-full bg-accent/70" />
+                      <span className="block h-2 w-2 rounded-full bg-accent/70" />
+                    </span>
+                  </span>
+
+                  <figcaption className="pt-4">
+                    <p className="nums-tabular font-accent text-[9px] uppercase tracking-luxe text-faint">
+                      Plate {String(i + 1).padStart(2, '0')}
+                    </p>
+                    <p className="mt-1.5 font-display text-lg leading-tight text-primary">
+                      {face.title ?? face.kicker ?? 'Untitled plate'}
+                    </p>
+                  </figcaption>
+                </figure>
+                );
+              })}
+            </ElasticRail>
           </div>
         </section>
 

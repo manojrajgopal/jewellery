@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import PageBanner from '@/components/ui/PageBanner';
@@ -22,6 +23,9 @@ import GradientOrb from '@/components/ui/GradientOrb';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
 import { products } from '@/data/products';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
+import CanvasGemRain from '@/components/motion/CanvasGemRain';
+import ElasticRail from '@/components/motion/ElasticRail';
 import type { Product } from '@/types';
 
 export default function CollectionClient({ id }: { id: string }) {
@@ -195,6 +199,73 @@ export default function CollectionClient({ id }: { id: string }) {
               </div>
             </div>
           )}
+
+          {/* ---- The rest of the house ----
+               A collection page ends by asking the visitor to leave it, and the
+               usual way of doing that is a row of small cards labelled "explore
+               more". This does it as a thrown rail instead, because the gesture
+               matters: flicking through what else exists is browsing, and clicking
+               a card is committing. At this point in the page the visitor should
+               be doing the first. */}
+          <div className="relative mb-32">
+            <CanvasGemRain count={20} speed={32} part={130} outline className="opacity-50" />
+
+            <div className="relative z-10">
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                Everything else in the house
+              </p>
+              <p className="mt-2 max-w-2xl font-sans text-sm font-light leading-relaxed text-secondary">
+                Thrown rather than listed. Past either end the rail resists instead of stopping,
+                which is the one thing a row of cards can never do.
+              </p>
+
+              <ElasticRail label="Every other piece in the house" className="mt-8" gap={18}>
+                {products
+                  .filter((product) => product.collection !== collection.id)
+                  .map((product) => (
+                    <figure key={product.id} className="w-60 flex-shrink-0">
+                      <span className="relative block h-72 overflow-hidden rounded-xl border border-hairline">
+                        <Image
+                          src={product.images?.[0] ?? '/images/products/ring.jpg'}
+                          alt={product.name}
+                          fill
+                          sizes="240px"
+                          className="object-cover"
+                        />
+                        <span aria-hidden="true" className="absolute inset-0 bg-vitrine" />
+                      </span>
+                      <figcaption className="mt-3">
+                        <p className="font-display text-lg leading-tight text-primary">
+                          {product.name}
+                        </p>
+                        <p className="nums-tabular mt-1 font-accent text-[9px] uppercase tracking-luxe text-faint">
+                          {product.collection.replace(/-/g, ' ')} ·{' '}
+                          {product.formattedPrice ?? product.price}
+                        </p>
+                      </figcaption>
+                    </figure>
+                  ))}
+              </ElasticRail>
+
+              {/* And this collection's own plate, rebuilt out of triangles as it
+                  arrives — the last image on the page, and the only one that is
+                  assembled rather than loaded. */}
+              <div className="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+                <FacetMosaicReveal
+                  src={collection.image}
+                  alt={`${collection.name}, assembled facet by facet`}
+                  columns={8}
+                  order="radial"
+                  ratio={4 / 5}
+                  caption={`${collection.name} — assembled from the table outward`}
+                />
+                <p className="font-display text-2xl italic leading-snug text-primary md:text-3xl">
+                  Every plate on this page came off one afternoon, one light and one card. The
+                  collection is photographed together or not at all.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* ---- How this one was shot ----
                The loupe above answers "is the piece as described". This answers "is

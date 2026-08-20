@@ -1495,3 +1495,421 @@ export const replayInView = { once: false, margin: '-15% 0px -15% 0px' } as cons
 
 /** Viewport preset that fires the moment any part of the element appears. */
 export const eagerInView = { once: true, margin: '0px 0px -2% 0px' } as const;
+
+/* ===========================================================================
+   v6 — the optics layer
+   ---------------------------------------------------------------------------
+   Everything above describes how an element *arrives*. This batch is about the
+   camera and the light: lens behaviours that were previously hand-rolled inside
+   individual components, plus the scatter helpers that a radial or helical
+   layout needs and a grid stagger cannot express.
+
+   Nothing here replaces an earlier export. Where a name looks close to one
+   above it differs in mechanism — `snapZoom` is a two-frame cut where
+   `crashZoom` is a continuous push, and `crossDissolve` overlaps two opacities
+   where `matchCut` swaps a shape.
+   =========================================================================== */
+
+/**
+ * Curves for mechanisms rather than for motion. `curtain` is weighted so a
+ * falling panel accelerates and then arrests hard, the way cloth on a rail
+ * does; `glass` is almost linear because a sheet of glass sliding in a groove
+ * has no bounce to give; `heavy` is for anything with real mass behind it.
+ */
+export const easeCine = {
+  curtain: [0.7, 0, 0.18, 1] as const,
+  glass: [0.42, 0.02, 0.32, 1] as const,
+  heavy: [0.62, 0.01, 0.24, 1] as const,
+  /** Overshoots once and settles — a lid, a hinge, a sprung catch. */
+  catch: [0.34, 1.42, 0.52, 1] as const,
+};
+
+/**
+ * Springs tuned for surfaces the pointer is touching directly. Lower mass than
+ * `springs` above, because a plate that lags behind the finger reads as broken
+ * rather than as weighty.
+ */
+export const springsSilk = {
+  /** Follows a pointer with no perceptible lag. */
+  touch: { type: 'spring', stiffness: 420, damping: 34, mass: 0.34 } as const,
+  /** For values that are read as numbers — settles without ringing. */
+  readout: { type: 'spring', stiffness: 200, damping: 30, mass: 0.7 } as const,
+  /** A long, slow settle for anything the size of a section. */
+  stage: { type: 'spring', stiffness: 64, damping: 22, mass: 1.4 } as const,
+};
+
+/**
+ * A Dutch tilt: the camera rolls off level. Used to unsettle a frame without
+ * moving it — the roll is small enough that most visitors read it as unease
+ * rather than as a rotation.
+ */
+export const dutchTilt: Variants = {
+  hidden: { opacity: 0, rotate: -4.5, scale: 1.06 },
+  visible: {
+    opacity: 1,
+    rotate: 0,
+    scale: 1,
+    transition: { duration: 1.1, ease: easeCine.heavy },
+  },
+};
+
+/**
+ * A snap zoom — two held frames rather than a travel. The scale jumps, holds,
+ * and only the opacity is interpolated, which is what makes it read as a cut
+ * on a longer lens instead of a dolly.
+ */
+export const snapZoom: Variants = {
+  hidden: { opacity: 0, scale: 1.24 },
+  visible: {
+    opacity: [0, 1, 1],
+    scale: [1.24, 1.05, 1],
+    transition: { duration: 0.52, times: [0, 0.34, 1], ease: 'linear' },
+  },
+};
+
+/** Two panels part from the centre line, like barn doors on a studio lamp. */
+export const barnDoorOpen: Variants = {
+  hidden: { clipPath: 'inset(0% 50% 0% 50%)' },
+  visible: {
+    clipPath: 'inset(0% 0% 0% 0%)',
+    transition: { duration: 1.05, ease: easeCine.curtain },
+  },
+};
+
+/**
+ * A checkerboard wipe — the transition an optical printer gives you for free
+ * and a browser does not. Cells carry their own delay through `custom`, so the
+ * variant is applied per cell and the pattern comes from the delay function.
+ */
+export const checkerWipe: Variants = {
+  hidden: { opacity: 0, scale: 0.86 },
+  visible: (delay: number = 0) => ({
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.6, delay, ease: easeCine.glass },
+  }),
+};
+
+/**
+ * A bellows focus: the frame breathes in and out of sharpness once before
+ * settling. Reads as a lens being seated rather than as a blur fading off.
+ */
+export const bellowsFocus: Variants = {
+  hidden: { opacity: 0, filter: 'blur(14px)', scale: 1.04 },
+  visible: {
+    opacity: 1,
+    filter: ['blur(14px)', 'blur(1px)', 'blur(4px)', 'blur(0px)'],
+    scale: 1,
+    transition: { duration: 1.35, ease: easeCine.glass, times: [0, 0.42, 0.62, 1] },
+  },
+};
+
+/**
+ * Swings in on an arc with its origin below the frame, so the element travels
+ * sideways *and* rises — a jib arm rather than a slide.
+ */
+export const arcSwing = (from: -1 | 1 = 1): Variants => ({
+  hidden: { opacity: 0, x: 90 * from, y: 40, rotate: 6 * from },
+  visible: {
+    opacity: 1,
+    x: 0,
+    y: 0,
+    rotate: 0,
+    transition: { duration: 1, ease: easeCine.heavy },
+  },
+});
+
+/**
+ * Released from one side and allowed to swing to rest. Distinct from
+ * `pendulumSettle` above, which starts already hanging — this one starts held.
+ */
+export const pendulumRelease: Variants = {
+  hidden: { opacity: 0, rotate: -16, transformOrigin: '50% 0%' },
+  visible: {
+    opacity: 1,
+    rotate: [-16, 9, -4.5, 2, 0],
+    transition: { duration: 1.6, ease: 'easeOut', times: [0, 0.34, 0.58, 0.8, 1] },
+  },
+};
+
+/** Turns in from depth on its own axis — a card rotating out of the stack. */
+export const spinInDepth: Variants = {
+  hidden: { opacity: 0, rotateY: -62, z: -180, scale: 0.9 },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    z: 0,
+    scale: 1,
+    transition: { duration: 1.05, ease: easeCine.heavy },
+  },
+};
+
+/** An idle that reads as a lens hunting very slightly for focus. */
+export const lensBreathe = (seconds = 8): Variants => ({
+  animate: {
+    filter: ['blur(0px)', 'blur(0.6px)', 'blur(0px)'],
+    scale: [1, 1.006, 1],
+    transition: { duration: seconds, repeat: Infinity, ease: 'easeInOut' },
+  },
+});
+
+/**
+ * A masked slide: the element travels under a fixed window rather than the
+ * window travelling with it, so the leading edge is always crisp.
+ */
+export const slideRevealMask = (axis: 'x' | 'y' = 'y'): Variants => ({
+  hidden: {
+    opacity: 0,
+    ...(axis === 'y' ? { y: '110%' } : { x: '110%' }),
+    clipPath: 'inset(0% 0% 0% 0%)',
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    x: 0,
+    transition: { duration: 0.95, ease: easeCine.curtain },
+  },
+});
+
+/** Struck down onto the page and rebounding once, like a hallmark punch. */
+export const stampPress: Variants = {
+  hidden: { opacity: 0, scale: 1.5, rotate: -8 },
+  visible: {
+    opacity: 1,
+    scale: [1.5, 0.94, 1.02, 1],
+    rotate: [-8, 1.5, -0.5, 0],
+    transition: { duration: 0.68, ease: easeCine.catch, times: [0, 0.5, 0.76, 1] },
+  },
+};
+
+/** Unwraps downward from a fold at the top edge. */
+export const unwrapY: Variants = {
+  hidden: { opacity: 0, scaleY: 0.02, transformOrigin: '50% 0%' },
+  visible: {
+    opacity: 1,
+    scaleY: 1,
+    transition: { duration: 0.85, ease: easeCine.curtain },
+  },
+};
+
+/** A cloth lifted straight up off whatever was under it. */
+export const curtainLift: Variants = {
+  hidden: { y: '0%' },
+  visible: {
+    y: '-104%',
+    transition: { duration: 1.15, ease: easeCine.curtain },
+  },
+};
+
+/**
+ * The overlap half of a dissolve. Apply to the outgoing layer with
+ * `initial="visible"` and the incoming one with the usual pair; both hold the
+ * same 0.9s so the mid-point sits at exactly 50 percent of each.
+ */
+export const crossDissolve: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.9, ease: 'linear' } },
+};
+
+/** An iris that opens from a point rather than from a rectangle's inset. */
+export const wipeCircle = (at = '50% 50%'): Variants => ({
+  hidden: { clipPath: `circle(0% at ${at})` },
+  visible: {
+    clipPath: `circle(140% at ${at})`,
+    transition: { duration: 1.2, ease: easeCine.glass },
+  },
+});
+
+/** Arrives on a bloom of light rather than on a movement. */
+export const flareIn: Variants = {
+  hidden: { opacity: 0, filter: 'brightness(2.4) saturate(0.4)' },
+  visible: {
+    opacity: 1,
+    filter: ['brightness(2.4) saturate(0.4)', 'brightness(1.18) saturate(0.9)', 'brightness(1) saturate(1)'],
+    transition: { duration: 1.1, ease: 'easeOut', times: [0, 0.4, 1] },
+  },
+};
+
+/** A long, soft rise for body copy that should not compete with a headline. */
+export const driftUpFade: Variants = {
+  hidden: { opacity: 0, y: 22 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 1.25, ease: ease.luxury },
+  },
+};
+
+/** Embers off a quench: rises, wanders, and goes out. Loops forever. */
+export const emberFloat = (index = 0): Variants => ({
+  animate: {
+    y: [0, -140 - (index % 4) * 26],
+    x: [0, (index % 2 ? 1 : -1) * (14 + (index % 3) * 9), 0],
+    opacity: [0, 0.85, 0],
+    scale: [0.6, 1, 0.4],
+    transition: {
+      duration: 5.4 + (index % 5) * 0.7,
+      repeat: Infinity,
+      delay: index * 0.42,
+      ease: 'easeOut',
+    },
+  },
+});
+
+/** Folds toward the viewer on the Z axis, hinged on its left edge. */
+export const foldZ: Variants = {
+  hidden: { opacity: 0, rotateY: 74, transformOrigin: '0% 50%' },
+  visible: {
+    opacity: 1,
+    rotateY: 0,
+    transition: { duration: 0.95, ease: easeCine.heavy },
+  },
+};
+
+/** Drops open on a hinge at its top edge — a shop shutter, a flap, a leaf. */
+export const hingeDown: Variants = {
+  hidden: { opacity: 0, rotateX: -82, transformOrigin: '50% 0%' },
+  visible: {
+    opacity: 1,
+    rotateX: 0,
+    transition: { duration: 0.9, ease: easeCine.catch },
+  },
+};
+
+/**
+ * A splice passing the gate: one frame of white, a jump, and then steady. Two
+ * held frames rather than a fade, because a splice is a physical join.
+ */
+export const filmSplice: Variants = {
+  hidden: { opacity: 0, y: 0 },
+  visible: {
+    opacity: [0, 1, 0.4, 1],
+    y: [-6, 2, -1, 0],
+    filter: ['brightness(2.6)', 'brightness(1)', 'brightness(1.6)', 'brightness(1)'],
+    transition: { duration: 0.4, times: [0, 0.3, 0.55, 1], ease: 'linear' },
+  },
+};
+
+/** Two beats, the second smaller — for anything that should read as alive. */
+export const heartbeat = (seconds = 3.6): Variants => ({
+  animate: {
+    scale: [1, 1.055, 1, 1.028, 1],
+    transition: {
+      duration: seconds,
+      repeat: Infinity,
+      times: [0, 0.09, 0.2, 0.29, 1],
+      ease: 'easeOut',
+    },
+  },
+});
+
+/** Rises as the section is scrolled rather than on entry. Pair with `holdRange`. */
+export const parallaxRise: Variants = {
+  hidden: { opacity: 0, y: 64, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 1.15, ease: easeCine.glass },
+  },
+};
+
+/** A stone dropping onto the cloth: overshoot, one small bounce, still. */
+export const caratPop: Variants = {
+  hidden: { opacity: 0, scale: 0.3, y: -30 },
+  visible: {
+    opacity: 1,
+    scale: [0.3, 1.14, 0.96, 1],
+    y: [-30, 0, -4, 0],
+    transition: { duration: 0.82, ease: easeCine.catch, times: [0, 0.52, 0.76, 1] },
+  },
+};
+
+/* ---------------------------------------------------------------------------
+   Scatter helpers.
+
+   `gridDelay` above orders a rectangular grid. These order the layouts a grid
+   cannot describe: rings, spirals, chains and anything whose sequence is a
+   distance rather than a row and a column.
+--------------------------------------------------------------------------- */
+
+/**
+ * Delay by distance from a centre point, so a reveal travels outward as a ring.
+ * `centre` is in the same index space as `index`, defaulting to the middle.
+ */
+export const radialDelay = (
+  index: number,
+  total: number,
+  step = 0.06,
+  centre = (total - 1) / 2
+) => Math.abs(index - centre) * step;
+
+/**
+ * Delay along a spiral: the further out a turn, the longer the arm takes to
+ * reach it, so the step grows with the square root of the index rather than
+ * linearly. A linear step on a spiral looks like it decelerates.
+ */
+export const spiralDelay = (index: number, step = 0.09) => Math.sqrt(index) * step;
+
+/** Delay around a ring, measured as the shorter way round from `from`. */
+export const orbitDelay = (index: number, total: number, from = 0, step = 0.07) => {
+  const raw = Math.abs(index - from);
+  return Math.min(raw, total - raw) * step;
+};
+
+/**
+ * Delay down a chain, where each link is held back by the one above it and the
+ * hold accumulates — so the bottom of a long chain lags noticeably.
+ */
+export const chainDelay = (index: number, step = 0.05, sag = 0.012) =>
+  index * step + index * index * sag;
+
+/**
+ * A 2D wave whose crest travels on a diagonal. Distinct from `gridWave` above:
+ * that one takes a corner, this one takes an angle, which is what a light
+ * source moving across a wall actually produces.
+ */
+export const staggerWave2D = (
+  col: number,
+  row: number,
+  angleDeg = 32,
+  step = 0.05
+) => {
+  const rad = (angleDeg * Math.PI) / 180;
+  return (col * Math.cos(rad) + row * Math.sin(rad)) * step;
+};
+
+/** Straight index stagger with an optional cap, so long lists stay watchable. */
+export const staggerFromIndex = (index: number, step = 0.06, max = 0.9) =>
+  Math.min(index * step, max);
+
+/**
+ * Depth in a stack, as the three values a plate needs to sit behind another:
+ * scale, vertical offset and dim. Kept together because changing one without
+ * the others breaks the illusion immediately.
+ */
+export const depthOf = (level = 0) => ({
+  scale: 1 - level * 0.045,
+  y: level * -14,
+  opacity: 1 - level * 0.16,
+});
+
+/**
+ * Map a scroll progress to a sub-range of it, clamped. The common case for
+ * scenes with several beats: beat three should start at 0.5 and finish at 0.7,
+ * and should not run backwards outside that window.
+ */
+export const scrubRange = (progress: number, start: number, end: number) => {
+  if (end <= start) return 0;
+  return Math.min(1, Math.max(0, (progress - start) / (end - start)));
+};
+
+/** Picks a transition or a zero-duration one, by preference. One-liner, used everywhere. */
+export const easeFor = (reduced: boolean | null | undefined, t: object) =>
+  reduced ? { duration: 0 } : t;
+
+/** Fires late, so a tall scene has already been partly read before it moves. */
+export const onceInViewLate = { once: true, margin: '-38% 0px -38% 0px' } as const;
+
+/** Re-runs on every pass, but only once the element is well inside the frame. */
+export const replayInViewSoft = { once: false, margin: '-28% 0px -28% 0px' } as const;

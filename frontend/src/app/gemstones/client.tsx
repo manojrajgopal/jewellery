@@ -14,6 +14,7 @@ import CaratScaleComparator from '@/components/ui/CaratScaleComparator';
 import GemSpectroscope from '@/components/ui/GemSpectroscope';
 import FluorescenceViewer from '@/components/ui/FluorescenceViewer';
 import HallmarkDecoder from '@/components/ui/HallmarkDecoder';
+import InclusionPlotter from '@/components/ui/InclusionPlotter';
 
 import MorphGemPath from '@/components/motion/MorphGemPath';
 import GemFacetTunnel from '@/components/motion/GemFacetTunnel';
@@ -29,6 +30,9 @@ import RippleGrid from '@/components/motion/RippleGrid';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ParticleField from '@/components/motion/ParticleField';
 import CylinderMarquee from '@/components/motion/CylinderMarquee';
+import CanvasGemRain from '@/components/motion/CanvasGemRain';
+import TypeOnPath from '@/components/motion/TypeOnPath';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 
 /**
  * The stone library — the reference half of the site.
@@ -267,6 +271,66 @@ export default function GemstonesClient() {
             />
 
             <CaratScaleComparator />
+          </div>
+        </section>
+
+        {/* ---- The plot ----
+             The one page of a grading report everybody looks at and nobody can
+             read: two little outlines covered in red and green marks, with no
+             legend. The whole page above teaches the vocabulary of grading and
+             none of it explains the diagram, so this runs the diagram backwards —
+             draw one, and watch the grade come out. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-20 md:py-28">
+          <CanvasGemRain count={22} speed={34} part={140} outline className="opacity-50" />
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <TypeOnPath
+              text="Red is inside. Green is not."
+              curve="swell"
+              size={64}
+              travel
+              className="mx-auto mb-4 max-w-3xl"
+            />
+
+            <SectionHeading
+              eyebrow="Reading The Plot"
+              title="Two marks can be worse than five"
+              highlightWords={['worse']}
+              subtitle="Place inclusions on the diagram and the grade is derived in front of you. It teaches the three things a table of grades cannot: that green marks are external and mostly harmless, that where a feature sits matters as much as what it is, and that a report covered in symbols is not a report describing a poor stone."
+              align="center"
+              className="mb-14"
+            />
+
+            <InclusionPlotter />
+
+            <div className="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+              <FacetMosaicReveal
+                src="/images/collections/gemstone.jpg"
+                alt="A stone assembled out of triangular facets"
+                columns={7}
+                order="radial"
+                ratio={1}
+                caption="Assembled from the table outward"
+              />
+
+              <div>
+                <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                  And why the table is the worst place for anything
+                </p>
+                <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                  Light enters a brilliant cut through the table, reflects off two pavilion facets
+                  and leaves the way it came. That path crosses the centre of the stone twice,
+                  which is why an inclusion under the table is looked straight through and one at
+                  the girdle is not — and why a setter can hide the second and can do nothing
+                  about the first.
+                </p>
+                <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                  It is also why two stones with identical certificates can differ. A plot shows
+                  what is in a stone. It does not show where the light goes, and nobody has ever
+                  managed to print that on a page.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 

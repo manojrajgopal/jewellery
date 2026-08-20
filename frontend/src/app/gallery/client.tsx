@@ -25,6 +25,10 @@ import BokehDrift from '@/components/motion/BokehDrift';
 import EchoTrailText from '@/components/motion/EchoTrailText';
 import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import { contactSheet } from '@/data/editorial';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
+import ElasticRail from '@/components/motion/ElasticRail';
+import CanvasGemRain from '@/components/motion/CanvasGemRain';
+import TypeOnPath from '@/components/motion/TypeOnPath';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
@@ -207,6 +211,105 @@ export default function GalleryClient() {
                 Pan the workshop
               </CTAButton>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---- The facet wall ----
+             Every other section of this page shows photographs as rectangles,
+             because that is what photographs are. This one shows them as the unit
+             a brilliant cut is actually divided into — triangles — and assembles
+             each plate in a different order: outward from the table, across a
+             raking light, and out of noise.
+
+             Three orders, identical geometry, three completely different
+             sentences. It is the only section here that is about how an image
+             arrives rather than about what is in it. */}
+      <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+        <CanvasGemRain count={30} speed={40} part={150} className="opacity-55" />
+
+        <div className="relative z-10 mx-auto max-w-[1600px] px-6 md:px-12 lg:px-24">
+          <div className="mb-14 max-w-2xl">
+            <TypeOnPath
+              text="Assembled, not loaded"
+              curve="wave"
+              size={58}
+              travel
+              className="mb-6 max-w-lg"
+            />
+            <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+              The Facet Wall
+            </p>
+            <h2 className="mt-4 font-display text-3xl leading-tight text-primary md:text-4xl">
+              One photograph, three ways of arriving
+            </h2>
+            <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+              Each plate is the same image cut into triangles and rebuilt — outward from the
+              centre, across a diagonal, and out of noise. One network request each; every tile is
+              the same file offset to its own cell.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            <FacetMosaicReveal
+              src="/images/products/necklace.jpg"
+              alt="A handwoven gold necklace, assembled outward from the centre"
+              columns={8}
+              order="radial"
+              caption="Outward from the table"
+            />
+            <FacetMosaicReveal
+              src="/images/collections/statement.jpg"
+              alt="A statement emerald piece, assembled across a raking light"
+              columns={8}
+              order="diagonal"
+              caption="Across a raking light"
+            />
+            <FacetMosaicReveal
+              src="/images/products/earrings.jpg"
+              alt="Pearl drop earrings, resolving out of noise"
+              columns={8}
+              order="random"
+              caption="Out of noise"
+            />
+          </div>
+
+          {/* And the whole set, thrown. A drag rail with real overscroll rather
+              than a native scroller, so the wall has weight at both ends. */}
+          <div className="mt-20">
+            <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+              Every frame, thrown rather than scrolled
+            </p>
+            <p className="mt-2 max-w-2xl font-sans text-sm font-light leading-relaxed text-secondary">
+              Take hold of it and let go. Past either end the rail resists rather than stopping,
+              and a flick carries into a snap — which is roughly how a box of prints behaves on a
+              light table.
+            </p>
+
+            <ElasticRail label="Every frame in the gallery" className="mt-8" gap={16}>
+              {GALLERY.map((shot, i) => (
+                <button
+                  key={shot.src + i}
+                  type="button"
+                  onClick={() => setLightboxIndex(i)}
+                  className="group relative block h-72 w-56 flex-shrink-0 overflow-hidden rounded-xl border border-hairline"
+                >
+                  <Image
+                    src={shot.src}
+                    alt={shot.alt}
+                    fill
+                    sizes="224px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <span aria-hidden="true" className="absolute inset-0 bg-vitrine" />
+                  <span className="absolute inset-x-0 bottom-0 bg-[linear-gradient(0deg,rgb(var(--shadow-color)/0.8),transparent)] p-3 text-left">
+                    <span className="block font-accent text-[9px] uppercase tracking-luxe text-on-media-soft">
+                      {shot.category}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </ElasticRail>
           </div>
         </div>
       </section>

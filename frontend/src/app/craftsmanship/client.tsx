@@ -17,6 +17,9 @@ import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ParticleField from '@/components/motion/ParticleField';
 import LensFlare from '@/components/motion/LensFlare';
 import AtelierPanorama, { type PanoramaStation } from '@/components/ui/AtelierPanorama';
+import DensityBench from '@/components/ui/DensityBench';
+import SolderWeldPath from '@/components/motion/SolderWeldPath';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ScrollStackCards from '@/components/motion/ScrollStackCards';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import LiquidDistortHover from '@/components/motion/LiquidDistortHover';
@@ -584,6 +587,67 @@ export default function CraftsmanshipClient() {
             un-made and re-made this many times, which is the whole reason a piece from here can
             still be something else in eighty years.
           </p>
+        </div>
+      </section>
+
+      {/* ---- The arithmetic ----
+           The question every counter in this trade is asked in exactly these
+           words — "but it's the same ring" — and the answer has two halves that
+           nobody separates for the customer. Density, then bench hours. It sits
+           here because the five benches and the techniques above have just
+           established what those hours actually consist of. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-28">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="But It Is The Same Ring"
+            title="Platinum is cheaper per gram and makes the dearest ring here"
+            highlightWords={['dearest']}
+            subtitle="One design, six metals, and the price split into metal and bench so the inversion is visible: platinum's metal costs less per gram than gold's, and it is still the most expensive object on the list. That single fact explains more about jewellery pricing than any amount of copy about heritage."
+            align="center"
+            className="mb-14"
+          />
+
+          <DensityBench />
+
+          {/* And the joins those hours are spent on. */}
+          <div className="mt-20">
+            <p className="text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Five of the joins those hours are spent on
+            </p>
+            <div className="mt-10 grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
+              <SolderWeldPath join="shank" duration={2.2} />
+              <SolderWeldPath join="bezel" duration={2.4} />
+              <SolderWeldPath join="claw" duration={2.8} />
+              <SolderWeldPath join="link" duration={2} />
+              <SolderWeldPath join="ring" duration={2.6} />
+            </div>
+          </div>
+
+          <div className="mt-20 grid items-center gap-12 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
+            <FacetMosaicReveal
+              src="/images/hero/craftsmanship.jpg"
+              alt="The bench, assembled facet by facet"
+              columns={8}
+              order="diagonal"
+              ratio={0.8}
+              caption="Assembled on a raking light"
+            />
+            <div>
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                Why platinum has its own everything
+              </p>
+              <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                A trace of gold in a platinum join stays there for ever — it lowers the melting
+                point of the alloy at exactly the point where the piece is weakest, and no amount
+                of subsequent work removes it. So platinum gets its own torch, its own solders,
+                its own files and its own polishing wheels, none of which may ever touch gold.
+              </p>
+              <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                That is not a policy. It is the reason the bench is laid out the way the panorama
+                above shows it, with forty feet between two of the stations.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

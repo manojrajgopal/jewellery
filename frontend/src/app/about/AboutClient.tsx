@@ -34,6 +34,10 @@ import StageSweep from '@/components/motion/StageSweep';
 import SmokeVeil from '@/components/motion/SmokeVeil';
 import MetaballGold from '@/components/motion/MetaballGold';
 import { brandData } from '@/data/brand';
+import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
+import StitchPathReveal from '@/components/motion/StitchPathReveal';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
+import ElasticRail from '@/components/motion/ElasticRail';
 
 /**
  * The four portraits, and the one decision each generation is remembered for.
@@ -200,6 +204,47 @@ const TURNING_POINTS: SpineNode[] = [
     aside: 'Regardless of who owns it now, or whether they bought it here',
   },
 ];
+
+/**
+ * Five things the house stopped doing.
+ *
+ * Kept as data because the rail reads it, and written as reversals rather than as
+ * milestones on purpose: a heritage page is a list of beginnings, and beginnings
+ * are the half of a history that cost nothing to publish. Every entry here has a
+ * `cost` field and none of them is zero.
+ */
+const REVERSALS = [
+  {
+    year: '1974',
+    what: 'Stopped buying Burmese ruby',
+    why: 'Not on ethical grounds — those came later, and we would be flattering ourselves. The parcels simply stopped being traceable, and we had been telling customers they were.',
+    cost: 'The best coloured stone in the trade, and about a fifth of the bridal book for six years.',
+  },
+  {
+    year: '1989',
+    what: 'Stopped machine-setting pavé',
+    why: 'We had bought the machine and said in print that it was as good as a hand. Three years of returns said otherwise: the beads were uniform and shallow, and stones came out of them.',
+    cost: 'The machine, and the advertisement we had run in every wedding supplement in the city.',
+  },
+  {
+    year: '2003',
+    what: 'Stopped quoting a blended buy-back percentage',
+    why: 'It was true and it was designed to be misread. Metal, making and stones come back at three different rates, and one figure conceals which one you are being paid.',
+    cost: 'A number that sounded generous, replaced by three that sound fair.',
+  },
+  {
+    year: '2011',
+    what: 'Stopped the “certified natural” claim on small coloured stones',
+    why: 'For anything under two carats the parcel is the unit of trade and a parcel has no single origin. We had been repeating our supplier’s language without checking what it could mean.',
+    cost: 'Nothing financially. It took two years to admit, which is the real cost.',
+  },
+  {
+    year: '2019',
+    what: 'Stopped polishing platinum as standard',
+    why: 'Every serviced piece came back mirror-bright, including fifteen-year patinas that clients had not asked us to remove and could not get back.',
+    cost: 'Four complaints from people who wanted the shine, against everything we had quietly destroyed before that.',
+  },
+] as const;
 
 export default function AboutClient() {
   return (
@@ -575,6 +620,92 @@ export default function AboutClient() {
             </div>
 
             <ScrollSpineTimeline nodes={TURNING_POINTS} />
+          </div>
+        </section>
+
+        {/* ---- What we stopped doing ----
+             A heritage page is a list of things a house started. This is the
+             list of things it stopped, which is both rarer and considerably more
+             informative: every entry is a decision that cost money at the time,
+             and four of the five were the house admitting it had been wrong.
+
+             Placed after the turning points rather than among them, because the
+             timeline above is what happened and this is what was learned — and a
+             page that mixes the two lets the second borrow the first's
+             inevitability. */}
+        <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Reversals"
+              title="Five things this house stopped doing"
+              highlightWords={['stopped']}
+              subtitle="Every heritage page is a list of beginnings. These are the endings — each one a decision that cost money at the time, and four of them the house admitting it had been wrong about something it had said in public."
+              align="center"
+              className="mb-14"
+            />
+
+            <ElasticRail label="Five things the house stopped doing" gap={20}>
+              {REVERSALS.map((item, i) => (
+                <article
+                  key={item.year}
+                  className="stub-tear w-80 flex-shrink-0 border border-hairline bg-surface-raised/40 p-6"
+                >
+                  <p className="nums-tabular font-display text-4xl leading-none text-accent">
+                    {item.year}
+                  </p>
+                  <p className="mt-4 font-display text-xl leading-snug text-primary">
+                    {item.what}
+                  </p>
+                  <p className="mt-3 font-sans text-xs font-light leading-relaxed text-secondary">
+                    {item.why}
+                  </p>
+                  <p className="mt-4 border-t border-hairline pt-3 font-sans text-[11px] font-light leading-relaxed text-faint">
+                    <span className="text-burgundy-300">Cost:</span> {item.cost}
+                  </p>
+                  <p className="nums-tabular mt-2 font-accent text-[9px] uppercase tracking-luxe text-faint">
+                    Reversal {String(i + 1).padStart(2, '0')} of{' '}
+                    {String(REVERSALS.length).padStart(2, '0')}
+                  </p>
+                </article>
+              ))}
+            </ElasticRail>
+
+            <div className="mt-20 grid items-start gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+              <ScrollBlurFocus
+                lines={[
+                  'A house that has never reversed itself has never been tested.',
+                  'Or it is not telling you about the tests.',
+                  'These five cost us money and two of them cost us customers.',
+                  'We would make every one of them again.',
+                ]}
+                depth={0.85}
+              />
+
+              <div className="space-y-8">
+                <FacetMosaicReveal
+                  src="/images/hero/craftsmanship.jpg"
+                  alt="The bench at the window, assembled facet by facet"
+                  columns={7}
+                  order="random"
+                  ratio={4 / 5}
+                  caption="The same window, 1892 to now"
+                />
+
+                <div className="rounded-2xl border border-hairline bg-surface-raised/35 p-6">
+                  <StitchPathReveal motif="seam" pitch={6} duration={2.6}>
+                    <p className="mt-4 font-accent text-[10px] uppercase tracking-luxe text-accent">
+                      The charter, stitched rather than framed
+                    </p>
+                    <p className="mt-2 font-sans text-xs font-light leading-relaxed text-secondary">
+                      It hangs by the door of the Bandra workshop, worked in thread by the fourth
+                      generation because the third had it printed and nobody read it. Thread was
+                      chosen deliberately: it can be unpicked, and a charter that cannot be
+                      changed is a charter nobody has looked at since it was written.
+                    </p>
+                  </StitchPathReveal>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

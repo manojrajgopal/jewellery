@@ -18,6 +18,7 @@ import FilmGrain from '@/components/motion/FilmGrain';
 import GoldDustTrail from '@/components/motion/GoldDustTrail';
 import ClickSparkle from '@/components/motion/ClickSparkle';
 import ScrollVelocitySkew from '@/components/motion/ScrollVelocitySkew';
+import IdleAttractLoop from '@/components/motion/IdleAttractLoop';
 import CompareTray from '@/components/ui/CompareTray';
 import ConciergeDock from '@/components/ui/ConciergeDock';
 
@@ -105,24 +106,31 @@ const HOME_SECTIONS = [
   { id: 'light', label: 'Light' },
   { id: 'stone-school', label: 'The 4Cs' },
   { id: 'stones', label: 'Stones' },
+  { id: 'lighting', label: 'Five Lights' },
   { id: 'lexicon', label: 'Lexicon' },
+  { id: 'threshold', label: 'Come Through' },
   { id: 'craftsmanship', label: 'Atelier' },
   { id: 'artisans', label: 'The Bench' },
+  { id: 'clasps', label: 'Fastenings' },
   { id: 'cabinet', label: 'The Hand' },
   { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
   { id: 'provenance', label: 'Provenance' },
   { id: 'ledger', label: 'The Ledger' },
+  { id: 'sustainability', label: 'What We Measure' },
+  { id: 'heirloom', label: 'Inherited' },
   { id: 'tools', label: 'Tools' },
   { id: 'manifesto', label: 'What For' },
   { id: 'journal', label: 'Journal' },
   { id: 'bespoke', label: 'Bespoke' },
   { id: 'presentation', label: 'Presentation' },
+  { id: 'suite', label: 'The Second Ring' },
   { id: 'testimonials', label: 'Patrons' },
   { id: 'gift-finder', label: 'Gift Finder' },
   { id: 'styling', label: 'Styling' },
   { id: 'services', label: 'Services' },
   { id: 'moodboard', label: 'Your Board' },
+  { id: 'helix', label: 'The Helix' },
   { id: 'private-view', label: 'Private View' },
   { id: 'experiences', label: 'In Person' },
   { id: 'boutiques', label: 'Houses' },
@@ -191,6 +199,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   never overlap. Hides itself on /contact, where everything it
                   offers is already on the page. */}
               <ConciergeDock />
+
+              {/* After a long stretch of no input at all, the page stops waiting
+                  and says something. Any input dismisses it instantly, and it
+                  never appears at all under a reduced-motion preference. */}
+              <IdleAttractLoop />
 
               {/* Projection layer sits above the page, below the cursor. */}
               <FilmGrain />

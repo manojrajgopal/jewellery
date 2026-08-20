@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
@@ -27,6 +28,9 @@ import PriceLadder from '@/components/ui/PriceLadder';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
 import { products } from '@/data/products';
+import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
+import ElasticRail from '@/components/motion/ElasticRail';
+import GravityChainRail from '@/components/motion/GravityChainRail';
 
 /**
  * Filters key off collection ids. The previous version matched a short label
@@ -346,6 +350,101 @@ export default function CollectionsClient() {
           </section>
 
           <GoldRibbonWeave className="mt-24" height={100} ribbons={4} />
+
+          {/* ---- The index ----
+               The grid at the top of this page is a chooser: filters, prices, a
+               ladder. This is the opposite — all six collections as one wall, with
+               nothing to operate and no way to sort. It exists because the filters
+               above quietly frame the collections as options in a list, and once a
+               visitor has finished filtering it is worth showing them the whole
+               shelf again as a single object. */}
+          <section className="relative overflow-hidden bg-canvas py-20 md:py-28">
+            <div className="relative z-10 mx-auto max-w-[1500px] px-6 md:px-12">
+              <GravityChainRail
+                className="mb-16"
+                links={46}
+                sag={0.16}
+                height={200}
+                charms={[
+                  { at: 0.24, label: 'Bridal' },
+                  { at: 0.5, label: 'Heritage' },
+                  { at: 0.76, label: 'Everyday' },
+                ]}
+              />
+
+              <div className="mb-14 max-w-2xl">
+                <p className="font-accent text-[10px] uppercase tracking-luxest text-accent">
+                  The Whole Shelf
+                </p>
+                <h2 className="mt-4 font-display text-3xl leading-tight text-primary md:text-4xl">
+                  Six collections, nothing to sort by
+                </h2>
+                <p className="mt-4 font-sans text-sm font-light leading-relaxed text-secondary">
+                  The filters at the top of this page turn a house into a list of options. Here it
+                  is again as one wall — every plate assembled facet by facet as it comes into
+                  view, in the order the house itself would hang them.
+                </p>
+              </div>
+
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {collections.map((collection, i) => (
+                  <Link
+                    key={collection.id}
+                    href={`/collections/${collection.slug ?? collection.id}`}
+                    data-cursor="Open"
+                    className="group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-4 focus-visible:ring-offset-[rgb(var(--canvas))]"
+                  >
+                    <FacetMosaicReveal
+                      src={collection.image}
+                      alt={collection.name}
+                      columns={7}
+                      order={i % 3 === 0 ? 'radial' : i % 3 === 1 ? 'diagonal' : 'random'}
+                      ratio={4 / 5}
+                      caption={collection.name}
+                    />
+                    <p className="mt-3 font-sans text-xs font-light leading-relaxed text-secondary transition-colors duration-500 group-hover:text-accent">
+                      {collection.description.split('. ')[0]}.
+                    </p>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Everything in the house, thrown sideways. The rail resists past
+                  either end rather than stopping, which is the one thing a native
+                  scroll container cannot do. */}
+              <div className="mt-20">
+                <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                  And every piece in them
+                </p>
+                <ElasticRail label="Every piece in the house" className="mt-6" gap={18}>
+                  {products.map((product) => (
+                    <Link
+                      key={product.id}
+                      href={`/collections/${product.collection}`}
+                      className="group block w-60 flex-shrink-0"
+                    >
+                      <span className="relative block h-72 overflow-hidden rounded-xl border border-hairline">
+                        <Image
+                          src={product.images?.[0] ?? '/images/products/ring.jpg'}
+                          alt={product.name}
+                          fill
+                          sizes="240px"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        <span aria-hidden="true" className="absolute inset-0 bg-vitrine" />
+                      </span>
+                      <span className="mt-3 block font-display text-lg leading-tight text-primary transition-colors duration-500 group-hover:text-accent">
+                        {product.name}
+                      </span>
+                      <span className="nums-tabular mt-1 block font-accent text-[9px] uppercase tracking-luxe text-faint">
+                        {product.formattedPrice ?? product.price}
+                      </span>
+                    </Link>
+                  ))}
+                </ElasticRail>
+              </div>
+            </div>
+          </section>
 
           {/* ---- One collection, assembling ----
                A wordless beat between the ladder and the advisory block below. The

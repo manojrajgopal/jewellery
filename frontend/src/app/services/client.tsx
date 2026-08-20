@@ -26,6 +26,9 @@ import VertigoZoom from '@/components/motion/VertigoZoom';
 import RepairTriage from '@/components/ui/RepairTriage';
 import SavingsPlanner from '@/components/ui/SavingsPlanner';
 import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
+import BuybackLadder from '@/components/ui/BuybackLadder';
+import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
+import SolderWeldPath from '@/components/motion/SolderWeldPath';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 
 /**
@@ -468,6 +471,50 @@ export default function ServicesClient() {
           </div>
 
           <ScrollSpineTimeline nodes={BENCH_SEQUENCE} />
+        </div>
+      </section>
+
+      {/* ---- What it is worth coming back ----
+           Every house in this trade operates a buy-back and almost none publish
+           the arithmetic, which is how a customer finds out at the counter that
+           the eighty-five per cent they were told about is eighty-five per cent
+           of something they had assumed meant the price they paid.
+
+           Placed after the repair and restoration run rather than beside the
+           savings plan, because those two sections are about money going in and
+           this is the only one on the site about money coming out. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-28">
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The Other Direction"
+            title="Metal, making and stones come back at three different rates"
+            highlightWords={['three']}
+            subtitle="Which is the whole reason exchange rates look generous and cash rates look mean — they are the same policy seen from two ends. Set your own figures below and watch the three components separate."
+            align="center"
+            className="mb-14"
+          />
+
+          <BuybackLadder />
+
+          <div className="mt-20 grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+            <ScrollBlurFocus
+              lines={[
+                'A buy-back figure is not a discount.',
+                'It is the resale value of an object.',
+                'Publishing it is the only way to tell whether the first price was fair.',
+              ]}
+              depth={0.85}
+            />
+
+            <div className="rounded-2xl border border-hairline bg-surface-raised/35 p-7">
+              <SolderWeldPath join="link" duration={2.4} loop />
+              <p className="mt-3 font-sans text-xs font-light leading-relaxed text-faint">
+                And this is what a restoration actually is: two hundred and sixty joins on a 45cm
+                chain, each one hand-fed and closed. It is why a chain repair is quoted by the
+                inch and not by the piece.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

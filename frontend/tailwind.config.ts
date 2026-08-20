@@ -92,6 +92,15 @@ const config: Config = {
         cinema: "0 40px 120px -40px rgb(0 0 0 / 0.7)",
       },
 
+      /* Two steps Tailwind does not ship. Eight places in the markup already ask
+         for `duration-400` and two for `duration-600`, and without these entries
+         every one of them is a class that silently does nothing — which is worse
+         than a wrong duration, because the transition simply is not there. */
+      transitionDuration: {
+        '400': '400ms',
+        '600': '600ms',
+      },
+
       transitionTimingFunction: {
         luxury: "cubic-bezier(0.22, 1, 0.36, 1)",
         silk: "cubic-bezier(0.65, 0, 0.35, 1)",
@@ -615,6 +624,108 @@ const config: Config = {
           "0%":   { transform: "translateY(-50%)" },
           "100%": { transform: "translateY(0)" },
         },
+        /* ---------- v6: optics, mechanism and material ---------- */
+        "gem-drift": {
+          "0%":   { transform: "translate3d(0,-8%,0) rotate(0deg)" },
+          "50%":  { transform: "translate3d(3%,0,0) rotate(180deg)" },
+          "100%": { transform: "translate3d(0,8%,0) rotate(360deg)" },
+        },
+        "wax-press": {
+          "0%":   { transform: "scale(1.9) rotate(-14deg)", opacity: "0" },
+          "42%":  { transform: "scale(0.92) rotate(3deg)", opacity: "1" },
+          "70%":  { transform: "scale(1.05) rotate(-1deg)" },
+          "100%": { transform: "scale(1) rotate(0deg)", opacity: "1" },
+        },
+        "field-sway": {
+          "0%, 100%": { transform: "skewX(0deg) translateX(0)" },
+          "50%":      { transform: "skewX(2.4deg) translateX(6px)" },
+        },
+        "arc-sweep": {
+          "0%":   { transform: "rotate(-38deg)", opacity: "0" },
+          "35%":  { opacity: "0.9" },
+          "100%": { transform: "rotate(38deg)", opacity: "0" },
+        },
+        "ember-rise": {
+          "0%":   { transform: "translate3d(0,0,0) scale(0.5)", opacity: "0" },
+          "18%":  { opacity: "0.9" },
+          "100%": { transform: "translate3d(14px,-160px,0) scale(0.3)", opacity: "0" },
+        },
+        "guilloche-spin": {
+          "0%":   { transform: "rotate(0deg) scale(1)" },
+          "50%":  { transform: "rotate(180deg) scale(1.04)" },
+          "100%": { transform: "rotate(360deg) scale(1)" },
+        },
+        bellows: {
+          "0%, 100%": { filter: "blur(0px)", transform: "scale(1)" },
+          "50%":      { filter: "blur(1.4px)", transform: "scale(1.012)" },
+        },
+        "spark-travel": {
+          "0%":   { offsetDistance: "0%", opacity: "0" },
+          "8%":   { opacity: "1" },
+          "92%":  { opacity: "1" },
+          "100%": { offsetDistance: "100%", opacity: "0" },
+        },
+        "curtain-drop": {
+          "0%":   { transform: "translateY(-102%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "checker-in": {
+          "0%":   { transform: "scale(0.7) rotate(-6deg)", opacity: "0" },
+          "100%": { transform: "scale(1) rotate(0deg)", opacity: "1" },
+        },
+        "dial-tick": {
+          "0%":   { transform: "rotate(0deg)" },
+          "70%":  { transform: "rotate(7.2deg)" },
+          "84%":  { transform: "rotate(5.4deg)" },
+          "100%": { transform: "rotate(6deg)" },
+        },
+        "patina-age": {
+          "0%":   { filter: "saturate(1) brightness(1)" },
+          "100%": { filter: "saturate(0.72) brightness(0.88) sepia(0.16)" },
+        },
+        "light-shift": {
+          "0%, 100%": { filter: "hue-rotate(0deg) brightness(1)" },
+          "33%":      { filter: "hue-rotate(-8deg) brightness(1.08)" },
+          "66%":      { filter: "hue-rotate(9deg) brightness(0.95)" },
+        },
+        "chain-link": {
+          "0%, 100%": { transform: "rotate(-2.5deg)" },
+          "50%":      { transform: "rotate(2.5deg)" },
+        },
+        "nib-write": {
+          "0%":   { strokeDashoffset: "1", opacity: "0" },
+          "6%":   { opacity: "1" },
+          "100%": { strokeDashoffset: "0", opacity: "1" },
+        },
+        "plate-slide": {
+          "0%":   { transform: "translateX(-8%) scale(1.04)", opacity: "0" },
+          "100%": { transform: "translateX(0) scale(1)", opacity: "1" },
+        },
+        "sonar-out": {
+          "0%":   { transform: "scale(0.4)", opacity: "0.7", borderWidth: "2px" },
+          "100%": { transform: "scale(2.4)", opacity: "0", borderWidth: "0.5px" },
+        },
+        "weave-shift": {
+          "0%":   { backgroundPosition: "0 0, 0 0" },
+          "100%": { backgroundPosition: "24px 0, -24px 0" },
+        },
+        "frost-bloom": {
+          "0%":   { opacity: "0", transform: "scale(0.86)", filter: "blur(6px)" },
+          "100%": { opacity: "1", transform: "scale(1)", filter: "blur(0px)" },
+        },
+        "star-twinkle": {
+          "0%, 100%": { opacity: "0.25", transform: "scale(0.7) rotate(0deg)" },
+          "50%":      { opacity: "1", transform: "scale(1.15) rotate(45deg)" },
+        },
+        "type-track": {
+          "0%":   { letterSpacing: "0.62em", opacity: "0" },
+          "100%": { letterSpacing: "0.2em", opacity: "1" },
+        },
+        "glint-cross": {
+          "0%":   { transform: "translate(-120%, -120%) rotate(35deg)", opacity: "0" },
+          "45%":  { opacity: "0.85" },
+          "100%": { transform: "translate(120%, 120%) rotate(35deg)", opacity: "0" },
+        },
       },
 
       animation: {
@@ -750,6 +861,30 @@ const config: Config = {
         /* ---------- v4: vertical rails ---------- */
         "marquee-y": "marquee-y 34s linear infinite",
         "marquee-y-reverse": "marquee-y-reverse 34s linear infinite",
+
+        /* ---------- v6: optics, mechanism and material ---------- */
+        "gem-drift": "gem-drift 34s ease-in-out infinite alternate",
+        "wax-press": "wax-press 760ms cubic-bezier(0.34,1.42,0.52,1) both",
+        "field-sway": "field-sway 13s ease-in-out infinite",
+        "arc-sweep": "arc-sweep 6.5s cubic-bezier(0.42,0.02,0.32,1) infinite",
+        "ember-rise": "ember-rise 5.6s ease-out infinite",
+        "guilloche-spin": "guilloche-spin 40s linear infinite",
+        bellows: "bellows 8s ease-in-out infinite",
+        "spark-travel": "spark-travel 2.8s linear infinite",
+        "curtain-drop": "curtain-drop 1.05s cubic-bezier(0.7,0,0.18,1) both",
+        "checker-in": "checker-in 620ms cubic-bezier(0.42,0.02,0.32,1) both",
+        "dial-tick": "dial-tick 900ms cubic-bezier(0.34,1.42,0.52,1) both",
+        "patina-age": "patina-age 1.4s ease-out both",
+        "light-shift": "light-shift 18s ease-in-out infinite",
+        "chain-link": "chain-link 4.6s ease-in-out infinite",
+        "nib-write": "nib-write 2.6s cubic-bezier(0.42,0.02,0.32,1) both",
+        "plate-slide": "plate-slide 900ms cubic-bezier(0.22,1,0.36,1) both",
+        "sonar-out": "sonar-out 3.2s cubic-bezier(0.22,1,0.36,1) infinite",
+        "weave-shift": "weave-shift 9s linear infinite",
+        "frost-bloom": "frost-bloom 1.1s cubic-bezier(0.22,1,0.36,1) both",
+        "star-twinkle": "star-twinkle 3.4s ease-in-out infinite",
+        "type-track": "type-track 1.2s cubic-bezier(0.22,1,0.36,1) both",
+        "glint-cross": "glint-cross 4.4s cubic-bezier(0.42,0.02,0.32,1) infinite",
       },
     },
   },
