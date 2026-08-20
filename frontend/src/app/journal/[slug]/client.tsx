@@ -19,6 +19,7 @@ import { journal } from '@/data/editorial';
 import { QueueToggle } from '@/components/ui/ReadingQueue';
 import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import StitchPathReveal from '@/components/motion/StitchPathReveal';
+import TelecineWipe from '@/components/motion/TelecineWipe';
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -325,6 +326,19 @@ export default function ArticleClient({ slug }: { slug: string }) {
           />
         </div>
       </section>
+
+      {/* A reel change rather than a rule. The site's dividers are ornamental
+           marks that say "new section" the way a paragraph break does; this says
+           it the way a projection booth does, and it is the only divider here
+           carrying information — the reel number tells a reader how far into the
+           piece they are.
+
+           The mechanism is a real change-over: two cue dots in the top-right
+           corner, then a narrow *bright* band rather than a fade. An optical
+           change-over passes both images at once for a fraction of a second, so
+           the join is brighter than either side of it, and getting that one
+           detail right is what stops it reading as a generic shimmer. */}
+      <TelecineWipe reel={2} label={`${entry.topic} — the printed edition`} />
 
       <GoldRibbonWeave className="px-6" height={100} />
 

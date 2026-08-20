@@ -29,6 +29,7 @@ import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
 import BuybackLadder from '@/components/ui/BuybackLadder';
 import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import SolderWeldPath from '@/components/motion/SolderWeldPath';
+import WarrantyDecoder from '@/components/ui/WarrantyDecoder';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 
 /**
@@ -562,6 +563,38 @@ export default function ServicesClient() {
       </section>
 
       {/* CTA */}
+      {/* ---- The guarantee, inverted ----
+           Every jewellers' guarantee is a list of what is covered, and every one
+           of them is therefore useless: a customer with a problem does not know
+           which category their problem is in. "Manufacturing defect" covers a
+           prong that lifted and does not cover the identical-looking prong that
+           lifted because the ring caught on a car door.
+
+           So the rows here are the events rather than the categories, ordered by
+           how often they actually happen — which puts the boring items at the top
+           where they belong. The thing that will happen to your white gold ring is
+           that the rhodium wears off, and it is the first row rather than a
+           footnote. Three states rather than two, because forcing every ambiguous
+           case into "not covered" is how guarantees earned their reputation. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <RippleGrid spacing={54} reach={170} dot={1} />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Who Pays"
+            title="Eleven things that go wrong, in the order they happen"
+            highlightWords={['order']}
+            subtitle="Not a list of what is covered — a list of what occurs, with who pays for each. The frequencies are from our own bench book over ten years and about eleven hundred pieces, and the most common entry by a wide margin is the one nobody thinks of as a fault at all."
+            align="center"
+            className="mb-16"
+          />
+
+          <WarrantyDecoder />
+        </div>
+      </section>
+
       <section className="px-6 py-28 text-center">
         <Reveal>
           <SectionHeading

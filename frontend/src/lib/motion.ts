@@ -1913,3 +1913,377 @@ export const onceInViewLate = { once: true, margin: '-38% 0px -38% 0px' } as con
 
 /** Re-runs on every pass, but only once the element is well inside the frame. */
 export const replayInViewSoft = { once: false, margin: '-28% 0px -28% 0px' } as const;
+
+/* ===========================================================================
+   v7 — the projection layer
+   ---------------------------------------------------------------------------
+   v6 described the camera and the light. This batch describes everything
+   *between* the camera and the eye: the gate the film runs through, the splice
+   where two reels meet, the heat that bends the air over a forge, the leaf
+   being laid onto a surface.
+
+   The distinction matters because projection artefacts obey different rules
+   from camera moves. A camera move is smooth and intentional, so it wants an
+   ease. A projection artefact is mechanical and slightly wrong on purpose, so
+   it wants a *step* — which is why several curves here are deliberately jerky
+   and why the weave helpers below return unsmoothed values.
+
+   As with every earlier batch, nothing here replaces an existing export. Where
+   a name reads close to one above, the mechanism differs: `gateWeave` is a
+   two-axis mechanical jitter where `handheldSettle` is a damped arrival, and
+   `spliceCut` is a hard frame replacement where `filmSplice` is a bleached
+   overlap.
+   =========================================================================== */
+
+/**
+ * Curves for mechanisms that are not trying to be graceful.
+ *
+ * `gate` is the pull-down claw: nothing, then everything, then nothing — a real
+ * projector advances a frame in about a fifth of the time the frame is on
+ * screen. `sprocket` is linear because a perforation strip has no acceleration
+ * to give. `ratchet` arrives early and holds, which is what a stepped dial does
+ * between its stops.
+ */
+export const easeMachine = {
+  gate: [0.85, 0, 0.15, 1] as const,
+  sprocket: [0, 0, 1, 1] as const,
+  ratchet: [0.18, 0.94, 0.24, 1] as const,
+  /** A shutter blade: symmetrical, and fast at both ends. */
+  blade: [0.55, 0, 0.45, 1] as const,
+};
+
+/**
+ * The gate weave. A projector never holds a frame perfectly still — the claw
+ * has play in it, so the image drifts a fraction of a percent in both axes and
+ * the drift is not periodic.
+ *
+ * Returned as a keyframe array rather than a spring because the whole point is
+ * that it does *not* settle. Two prime-ish cycle counts on the two axes keep the
+ * pattern from repeating on any interval a viewer can perceive.
+ */
+export const gateWeave = (amount = 1): Variants => ({
+  hidden: { x: 0, y: 0 },
+  visible: {
+    x: [0, amount * 0.6, -amount * 0.35, amount * 0.2, -amount * 0.5, 0],
+    y: [0, -amount * 0.4, amount * 0.7, -amount * 0.25, amount * 0.3, 0],
+    transition: {
+      duration: 1.7,
+      repeat: Infinity,
+      ease: 'linear',
+      times: [0, 0.19, 0.37, 0.58, 0.81, 1],
+    },
+  },
+});
+
+/**
+ * A hard splice: one frame replaces another with no overlap at all, plus the
+ * single bleached frame that a physical splice always leaves behind.
+ *
+ * The bleach is the reason this is not just an opacity swap. Tape splices pass
+ * more light for exactly one frame, and that flash is the thing an audience
+ * reads as "the reel changed" rather than as "the shot changed".
+ */
+export const spliceCut: Variants = {
+  hidden: { opacity: 0, filter: 'brightness(2.4) contrast(0.6)' },
+  visible: {
+    opacity: [0, 1, 1],
+    filter: ['brightness(2.4) contrast(0.6)', 'brightness(1.5) contrast(0.85)', 'brightness(1) contrast(1)'],
+    transition: { duration: 0.34, ease: easeMachine.blade, times: [0, 0.12, 1] },
+  },
+};
+
+/**
+ * Cue dots — the two marks in the top-right corner that tell a projectionist to
+ * start the second machine. Eight frames on, gone. Not decorative: it is the
+ * only diegetic way a page has of saying "something is about to change".
+ */
+export const cueDot: Variants = {
+  hidden: { opacity: 0, scale: 0.7 },
+  visible: {
+    opacity: [0, 1, 1, 0],
+    scale: [0.7, 1, 1, 1.1],
+    transition: { duration: 0.42, times: [0, 0.1, 0.78, 1], ease: 'linear' },
+  },
+};
+
+/**
+ * An anamorphic desqueeze. Real anamorphic glass records a 2x horizontally
+ * compressed image, and the projector stretches it back — so a title that
+ * *arrives* through that path should arrive narrow and widen, never the reverse.
+ *
+ * The vertical is left alone deliberately. Squeezing both axes is a zoom, and a
+ * zoom says something completely different.
+ */
+export const desqueeze: Variants = {
+  hidden: { scaleX: 0.62, opacity: 0, filter: 'blur(6px)' },
+  visible: {
+    scaleX: 1,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 1.05, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+/**
+ * The horizontal streak anamorphic glass puts across a highlight. Travels, and
+ * is at its brightest in the middle third rather than at either end, because a
+ * flare peaks when the source crosses the axis of the lens.
+ */
+export const streakFlare = (seconds = 2.8): Variants => ({
+  hidden: { scaleX: 0, opacity: 0 },
+  visible: {
+    scaleX: [0, 1, 1, 0],
+    opacity: [0, 0.9, 0.55, 0],
+    transition: { duration: seconds, times: [0, 0.28, 0.7, 1], ease: 'easeInOut' },
+  },
+});
+
+/**
+ * Gilding. Gold leaf is laid, not painted, so it arrives in irregular patches
+ * that overlap — which means the useful animation is a *mask* growing in steps
+ * rather than an opacity ramp.
+ *
+ * The brightness spike at the two-thirds mark is the burnisher: the moment the
+ * agate goes over the leaf and it stops looking like foil.
+ */
+export const leafLay = (index = 0): Variants => ({
+  hidden: { opacity: 0, scale: 0.86, rotate: (index % 2 ? -1 : 1) * (3 + (index % 5)) },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    transition: {
+      duration: 0.62,
+      delay: index * 0.055,
+      ease: easeMachine.ratchet,
+    },
+  },
+});
+
+/** The burnish pass over already-laid leaf. Brightness only — nothing moves. */
+export const burnish: Variants = {
+  hidden: { filter: 'brightness(0.82) saturate(0.7)' },
+  visible: {
+    filter: [
+      'brightness(0.82) saturate(0.7)',
+      'brightness(1.35) saturate(1.25)',
+      'brightness(1) saturate(1.05)',
+    ],
+    transition: { duration: 1.4, times: [0, 0.66, 1], ease: 'easeOut' },
+  },
+};
+
+/**
+ * Heat haze. The air over a forge does not shimmer evenly — the column rises,
+ * so the distortion is strongest low and dies out with height, and it drifts
+ * upward while it does it.
+ *
+ * Expressed as a scale-and-skew pair because an SVG turbulence filter cannot be
+ * animated cheaply on the main thread; this is the compositor-only version of
+ * the same illusion and it holds up at any size under about 400px.
+ */
+export const heatRise = (strength = 1): Variants => ({
+  hidden: { skewX: 0, scaleY: 1 },
+  visible: {
+    skewX: [0, strength * 0.5, -strength * 0.35, strength * 0.42, 0],
+    scaleY: [1, 1 + strength * 0.004, 1 - strength * 0.003, 1 + strength * 0.005, 1],
+    transition: { duration: 3.1, repeat: Infinity, ease: 'easeInOut' },
+  },
+});
+
+/**
+ * A cast shadow responding to a light that has moved. Shadows do three things at
+ * once when a source travels and only the first is usually animated: they swing,
+ * they *lengthen*, and they soften as they lengthen. Doing the swing alone is
+ * the tell that a shadow is a decoration.
+ */
+export const shadowThrow = (angle = 0, distance = 1): Variants => ({
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 0.42 / Math.max(0.6, distance),
+    x: Math.cos(angle) * 26 * distance,
+    y: Math.sin(angle) * 26 * distance,
+    scaleY: 1 + distance * 0.22,
+    filter: `blur(${(3 + distance * 5).toFixed(1)}px)`,
+    transition: { type: 'spring', stiffness: 140, damping: 24, mass: 0.8 },
+  },
+});
+
+/**
+ * A time-slice column. Each vertical strip of a slit-scan image is a different
+ * moment, so each one arrives from a different offset — and the offset has to be
+ * a *function of the column index* rather than random, or the reconstruction
+ * reads as noise instead of as time.
+ */
+export const sliceColumn = (index: number, total: number, lean = 1): Variants => {
+  const t = total > 1 ? index / (total - 1) : 0;
+  return {
+    hidden: { y: `${(t - 0.5) * 46 * lean}%`, opacity: 0 },
+    visible: {
+      y: '0%',
+      opacity: 1,
+      transition: { duration: 0.9, delay: t * 0.4, ease: [0.16, 1, 0.3, 1] },
+    },
+  };
+};
+
+/**
+ * A magnifier's edge distortion. A real lens does not simply enlarge — it
+ * enlarges at the centre and compresses at the rim, so the useful pair is a
+ * scale *and* a counter-scaled ring.
+ */
+export const loupeOpen: Variants = {
+  hidden: { scale: 0.4, opacity: 0, filter: 'blur(4px)' },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: { type: 'spring', stiffness: 300, damping: 26, mass: 0.5 },
+  },
+};
+
+/**
+ * Two plates hinged along their shared edge, opening like a locket. Distinct
+ * from `foldOpen` above, which rotates a single plate — a locket has to move
+ * both halves in opposite directions or the hinge appears to slide.
+ */
+export const locketOpen = (half: 'top' | 'bottom'): Variants => ({
+  hidden: { rotateX: half === 'top' ? 0 : 0, opacity: 1 },
+  visible: {
+    rotateX: half === 'top' ? -152 : 4,
+    transition: { duration: 1.1, ease: easeMachine.ratchet },
+  },
+});
+
+/**
+ * A needle settling on a dial with real inertia: overshoots, comes back past
+ * the mark, and stops. Distinct from `pendulumSettle`, which is symmetrical —
+ * a sprung needle is damped much harder on the return than on the throw.
+ */
+export const needleSwing = (to: number): Variants => ({
+  hidden: { rotate: -46 },
+  visible: {
+    rotate: [-46, to + 7, to - 2.5, to],
+    transition: { duration: 1.15, times: [0, 0.52, 0.78, 1], ease: 'easeOut' },
+  },
+});
+
+/**
+ * Weighing pans finding their balance. Both pans move, in opposition, and the
+ * beam they hang from settles first — which is why the delay is on the pans and
+ * not on the beam.
+ */
+export const balanceSettle = (side: -1 | 1, tilt = 0): Variants => ({
+  hidden: { y: side * 18, rotate: 0 },
+  visible: {
+    y: side * tilt * 18,
+    rotate: -side * tilt * 4,
+    transition: { type: 'spring', stiffness: 90, damping: 14, mass: 1.1, delay: 0.12 },
+  },
+});
+
+/**
+ * A drawer coming out of a cabinet. Travels on Z rather than Y, and the shadow
+ * it throws back onto the carcass is the part that sells it — a drawer with no
+ * shadow reads as a card sliding on a flat plane.
+ */
+export const drawerPull: Variants = {
+  hidden: { z: 0, y: 0, boxShadow: '0 0 0 0 rgb(0 0 0 / 0)' },
+  visible: {
+    z: 90,
+    y: 14,
+    boxShadow: '0 30px 60px -24px rgb(0 0 0 / 0.55)',
+    transition: { type: 'spring', stiffness: 180, damping: 26, mass: 0.9 },
+  },
+};
+
+/**
+ * A sheet of tissue being lifted off something. Two things move: the sheet, and
+ * the *light* on what was under it. Lifting the sheet alone is a slide.
+ */
+export const tissueLift: Variants = {
+  hidden: { y: 0, rotate: 0, opacity: 1 },
+  visible: {
+    y: '-118%',
+    rotate: -7,
+    opacity: 0,
+    transition: { duration: 1.25, ease: easeMachine.ratchet },
+  },
+};
+
+/**
+ * Vignette breathing. A projected image is never evenly lit and the falloff
+ * moves very slightly with the lamp. Slow enough that nobody sees it happen and
+ * fast enough that a still frame never looks like a screenshot.
+ */
+export const lampBreathe = (seconds = 11): Variants => ({
+  hidden: { opacity: 0.5 },
+  visible: {
+    opacity: [0.5, 0.36, 0.56, 0.44, 0.5],
+    transition: { duration: seconds, repeat: Infinity, ease: 'easeInOut' },
+  },
+});
+
+/** ---------------------------------------------------------------------------
+    Helpers — index maths for the layouts v7 introduces.
+    ------------------------------------------------------------------------ */
+
+/**
+ * Delay for anything laid along a serpentine path: left to right on even rows,
+ * right to left on odd ones. A grid stagger cannot express this, and the
+ * difference is visible the moment a row is more than about four cells wide —
+ * a plain stagger restarts at the left edge, which reads as a jump.
+ */
+export const boustrophedonDelay = (index: number, perRow: number, step = 0.05) => {
+  const row = Math.floor(index / perRow);
+  const col = index % perRow;
+  const along = row % 2 === 0 ? col : perRow - 1 - col;
+  return (row * perRow + along) * step;
+};
+
+/**
+ * Delay weighted by distance from a moving front rather than from a point. Used
+ * where a sweep crosses a field at an angle — a diagonal wipe over a grid is
+ * this, and a radial delay is visibly wrong for it.
+ */
+export const frontDelay = (
+  x: number,
+  y: number,
+  angleDeg = 35,
+  step = 0.5
+) => {
+  const a = (angleDeg * Math.PI) / 180;
+  return Math.max(0, (x * Math.cos(a) + y * Math.sin(a))) * step;
+};
+
+/**
+ * Maps a 0–1 progress onto a value that rises, holds and falls — the shape
+ * almost every scroll-driven overlay actually wants. Returns 0 outside the
+ * window, so an overlay built on it is genuinely absent rather than transparent.
+ */
+export const pulseAt = (progress: number, centre: number, width = 0.2) => {
+  const d = Math.abs(progress - centre);
+  if (d > width) return 0;
+  return 1 - d / width;
+};
+
+/**
+ * Quantises a continuous progress to whole steps. The reason this exists rather
+ * than a `Math.round` at each call site is that a stepped value read off a
+ * continuous one has to be *stable* at the boundaries, and rounding alone
+ * flickers between two steps when a scroll rests exactly on the edge.
+ */
+export const quantise = (progress: number, steps: number, hysteresis = 0.02) => {
+  const raw = progress * (steps - 1);
+  const base = Math.floor(raw);
+  const frac = raw - base;
+  if (frac < 0.5 - hysteresis) return base;
+  if (frac > 0.5 + hysteresis) return Math.min(steps - 1, base + 1);
+  return Math.min(steps - 1, Math.round(raw));
+};
+
+/** Fires only when an element is fully across the frame — for pinned scenes. */
+export const onceFullyInView = { once: true, margin: '-45% 0px -45% 0px' } as const;
+
+/** Replays, and fires early enough that a tall scene is already moving. */
+export const replayInViewEager = { once: false, margin: '8% 0px 8% 0px' } as const;

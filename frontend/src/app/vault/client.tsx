@@ -25,6 +25,7 @@ import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
 import RippleGrid from '@/components/motion/RippleGrid';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import PortfolioBalance from '@/components/ui/PortfolioBalance';
 
 /**
  * What the house does with a piece over a lifetime, as the sequence it actually
@@ -317,6 +318,38 @@ export default function VaultClient() {
              Drawn rather than listed. The line arrives at each entry as you
              scroll to it, which is the only way to make an interval-based
              schedule read as a sequence rather than as a price list. */}
+        {/* ---- The shape of it ----
+             Everything above is an inventory: what you own, what is due a check,
+             what you have asked us to remember. This is the *shape* — and the
+             shape is the one thing an owner cannot see, because they acquired the
+             pieces one at a time over decades and every decision was made against
+             an occasion rather than against the collection.
+
+             The gaps are observations rather than prescriptions, and there is no
+             price anywhere in them. A person with no earrings may simply not have
+             pierced ears, and a tool that reads that as "buy earrings" is worse
+             than one that says nothing. It also reads only what you entered
+             yourself: a wishlist and a collection are different objects, and
+             merging them would make the whole readout a sales instrument. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <StageSweep intensity={0.2} width={0.32} seconds={21} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Shape"
+              title="What it is made of, and what is missing"
+              highlightWords={['missing']}
+              subtitle="Read off the pieces you have entered above and nothing else. Most collections turn out to be heavy on occasions and light on everyday, which is the usual shape and the usual regret — and the answer to it is almost never another piece."
+              align="center"
+              className="mb-14"
+            />
+
+            <PortfolioBalance />
+          </div>
+        </section>
+
         <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/40 py-20 md:py-28">
           <CausticsCanvas intensity={0.3} lobes={5} speed={34} />
 

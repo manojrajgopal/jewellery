@@ -31,6 +31,7 @@ import { products } from '@/data/products';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
 import GravityChainRail from '@/components/motion/GravityChainRail';
+import CollectionCompass from '@/components/ui/CollectionCompass';
 
 /**
  * Filters key off collection ids. The previous version matched a short label
@@ -482,6 +483,37 @@ export default function CollectionsClient() {
               What we make
             </p>
             <CylinderMarquee items={CATEGORY_WORDS} radius={130} speed={11} />
+          </section>
+
+
+          {/* ---- The compass ----
+               Six collections described in six paragraphs asks a visitor to hold
+               all six in their head and compare them, which nobody does. This
+               plots them against the two questions people actually decide on \u2014
+               how loud, and worn when \u2014 and lets the visitor aim rather than
+               read. Neither axis is price, deliberately: a plain platinum band
+               and a cocktail ring can cost the same and sit at opposite corners.
+
+               Placed after the price ladder, because the ladder answers "what
+               can I spend" and this answers "which of these is mine", and the
+               second question is much harder to ask out loud. */}
+          <section className="relative mt-24 overflow-hidden rounded-[2.5rem] border border-hairline bg-canvas-alt/40 px-6 py-20 md:px-12 md:py-28">
+            <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+              <StageSweep intensity={0.2} width={0.34} seconds={19} />
+            </div>
+
+            <div className="relative z-10">
+              <SectionHeading
+                eyebrow="Aim, Do Not Read"
+                title="Two questions, not six paragraphs"
+                highlightWords={['Two']}
+                subtitle="How loud you want to be, and when you intend to wear it. Drag the reticle to where you actually are and the nearest collection comes to meet you — including, sometimes, the honest answer that nothing here is close."
+                align="center"
+                className="mb-16"
+              />
+
+              <CollectionCompass />
+            </div>
           </section>
 
           <GoldDivider variant="wide" className="my-24" />

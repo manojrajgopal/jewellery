@@ -29,6 +29,7 @@ import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
 import CanvasGemRain from '@/components/motion/CanvasGemRain';
 import TypeOnPath from '@/components/motion/TypeOnPath';
+import ProjectorGate from '@/components/motion/ProjectorGate';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
@@ -45,6 +46,39 @@ const GALLERY = [
   { src: '/images/collections/everyday.jpg', alt: 'Everyday luxe stack', category: 'Collections' },
   { src: '/images/collections/gemstone.jpg', alt: 'Gemstone cocktail ring', category: 'Rings' },
   { src: '/images/collections/mens.jpg', alt: "Men's signet collection", category: 'Collections' },
+];
+
+/**
+ * Three reels, in three of the frame formats the house has actually shot in.
+ * The formats are the point of the comparison: Academy is the ratio the archive
+ * photographs are in, Vista is what the current catalogue is shot at, and Scope
+ * is the only one wide enough to hold a whole necklace without cropping a clasp.
+ */
+const GATE_REELS = [
+  {
+    src: '/images/hero/craftsmanship.jpg',
+    alt: 'The bench, projected in Academy ratio',
+    format: 'academy' as const,
+    weave: 1.6,
+    footage: '00:00:14',
+    note: 'Academy, 4:3 — the shape every photograph in the archive is in, because it is the shape the cameras were.',
+  },
+  {
+    src: '/images/collections/heritage.jpg',
+    alt: 'A heritage piece, projected in Vista ratio',
+    format: 'vista' as const,
+    weave: 1.1,
+    footage: '00:01:38',
+    note: 'Vista, 1.85:1 — what the current catalogue is shot at. Wide enough for a pair, not for a suite.',
+  },
+  {
+    src: '/images/collections/statement.jpg',
+    alt: 'A statement piece, projected in Scope ratio',
+    format: 'scope' as const,
+    weave: 0.8,
+    footage: '00:03:52',
+    note: 'Scope, 2.35:1 — the only ratio that holds a whole necklace without cropping the clasp, which is why we shoot the long pieces in it.',
+  },
 ];
 
 export default function GalleryClient() {
@@ -430,6 +464,68 @@ export default function GalleryClient() {
            that appears when the page is moving quickly, the leaks that come in
            when a camera back is not light-tight, and the dolly zoom, which is the
            only one of the three that was ever done on purpose. */}
+      {/* ---- Run through a gate ----
+           The page is a contact sheet, a filmstrip and a loupe: every one of them
+           treats the image as a still. This is the same photography *projected* —
+           which is a different claim, and the last thing the page should say.
+
+           The gate is the mechanism rather than the look. There is an aperture
+           plate cropping the frame, a perforation strip running past it, a lamp
+           hot-spot behind it, and the claw's mechanical slack making the whole
+           image wander a fraction of a percent while it sits there. That last
+           detail is the entire difference between a photograph with a filter on
+           it and something being projected — a projected frame is never still,
+           and it never settles either, which is why the drift here has no spring
+           in it. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <LightLeakOverlay intensity={0.24} />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <div className="mb-16 max-w-2xl">
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Three reels
+            </p>
+            <h2 className="font-display text-3xl leading-snug text-primary md:text-5xl">
+              The same frames, run through a{' '}
+              <span className="italic text-accent">gate</span>
+            </h2>
+            <p className="mt-6 font-sans text-base font-light leading-relaxed text-muted md:text-lg">
+              An aperture plate, two perforation strips, and a lamp behind it. The image wanders
+              while it sits there because the claw that advances the film has play in it, and that
+              sub-pixel wander is the whole difference between a still and a projection. Nothing here
+              is a filter; every part of it is a part of a projector.
+            </p>
+          </div>
+
+          <div className="grid gap-12 md:grid-cols-3 md:gap-8">
+            {GATE_REELS.map((reel, i) => (
+              <div key={reel.src} className={i === 1 ? 'md:mt-14' : undefined}>
+                <ProjectorGate
+                  format={reel.format}
+                  weave={reel.weave}
+                  footage={reel.footage}
+                  tail={i === 2}
+                >
+                  <Image
+                    src={reel.src}
+                    alt={reel.alt}
+                    width={900}
+                    height={600}
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="h-full w-full object-cover"
+                  />
+                </ProjectorGate>
+                <p className="mt-4 font-sans text-sm font-light leading-relaxed text-muted">
+                  {reel.note}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-24 md:py-32">
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <BokehDrift count={22} intensity={0.48} speed={0.7} blades={7} />

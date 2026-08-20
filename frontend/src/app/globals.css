@@ -2500,3 +2500,390 @@ html[data-theme='light'][data-cinema='on'] {
     transition: none !important;
   }
 }
+
+/* ===========================================================================
+   v7 — the projection layer
+   ---------------------------------------------------------------------------
+   v6 gave the page its surfaces. This layer sits *in front* of them: the film
+   path, the forge, the gilder's cushion and the assay bench. Everything here is
+   either an artefact of something being projected or a texture belonging to a
+   process the site describes elsewhere in words.
+
+   The rule the earlier layers established holds: textures stay under a
+   reduced-motion preference and only the motion is surrendered. A visitor who
+   has asked for less movement has not asked for a plainer page.
+   =========================================================================== */
+
+@layer components {
+  /* The film path ------------------------------------------------------------
+     A projector gate is three things stacked: the aperture that crops the frame,
+     the perforation strip that runs past it, and the frame line that bleeds in
+     from the frame above. Most "film look" treatments do the grain and skip all
+     three, which is why they read as a filter rather than as a mechanism. */
+  .gate-aperture {
+    position: relative;
+    overflow: hidden;
+    /* The soft-edged crop a real aperture plate leaves: hard on the long edges,
+       very slightly rounded at the corners where the plate was filed. */
+    -webkit-mask-image: radial-gradient(120% 130% at 50% 50%, #000 88%, transparent 100%);
+    mask-image: radial-gradient(120% 130% at 50% 50%, #000 88%, transparent 100%);
+  }
+
+  .gate-aperture::after {
+    /* The frame line: the bottom of the previous frame, bleeding through the top
+       of this one. Never fully opaque, because the gate is never quite aligned. */
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 3px;
+    background: linear-gradient(
+      180deg,
+      rgb(var(--shadow-color) / 0.5),
+      rgb(var(--shadow-color) / 0.14) 60%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .sprocket-strip {
+    /* Perforations. Two rows, because 8mm has one and 35mm has two and the
+       double row is the one that reads as cinema rather than as home movie. */
+    background-image:
+      radial-gradient(circle at 50% 50%, rgb(var(--hairline) / 0.55) 0 3px, transparent 3.5px),
+      radial-gradient(circle at 50% 50%, rgb(var(--hairline) / 0.55) 0 3px, transparent 3.5px);
+    background-size: 20px 20px, 20px 20px;
+    background-position: 0 3px, 0 15px;
+    background-repeat: repeat-x;
+    animation: sprocket-run 0.9s linear infinite;
+  }
+
+  .gate-hotspot {
+    /* Lamp hot-spot. A projector lamp is a point source behind a condenser, so
+       the centre is measurably brighter than the corners and the falloff is
+       radial rather than vignetted. */
+    background: radial-gradient(
+      58% 52% at 50% 46%,
+      rgb(var(--gold-100) / 0.14),
+      transparent 74%
+    );
+    mix-blend-mode: screen;
+    animation: lamp-flutter 6.5s ease-in-out infinite;
+  }
+
+  .reel-tail {
+    /* The leader at the end of a reel: countdown scratches and a raw edge. */
+    background-image: repeating-linear-gradient(
+      92deg,
+      transparent 0 14px,
+      rgb(var(--hairline) / 0.16) 14px 15px,
+      transparent 15px 40px
+    );
+    animation: tail-run 1.4s linear infinite;
+  }
+
+  /* The forge --------------------------------------------------------------
+     Heat is the only thing on this site that distorts what is behind it. The
+     shimmer is a backdrop-filter rather than an SVG turbulence because
+     turbulence cannot be animated without a main-thread repaint per frame, and
+     this sits over content that is already moving. */
+  .heat-column {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .heat-column::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    backdrop-filter: blur(0.6px) saturate(1.08);
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      transparent,
+      #000 34%,
+      #000 74%,
+      transparent
+    );
+    mask-image: linear-gradient(180deg, transparent, #000 34%, #000 74%, transparent);
+    animation: heat-drift 4.2s ease-in-out infinite;
+  }
+
+  .ember-bed {
+    /* Coals. Two offset radial fields at different scales, breathing out of
+       phase — a single field pulses, which no fire has ever done. */
+    background-image:
+      radial-gradient(circle at 22% 74%, rgb(var(--gold-400) / 0.5) 0 6px, transparent 22px),
+      radial-gradient(circle at 61% 82%, rgb(var(--gold-300) / 0.42) 0 4px, transparent 18px),
+      radial-gradient(circle at 84% 70%, rgb(var(--burgundy-500) / 0.4) 0 5px, transparent 20px),
+      radial-gradient(circle at 40% 90%, rgb(var(--gold-500) / 0.36) 0 7px, transparent 26px);
+    animation: ember-glow 3.8s ease-in-out infinite alternate;
+  }
+
+  .quench-ripple {
+    /* The instant a piece goes into water. One ring, fast, and gone. */
+    background: radial-gradient(
+      circle at center,
+      transparent 34%,
+      rgb(var(--jade-300) / 0.22) 46%,
+      transparent 58%
+    );
+    animation: quench-out 1.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  }
+
+  /* The gilder's cushion ---------------------------------------------------
+     Gold leaf is a quarter of a micron thick, which means it is genuinely
+     translucent and it creases. Both facts are the whole look. */
+  .leaf-skin {
+    background-image:
+      linear-gradient(112deg, rgb(var(--gold-100) / 0.9), rgb(var(--gold-500) / 0.72) 38%, rgb(var(--gold-300) / 0.95) 55%, rgb(var(--gold-700) / 0.7) 78%, rgb(var(--gold-200) / 0.88)),
+      repeating-linear-gradient(74deg, transparent 0 7px, rgb(var(--shadow-color) / 0.07) 7px 8px);
+    background-blend-mode: overlay, normal;
+  }
+
+  .leaf-crease {
+    /* The wrinkle pattern a laid leaf keeps until it is burnished. Static on
+       purpose — a crease that moves is foil, not leaf. */
+    background-image:
+      repeating-linear-gradient(38deg, transparent 0 9px, rgb(var(--hairline) / 0.1) 9px 10px),
+      repeating-linear-gradient(-52deg, transparent 0 13px, rgb(var(--shadow-color) / 0.06) 13px 14px);
+  }
+
+  /* The agate going over, as the element's *own* background so it can be
+     clipped to letterforms with `background-clip: text`. A pseudo-element
+     version (below) is a child, and a child is never clipped by its parent's
+     text clip — which silently turns a burnish over a word into a bright
+     rectangle sweeping across it. */
+  .burnish-skin {
+    background-image: linear-gradient(
+      104deg,
+      transparent 34%,
+      rgb(var(--gold-50) / 0.6) 47%,
+      rgb(var(--gold-100) / 0.85) 50%,
+      rgb(var(--gold-50) / 0.5) 54%,
+      transparent 66%
+    );
+    background-size: 260% 100%;
+    background-repeat: no-repeat;
+    animation: burnish-travel 5.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  .burnish-pass::after {
+    /* The same pass over a surface rather than over type. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      104deg,
+      transparent 34%,
+      rgb(var(--gold-50) / 0.55) 48%,
+      rgb(var(--gold-100) / 0.28) 54%,
+      transparent 66%
+    );
+    background-size: 240% 100%;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    animation: burnish-travel 5.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+
+  /* The assay bench -------------------------------------------------------
+     Where a number is being read off an instrument rather than displayed. The
+     shared trait is a hairline scale and a needle, and the shared mistake is
+     drawing the scale evenly — a real instrument crowds its divisions at the
+     ends of its useful range. */
+  .assay-scale {
+    background-image:
+      repeating-linear-gradient(90deg, rgb(var(--hairline) / 0.28) 0 1px, transparent 1px 10%),
+      repeating-linear-gradient(90deg, rgb(var(--hairline) / 0.14) 0 1px, transparent 1px 2%);
+    background-position: 0 0;
+  }
+
+  .assay-needle {
+    transform-origin: 50% 100%;
+    filter: drop-shadow(0 2px 3px rgb(var(--shadow-color) / 0.4));
+  }
+
+  .balance-beam {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--gold-700) / 0.5),
+      rgb(var(--gold-300) / 0.9) 50%,
+      rgb(var(--gold-700) / 0.5)
+    );
+    box-shadow: 0 1px 0 0 rgb(var(--hairline) / 0.18);
+  }
+
+  /* A pane of glass between the visitor and the object. Distinct from the
+     existing vitrine treatment, which is a case; this is a single sheet, and a
+     single sheet shows the room reflected in it. */
+  .glass-pane::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      116deg,
+      rgb(var(--hairline) / 0.1) 0 18%,
+      transparent 26% 62%,
+      rgb(var(--hairline) / 0.06) 70% 76%,
+      transparent 84%
+    );
+  }
+
+  .glass-pane::after {
+    /* The edge of the sheet, catching light along one side only. */
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow:
+      inset 1px 0 0 0 rgb(var(--gold-100) / 0.16),
+      inset -1px 0 0 0 rgb(var(--shadow-color) / 0.2);
+  }
+
+  /* A cast shadow that can be aimed. `--throw-x`, `--throw-y` and `--throw-blur`
+     are written by whatever owns the light source. */
+  .cast-shadow {
+    filter: drop-shadow(
+      calc(var(--throw-x, 0px)) calc(var(--throw-y, 8px)) calc(var(--throw-blur, 10px))
+        rgb(var(--shadow-color) / var(--throw-alpha, 0.4))
+    );
+    transition: filter 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* A reading loupe travelling over body copy. The bar itself; the enlargement
+     is done in JS because a CSS-only version has to duplicate the text. */
+  .loupe-bar {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--gold-100) / 0.05),
+      rgb(var(--gold-200) / 0.14) 40%,
+      rgb(var(--gold-100) / 0.05)
+    );
+    box-shadow:
+      0 0 0 1px rgb(var(--gold-500) / 0.2),
+      inset 0 1px 0 0 rgb(var(--hairline) / 0.14);
+    backdrop-filter: saturate(1.1) brightness(1.03);
+  }
+}
+
+@layer utilities {
+  /* Two cuts the pearl and enamel work needs. */
+  .clip-cabochon { clip-path: ellipse(50% 42% at 50% 52%); }
+  .clip-tablet   { clip-path: polygon(12% 0%, 88% 0%, 100% 18%, 100% 82%, 88% 100%, 12% 100%, 0% 82%, 0% 18%); }
+
+  /* Masks for the film path and the slit-scan. */
+  .mask-slit-h {
+    -webkit-mask-image: repeating-linear-gradient(0deg, #000 0 5px, transparent 5px 8px);
+    mask-image: repeating-linear-gradient(0deg, #000 0 5px, transparent 5px 8px);
+  }
+
+  .mask-gate {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+
+  .mask-column-fade {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+  }
+
+  /* Depth the drawer and locket scenes need. */
+  .perspective-900 { perspective: 900px; }
+  .perspective-origin-top { perspective-origin: center top; }
+  .rotate-x-90  { transform: rotateX(90deg); }
+  .-rotate-x-90 { transform: rotateX(-90deg); }
+  .translate-z-32 { transform: translateZ(128px); }
+  .backface-hidden { backface-visibility: hidden; }
+
+  /* Blend modes the projection layer uses. */
+  .blend-screen  { mix-blend-mode: screen; }
+  .blend-overlay { mix-blend-mode: overlay; }
+  .blend-lighten { mix-blend-mode: lighten; }
+
+  /* Aspect ratios for the frame formats named on the film sections. */
+  .aspect-academy { aspect-ratio: 4 / 3; }
+  .aspect-scope   { aspect-ratio: 235 / 100; }
+  .aspect-vista   { aspect-ratio: 185 / 100; }
+
+  /* Optical alignment for figures set in a slab. Type this large needs the
+     leading closed up or the line looks like two lines. */
+  .leading-slab { line-height: 0.88; }
+  .tracking-slab { letter-spacing: -0.03em; }
+
+  /* Cursors for the two new direct-manipulation surfaces. */
+  .cursor-aim { cursor: crosshair; }
+  .cursor-grab-any { cursor: grab; }
+  .cursor-grabbing-any { cursor: grabbing; }
+
+  /* Instrument numerals: tabular *and* lining, which is what a dial needs and
+     what the existing tabular utility alone does not guarantee. */
+  .nums-instrument {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+
+  /* Isolate a stacking context without a transform. Several of the new overlays
+     use blend modes, and a blend mode without isolation bleeds onto the page. */
+  .isolate-blend { isolation: isolate; }
+}
+
+@keyframes sprocket-run {
+  0%   { background-position: 0 3px, 0 15px; }
+  100% { background-position: -20px 3px, -20px 15px; }
+}
+
+@keyframes lamp-flutter {
+  0%, 100% { opacity: 0.85; }
+  38%      { opacity: 1; }
+  61%      { opacity: 0.72; }
+}
+
+@keyframes tail-run {
+  0%   { background-position: 0 0; }
+  100% { background-position: -40px 0; }
+}
+
+@keyframes heat-drift {
+  0%, 100% { transform: translateY(0) skewX(0deg); }
+  33%      { transform: translateY(-2px) skewX(0.35deg); }
+  66%      { transform: translateY(-1px) skewX(-0.28deg); }
+}
+
+@keyframes ember-glow {
+  0%   { opacity: 0.55; filter: brightness(0.9); }
+  100% { opacity: 0.95; filter: brightness(1.18); }
+}
+
+@keyframes quench-out {
+  0%   { transform: scale(0.4); opacity: 0; }
+  22%  { opacity: 0.9; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+@keyframes burnish-travel {
+  0%, 22%  { background-position: -140% 0; }
+  70%, 100% { background-position: 240% 0; }
+}
+
+/* Consistent with v4 through v6: the projection layer keeps every texture and
+   gives up all of its motion. The gate, the forge and the burnisher are all
+   still *there* — they simply stop running, which is exactly what a projector
+   with the lamp on and the motor off looks like. */
+@media (prefers-reduced-motion: reduce) {
+  .sprocket-strip,
+  .gate-hotspot,
+  .reel-tail,
+  .heat-column::before,
+  .ember-bed,
+  .quench-ripple,
+  .burnish-skin,
+  .burnish-pass::after {
+    animation: none !important;
+  }
+
+  .cast-shadow {
+    transition: none !important;
+  }
+}

@@ -26,6 +26,7 @@ import { products } from '@/data/products';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import CanvasGemRain from '@/components/motion/CanvasGemRain';
 import ElasticRail from '@/components/motion/ElasticRail';
+import ShadowStage from '@/components/motion/ShadowStage';
 import type { Product } from '@/types';
 
 export default function CollectionClient({ id }: { id: string }) {
@@ -355,6 +356,38 @@ export default function CollectionClient({ id }: { id: string }) {
           </div>
         </div>
       </div>
+
+      {/* ---- Under a light you can move ----
+           Every image above this point was lit by us, and a collection page is
+           the exact place a visitor is asked to judge a piece from one. So the
+           last thing on the page hands the lamp over.
+
+           A cast shadow is the only cue on a flat screen that an object has a
+           position in space rather than a place on a page, and lowering the lamp
+           lengthens it — which is the fact that makes the whole thing read as a
+           room. It is also, quietly, the most useful control on the page: the
+           raking position is the one that shows surface condition, and it is the
+           position no jeweller photographs in. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Your Lamp"
+            title="Move the light and see what a photograph hides"
+            highlightWords={['hides']}
+            subtitle="Drag the lamp anywhere above the floor. Lower it and the shadow lengthens and softens, which is what light actually does and what a catalogue photograph is specifically arranged to avoid."
+            align="center"
+            className="mb-16"
+          />
+
+          <div className="mx-auto max-w-3xl">
+            <ShadowStage
+              src="/images/products/ring.jpg"
+              alt={`A piece from the ${collection.name} collection, lit from a movable source`}
+              caption="The raking position — lamp low and to one side — is the one that shows surface condition, and the one nobody photographs in. It is also the light in the window of every room we have."
+            />
+          </div>
+        </div>
+      </section>
 
       <RecentlyViewed />
 

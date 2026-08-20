@@ -103,6 +103,7 @@ const HOME_SECTIONS = [
   { id: 'lookbook', label: 'Lookbook' },
   { id: 'film', label: 'The Film' },
   { id: 'showcase', label: 'The Stone' },
+  { id: 'gate', label: 'Four Exposures' },
   { id: 'light', label: 'Light' },
   { id: 'stone-school', label: 'The 4Cs' },
   { id: 'stones', label: 'Stones' },

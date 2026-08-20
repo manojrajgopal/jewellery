@@ -29,6 +29,7 @@ import { journal, journalTopics, type JournalEntry } from '@/data/editorial';
 import ReadingQueue, { QueueToggle } from '@/components/ui/ReadingQueue';
 import ElasticRail from '@/components/motion/ElasticRail';
 import TypeOnPath from '@/components/motion/TypeOnPath';
+import ReadingLoupe from '@/components/motion/ReadingLoupe';
 
 /**
  * The four stages of the print run. The front of each card is the claim; the sheet
@@ -437,6 +438,52 @@ export default function JournalClient() {
         <GoldRibbonWeave className="px-6" height={100} />
 
         {/* ---- The pull-quote drum ---- */}
+        {/* ---- The opening lines, under glass ----
+             The index above is a list of things to read later. This is the only
+             place on it where anything is actually *read* — four opening lines,
+             under a magnifier that snaps to whole lines rather than hovering a
+             circle over fragments of three.
+
+             That constraint is the reason the loupe is a bar. A round magnifier
+             over prose enlarges parts of several lines at once, which is strictly
+             harder to read than the unmagnified text; magnification only helps
+             type if it respects the line. The lines around the lit one are pushed
+             apart rather than overlapped, so nothing is ever hidden under the
+             housing — which is the usual failure of a lens over text. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <CausticsCanvas intensity={0.24} lobes={4} speed={40} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-4xl px-6">
+            <div className="mb-14">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                First lines
+              </p>
+              <h2 className="font-display text-3xl leading-snug text-primary md:text-4xl">
+                Four openings, <span className="italic text-accent">one line at a time</span>
+              </h2>
+              <p className="mt-5 font-sans text-base font-light leading-relaxed text-muted">
+                Move the lens down the page, or use the arrow keys. It snaps to whole lines, because
+                a round magnifier over prose enlarges fragments of three at once and that is harder
+                to read than not magnifying at all.
+              </p>
+            </div>
+
+            <ReadingLoupe
+              label="First lines, unattributed"
+              zoom={1.6}
+              lines={[
+                'A hallmark is not a guarantee of quality. It is a guarantee of one number.',
+                'The most expensive word in a stone brief is almost always a place name.',
+                'Nobody returns a heavy earring. It simply stops being chosen.',
+                'We have refused more commissions on grounds of construction than of budget.',
+                'A platinum patina takes fifteen years to acquire and forty seconds to destroy.',
+              ]}
+            />
+          </div>
+        </section>
+
         <section className="relative border-y border-hairline bg-surface-raised/30 py-16 md:py-24">
           <CausticsCanvas intensity={0.26} lobes={5} />
           <div className="relative z-10 mx-auto max-w-5xl px-6">

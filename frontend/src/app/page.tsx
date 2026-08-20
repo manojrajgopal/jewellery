@@ -39,6 +39,7 @@ import HeirloomSection from '@/app/_sections/home/HeirloomSection';
 import SustainabilitySection from '@/app/_sections/home/SustainabilitySection';
 import SuiteSection from '@/app/_sections/home/SuiteSection';
 import HelixSection from '@/app/_sections/home/HelixSection';
+import GateSection from '@/app/_sections/home/GateSection';
 import GoldDivider from '@/components/ui/GoldDivider';
 
 /**
@@ -87,6 +88,12 @@ export default function Home() {
 
       {/* The stone itself — drawn, lit and turnable */}
       <ShowcaseSection />
+
+      {/* The photography itself, admitted to. Placed between the stone turning and
+          the physics of why it does that, because this is the only point on the
+          page where a visitor has just been asked to judge something from an
+          image and has not yet been told who lit it. */}
+      <GateSection />
 
       {/* The physics before the vocabulary. A visitor who has just watched a stone
           turn is looking at fire and scintillation without having names for them,

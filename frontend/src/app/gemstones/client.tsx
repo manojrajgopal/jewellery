@@ -33,6 +33,8 @@ import CylinderMarquee from '@/components/motion/CylinderMarquee';
 import CanvasGemRain from '@/components/motion/CanvasGemRain';
 import TypeOnPath from '@/components/motion/TypeOnPath';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
+import PearlGrader from '@/components/ui/PearlGrader';
+import TreatmentDisclosure from '@/components/ui/TreatmentDisclosure';
 
 /**
  * The stone library — the reference half of the site.
@@ -448,6 +450,62 @@ export default function GemstonesClient() {
         </section>
 
         {/* ---- Onward ---- */}
+        {/* ---- Graded on five things, not four ----
+             The 4Cs are on the home page and in the explorer above, and every one
+             of them is the wrong tool for a pearl: no cut, colour is a preference
+             rather than a scale, and carat weight is close to irrelevant because
+             size is sold in millimetres. What decides a pearl is nacre thickness,
+             and nacre thickness is the one figure almost no retailer will quote.
+
+             The weights below are the trade's real ones and they are printed on
+             the dials. Five equal sliders — which is what most educational pages
+             offer — hands a buyer a rubric that scores a bad pearl well. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={12} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Not The Four Cs"
+              title="A pearl is graded on five things and weighted on one"
+              highlightWords={['one']}
+              subtitle="Lustre carries a third of the grade, because it is the only thing a buyer can see that tells them how deep the nacre is — and nacre depth is what decides whether the pearl survives its first owner or wears through to the bead in eight years."
+              align="center"
+              className="mb-16"
+            />
+
+            <PearlGrader />
+          </div>
+        </section>
+
+        {/* ---- What was done to it ----
+             The spectroscope, the fluorescence viewer and the inclusion plotter
+             above are all instruments for looking at a stone. This is the
+             paperwork question instead, and it moves the price by a factor of
+             thirty in the worst case.
+
+             Sorted worst-value-first on purpose. A list of treatments in
+             alphabetical order buries the three that actually cost people money. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <PrismDispersion at={{ x: 0.88, y: 0.2 }} size={120} rays={22} interactive={false} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Disclosure"
+              title="Nearly every coloured stone has been treated"
+              highlightWords={['treated']}
+              subtitle="Which is not a scandal — heating sapphire is two thousand years old and completely stable. The scandal is selectively not mentioning it, because the same stone is worth between a thirtieth and all of its value depending on which treatment it has had, and none of them is visible without a laboratory."
+              align="center"
+              className="mb-16"
+            />
+
+            <TreatmentDisclosure />
+          </div>
+        </section>
+
         <section className="relative px-6 py-24 text-center md:py-32">
           <SectionHeading
             eyebrow="Next"

@@ -28,6 +28,7 @@ import StageSweep from '@/components/motion/StageSweep';
 import EchoTrailText from '@/components/motion/EchoTrailText';
 import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import ChromaSplit from '@/components/motion/ChromaSplit';
+import CallbackWindow from '@/components/ui/CallbackWindow';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -633,6 +634,36 @@ export default function ContactClient() {
       </section>
 
       {/* CTA */}
+      {/* ---- A window in both clocks ----
+           The page can already take a message and show the opening hours. Neither
+           is any use to somebody in another time zone, because our hours mean
+           nothing to them and every "preferred time" field on the internet
+           quietly assumes one end of the conversation.
+
+           So the grid is drawn in both clocks at once, which takes no more space
+           than one and removes the arithmetic entirely. The arithmetic is where
+           these arrangements fail — somebody converts a zone the wrong way about
+           once in every four or five attempts, and it is always the customer who
+           then waits by a phone. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <MagneticFieldLines />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Both Clocks"
+            title="Pick a half hour that is civil at both ends"
+            highlightWords={['both']}
+            subtitle="Every cell shows your time above ours, so there is no conversion to get wrong. Three states rather than two, because &ldquo;the bench is open but nobody who can answer your question is here&rdquo; is a real situation and offering it would produce a call that has to happen twice."
+            align="center"
+            className="mb-16"
+          />
+
+          <CallbackWindow />
+        </div>
+      </section>
+
       <section className="px-6 py-24 text-center">
         <Reveal>
           <SectionHeading

@@ -34,6 +34,8 @@ import MetaballGold from '@/components/motion/MetaballGold';
 import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
 import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import StageSweep from '@/components/motion/StageSweep';
+import HeatShimmer from '@/components/motion/HeatShimmer';
+import EnamelAtlas from '@/components/ui/EnamelAtlas';
 import { Reveal } from '@/components/animations/Reveal';
 
 /** Hotspots along the pan. `at` is a fraction of the strip's full width. */
@@ -729,6 +731,38 @@ export default function CraftsmanshipClient() {
       </section>
 
       {/* Quote + CTA */}
+      {/* ---- Glass on metal ----
+           The atelier run above covers everything done to metal by hand. Enamel
+           is the one craft on the premises where the maker takes all the risk:
+           the piece is finished, engraved and complete before it goes into the
+           kiln, and if the glass crazes it is gone. There is no repair.
+
+           Each technique is drawn in section rather than photographed, because
+           the drawing is the explanation — the difference between cloisonné and
+           champlevé is entirely whether the walls holding the glass were added to
+           the surface or carved out of it, and the finished pieces are
+           indistinguishable.
+
+           Wrapped in the heat of the kiln it goes into. The shimmer is the only
+           treatment on this site that distorts what is behind it rather than
+           adding something on top, which is exactly what hot air does. */}
+      <HeatShimmer strength={1.3} embers reading="820 °C" className="relative">
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Fired, Not Set"
+              title="The only bench where a mistake cannot be undone"
+              highlightWords={['cannot']}
+              subtitle="Enamel is glass fused to metal at around eight hundred degrees, and every colour has its own melting point — so a six-colour panel goes through the kiln six times, hottest first, and each pass is another chance to lose the whole piece."
+              align="center"
+              className="mb-16"
+            />
+
+            <EnamelAtlas />
+          </div>
+        </section>
+      </HeatShimmer>
+
       <section className="relative overflow-hidden bg-surface-raised/30 px-6 py-32 text-center">
         <LensFlare intensity={0.4} originX={50} originY={20} follow={false} />
 

@@ -35,6 +35,7 @@ import EchoTrailText from '@/components/motion/EchoTrailText';
 import PerspectiveCorridor from '@/components/motion/PerspectiveCorridor';
 import WaxSealReveal from '@/components/motion/WaxSealReveal';
 import TypeOnPath from '@/components/motion/TypeOnPath';
+import EtiquetteBriefing from '@/components/ui/EtiquetteBriefing';
 
 const SENSES = [
   {
@@ -218,6 +219,37 @@ export default function ExperiencesClient() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+
+        {/* ---- Before you have to walk in ----
+             Everything above describes what is on offer and how to book it. This
+             addresses the reason a meaningful number of people never book at all:
+             they do not know what is expected of them, and a shop like this is
+             intimidating in a way we are extremely badly placed to notice.
+
+             The questions are phrased as they are actually asked, and every
+             answer carries a commitment on its own line rather than reassurance
+             in a paragraph — reassurance cannot be held against us and a promise
+             can. Placed immediately before the diary, because this is the
+             conversation that has to happen before somebody is willing to pick a
+             date. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={10} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6">
+            <SectionHeading
+              eyebrow="No Wrong Way In"
+              title="The questions nobody asks out loud"
+              highlightWords={['out', 'loud']}
+              subtitle="What to wear, whether you have to say what you can spend, how to say no, and whether you can just look. Answered plainly, with what you are under no obligation to do set out beside what we will do."
+              align="center"
+              className="mb-16"
+            />
+
+            <EtiquetteBriefing />
           </div>
         </section>
 

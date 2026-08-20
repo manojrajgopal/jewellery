@@ -38,6 +38,8 @@ import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import StitchPathReveal from '@/components/motion/StitchPathReveal';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
+import GoldLeafGild from '@/components/motion/GoldLeafGild';
+import ArchiveDrawer from '@/components/ui/ArchiveDrawer';
 
 /**
  * The four portraits, and the one decision each generation is remembered for.
@@ -706,6 +708,47 @@ export default function AboutClient() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+
+        {/* ---- The holdings ----
+             The history is argued twice above: once as a timeline and once as a
+             set of claims with evidence behind them. This is neither. It is the
+             inventory of what physically survives in the room upstairs, drawer
+             by drawer, including the drawer that is empty.
+
+             Placed immediately before the wager, because the wager is a promise
+             about the future and this is the only honest measure of whether the
+             house has kept the same promise before. A heading laid in gold leaf
+             over a cabinet of gaps is the argument in one image. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <SmokeVeil intensity={0.2} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <div className="mb-14 text-center">
+              <p className="mb-6 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                The archive, drawer by drawer
+              </p>
+
+              <GoldLeafGild
+                text="What survives"
+                as="h2"
+                flakes={7}
+                className="mx-auto text-5xl md:text-7xl"
+              />
+
+              <p className="mx-auto mt-8 max-w-2xl font-sans text-base font-light leading-relaxed text-muted md:text-lg">
+                Every heritage house has gaps in its archive and almost none of them are published,
+                which is what lets a shop imply a continuity it cannot document. Ours has a five-year
+                hole in the middle of the 1940s and six hundred drawings nobody can attribute. Both
+                are in the cabinet below, in their own drawers, labelled.
+              </p>
+            </div>
+
+            <ArchiveDrawer />
           </div>
         </section>
 

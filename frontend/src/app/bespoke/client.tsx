@@ -33,6 +33,7 @@ import ChromaSplit from '@/components/motion/ChromaSplit';
 import MetaballGold from '@/components/motion/MetaballGold';
 import SilkWave from '@/components/motion/SilkWave';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import StoneSourcingBrief from '@/components/ui/StoneSourcingBrief';
 
 const JOURNEY = [
   {
@@ -506,6 +507,42 @@ export default function BespokeClient() {
       </section>
 
       {/* ---------------- FAQ ---------------- */}
+      {/* ---- Whether the stone exists ----
+           The brief above takes the commission and the studio prices the ring.
+           Neither answers the question that decides whether any of it is
+           possible: is there a stone like that, findable, in this budget, in
+           this timescale?
+
+           Almost every dealer in the trade answers "leave it with me" and then
+           spends six weeks negotiating the customer down. The arithmetic that
+           makes that unnecessary is not complicated and is deliberately never
+           shown — price per carat *steps* at the weights the market trades in,
+           and every constraint added multiplies the search rather than adding to
+           it.
+
+           The single most useful output is therefore not the price. It is which
+           one requirement to drop, because the factors multiply and no customer
+           can work out in their head which of their three requirements was the
+           expensive one. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <RippleGrid spacing={52} reach={175} dot={1} />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Before Anything Is Drawn"
+            title="Does the stone you have described actually exist"
+            highlightWords={['exist']}
+            subtitle="Weight, origin, treatment and budget, against what the market will really produce and how long it takes to find. The marks on the weight slider are the points where the price steps for no physical reason at all — crossing one costs more than most people expect, and stopping a hundredth of a carat short is invisible in the setting."
+            align="center"
+            className="mb-16"
+          />
+
+          <StoneSourcingBrief />
+        </div>
+      </section>
+
       <section className="relative bg-canvas-alt py-24 md:py-32">
         <div className="mx-auto max-w-4xl px-6 md:px-12">
           <SectionHeading

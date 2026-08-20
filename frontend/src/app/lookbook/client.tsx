@@ -32,6 +32,7 @@ import { collections } from '@/data/collections';
 import GravityChainRail from '@/components/motion/GravityChainRail';
 import ElasticRail from '@/components/motion/ElasticRail';
 import TypeOnPath from '@/components/motion/TypeOnPath';
+import SeasonPalette from '@/components/ui/SeasonPalette';
 import { products } from '@/data/products';
 
 /** The chapters, as a pile of cards that stack up while the reader scrolls. */
@@ -547,6 +548,39 @@ export default function LookbookClient() {
         </CinematicLetterbox>
 
         <GoldRibbonWeave className="px-6" height={110} ribbons={4} />
+
+        {/* ---- The palette, sourced ----
+             Every lookbook has a palette and almost none of them say where it
+             came from, which turns the most concrete decision of the season into
+             decoration. A palette is a set of instructions to a bench about which
+             metals go next to which stones, and it is arrived at by looking at
+             specific physical things — a mango cut open, ink on a ledger page,
+             cold charcoal from the hearth.
+
+             The mixing strip is why this is not a list. Two colours held together
+             with a hard join is the only way anybody has ever chosen a
+             combination, and a gradient between them blurs away exactly the
+             question being asked. The entry that matters most on each swatch is
+             the metal it *fights*, because the question at the counter is always
+             about the piece somebody already owns. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={10} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6">
+            <SectionHeading
+              eyebrow="Six Colours, Six Sources"
+              title="A palette is an instruction, not a mood"
+              highlightWords={['instruction,']}
+              subtitle="Each of these was taken from a specific physical thing in or near the workshop, and each one carries the metal it fights as well as the metals it works with. The second list is the useful one."
+              align="center"
+              className="mb-16"
+            />
+
+            <SeasonPalette />
+          </div>
+        </section>
 
         <section className="relative px-6 py-24 text-center md:py-32">
           <SectionHeading

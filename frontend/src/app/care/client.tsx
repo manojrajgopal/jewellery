@@ -38,6 +38,9 @@ import PatinaTimeline from '@/components/ui/PatinaTimeline';
 import ElasticRail from '@/components/motion/ElasticRail';
 import StitchPathReveal from '@/components/motion/StitchPathReveal';
 import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
+import MetalAllergyAdvisor from '@/components/ui/MetalAllergyAdvisor';
+import ChainStrengthGauge from '@/components/ui/ChainStrengthGauge';
+import ResizeFeasibility from '@/components/ui/ResizeFeasibility';
 
 /** The five stories every jeweller has. Rendered as warnings, not as anecdotes. */
 const DISASTERS = [
@@ -590,6 +593,80 @@ export default function CareClient() {
                 are the reason a claim fails.
               </p>
             </div>
+          </div>
+        </section>
+
+
+        {/* ---- What is in the alloy ----
+             The page has covered how metals age and how to store them. It has not
+             said what is actually *in* them, and for one adult in seven that is
+             the only question on this page that matters. Placed before the FAQ,
+             because a nickel reaction is not an occasional question — it is the
+             single commonest reason a piece stops being worn. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={12} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="What Is In It"
+              title="Almost nobody reacts to gold"
+              highlightWords={['gold']}
+              subtitle="They react to what else is in the alloy — overwhelmingly nickel, and a karat number tells you nothing at all about it. Every alloy we work is below, with the nickel release measured against the only threshold that has a law behind it."
+              align="center"
+              className="mb-14"
+            />
+
+            <MetalAllergyAdvisor />
+          </div>
+        </section>
+
+        {/* ---- Whether the chain can carry it ----
+             The most avoidable loss in the trade, and almost always the shop's
+             fault rather than the customer's. Sits next to the alloy disclosure
+             because both are cases of a number that exists, is knowable, and is
+             simply never quoted across a counter. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <RippleGrid spacing={54} reach={170} dot={1} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Load"
+              title="The chain is not the part that breaks"
+              highlightWords={['breaks']}
+              subtitle="The jump ring is. Every chain here is rated by what it will carry for twenty years rather than what it will hold this afternoon — and the number that matters is the shock load when it catches on a coat, which is several times the weight of the pendant."
+              align="center"
+              className="mb-14"
+            />
+
+            <ChainStrengthGauge />
+          </div>
+        </section>
+
+        {/* ---- Whether it can be sized ----
+             Between the two questions above and the FAQ, because it is the same
+             kind of answer: a structural fact about a piece that decides what can
+             be done to it later, knowable now, and almost never said out loud at
+             the point of sale. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/60 py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <CausticsCanvas intensity={0.26} lobes={4} speed={38} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Alteration"
+              title="Every shop can size that ring"
+              highlightWords={['can']}
+              subtitle="A meaningful number of them should not. The travel available in a ring is decided by its construction and nothing else, and four of the ten constructions below cannot be sized at all — which is a conversation for before you buy rather than for five years afterwards."
+              align="center"
+              className="mb-14"
+            />
+
+            <ResizeFeasibility />
           </div>
         </section>
 
