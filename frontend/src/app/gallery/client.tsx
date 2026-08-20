@@ -18,6 +18,12 @@ import InkBleedReveal from '@/components/motion/InkBleedReveal';
 import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
 import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
 import SilkWave from '@/components/motion/SilkWave';
+import VertigoZoom from '@/components/motion/VertigoZoom';
+import ChromaSplit from '@/components/motion/ChromaSplit';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import BokehDrift from '@/components/motion/BokehDrift';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import { contactSheet } from '@/data/editorial';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
@@ -308,6 +314,66 @@ export default function GalleryClient() {
             speed={11}
             reverse
           />
+        </div>
+      </section>
+
+
+      {/* ---- The lens itself ----
+           Every other section on this page is about what was photographed. This
+           one is about the glass it was photographed through, which is the half
+           of a picture nobody credits.
+
+           Three optical faults, reproduced rather than described: the aberration
+           that appears when the page is moving quickly, the leaks that come in
+           when a camera back is not light-tight, and the dolly zoom, which is the
+           only one of the three that was ever done on purpose. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <BokehDrift count={22} intensity={0.48} speed={0.7} blades={7} />
+          <LightLeakOverlay intensity={0.44} interval={8} onClick />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center md:px-12">
+          <ChromaSplit amount={7} saturateAt={1800}>
+            <p className="mb-6 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Faults, on purpose
+            </p>
+            <h2 className="mx-auto max-w-3xl font-display text-3xl leading-tight text-primary md:text-5xl">
+              Scroll quickly and the colours come apart
+            </h2>
+          </ChromaSplit>
+
+          <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+            Cheap glass cannot bring red and blue to the same focal plane, so a fast pan smears them
+            in opposite directions. The heading above does it in proportion to how fast this page is
+            actually moving \u2014 stop, and it converges. Tap anywhere for a light leak.
+          </p>
+
+          <VertigoZoom intensity={0.9} className="mt-20">
+            <TypeSlamHeading
+              lines={['The room falls away.', 'The subject does not.']}
+              highlightWords={['not.']}
+              as="h3"
+              className="font-display text-2xl leading-[1.15] text-primary md:text-4xl"
+            />
+            <p className="mx-auto mt-6 max-w-lg font-sans text-sm font-light leading-relaxed text-muted">
+              A dolly zoom: the camera tracks in while the lens zooms out, so the subject holds its
+              size and the world behind it collapses. Invented for a film about vertigo, and still
+              the only shot that makes a still room feel unsafe.
+            </p>
+          </VertigoZoom>
+
+          <div className="mt-20">
+            <EchoTrailText
+              text="Half of every photograph here is glass."
+              as="p"
+              echoes={3}
+              spread={17}
+              direction="right"
+              persistent
+              className="font-display text-2xl leading-snug text-primary md:text-3xl"
+            />
+          </div>
         </div>
       </section>
 

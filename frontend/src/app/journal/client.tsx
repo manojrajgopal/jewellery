@@ -19,6 +19,11 @@ import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import InkBleedReveal from '@/components/motion/InkBleedReveal';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import HoverPeelCard from '@/components/motion/HoverPeelCard';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import ChromaSplit from '@/components/motion/ChromaSplit';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import BokehDrift from '@/components/motion/BokehDrift';
+import SmokeVeil from '@/components/motion/SmokeVeil';
 
 import { journal, journalTopics, type JournalEntry } from '@/data/editorial';
 
@@ -216,6 +221,58 @@ export default function JournalClient() {
                 Nothing filed under {topic} yet. The bench is working on it.
               </p>
             )}
+          </div>
+        </section>
+
+
+        {/* ---- The standing position ----
+             The grid above is what the house has written; this is why it writes
+             at all. Placed between the archive and the press run, where a reader
+             who has scrolled a wall of headlines needs a reason to have read them.
+
+             The type here is the only place on the site where the echo trail runs
+             at full strength on a heading \u2014 copies of the line arriving behind
+             it, converging faster than the line itself, which is what motion blur
+             looks like to the eye without costing a filter pass. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-24 md:py-32">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={16} intensity={0.36} speed={0.55} blades={6} />
+            <SmokeVeil intensity={0.2} originX={0.78} speed={0.6} count={14} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-4xl px-6 text-center md:px-12">
+            <ChromaSplit amount={6} saturateAt={2000}>
+              <p className="mb-7 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Why we publish
+              </p>
+            </ChromaSplit>
+
+            <TypeSlamHeading
+              lines={['A trade that', 'explains itself', 'sells less.']}
+              highlightWords={['less.']}
+              as="h2"
+              gap={0.17}
+              className="font-display text-3xl leading-[1.1] text-primary sm:text-4xl md:text-6xl"
+            />
+
+            <div className="mx-auto mt-10 max-w-2xl space-y-6">
+              <p className="font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+                Which is the honest reason most jewellers do not. Every piece here gives away
+                something that would be easier to keep \u2014 what a certificate does not cover, why
+                clarity above eye-clean is money spent on nothing, which of our own claims we cannot
+                substantiate.
+              </p>
+
+              <EchoTrailText
+                text="We would rather have fewer, better-informed customers."
+                as="p"
+                echoes={3}
+                spread={18}
+                direction="left"
+                persistent
+                className="font-display text-2xl leading-snug text-primary md:text-3xl"
+              />
+            </div>
           </div>
         </section>
 

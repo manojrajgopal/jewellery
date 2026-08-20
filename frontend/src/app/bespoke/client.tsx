@@ -17,11 +17,17 @@ import Odometer from '@/components/motion/Odometer';
 import ScrollTextMask from '@/components/motion/ScrollTextMask';
 import CTAButton from '@/components/ui/CTAButton';
 import EngravingStudio from '@/components/ui/EngravingStudio';
+import SettingExplorer from '@/components/ui/SettingExplorer';
+import BandProfileSelector from '@/components/ui/BandProfileSelector';
 import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
 import FlipClock from '@/components/motion/FlipClock';
 import FoilCard from '@/components/motion/FoilCard';
 import RippleGrid from '@/components/motion/RippleGrid';
 import VaultDoorReveal from '@/components/motion/VaultDoorReveal';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import VertigoZoom from '@/components/motion/VertigoZoom';
+import ChromaSplit from '@/components/motion/ChromaSplit';
+import MetaballGold from '@/components/motion/MetaballGold';
 import SilkWave from '@/components/motion/SilkWave';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 
@@ -397,6 +403,58 @@ export default function BespokeClient() {
           />
 
           <PackagingConfigurator />
+        </div>
+      </section>
+
+
+      {/* ---------------- In section ----------------
+           The two decisions a commission actually turns on, and the two a client
+           almost never arrives with an answer to. A ring is chosen from a picture
+           of its front, which is the one face that decides nothing: the setting
+           decides whether the stone survives a decade, and the inside of the band
+           decides whether the ring is still being worn after one.
+
+           Both tools draw sections rather than renders. That is the point — a
+           render shows the stone, and what is being chosen here is the metal. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <SmokeVeil intensity={0.22} originX={0.8} speed={0.6} count={16} />
+          <MetaballGold count={5} intensity={0.22} step={4} attract={false} />
+          <div className="absolute inset-0 bg-gradient-to-b from-canvas via-canvas/40 to-canvas" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+          <VertigoZoom intensity={0.5} className="mb-14">
+            <SectionHeading
+              eyebrow="In Section"
+              title="The half nobody photographs"
+              highlightWords={['nobody']}
+              subtitle="Before we draw anything, two questions have to be settled in metal. How the stone is held, and what the band feels like from the inside. Neither is visible in a photograph and both decide whether the piece is still worn in ten years."
+              align="center"
+            />
+          </VertigoZoom>
+
+          <SettingExplorer className="mb-20" />
+
+          <GoldDivider variant="jewel" className="my-20" />
+
+          <div className="mb-14 text-center">
+            <ChromaSplit amount={5} saturateAt={2200}>
+              <p className="mb-4 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                And the band itself
+              </p>
+              <h3 className="mx-auto max-w-2xl font-display text-2xl font-light leading-snug text-primary md:text-3xl">
+                A court profile runs half a size loose
+              </h3>
+            </ChromaSplit>
+            <p className="mx-auto mt-4 max-w-xl font-sans text-sm font-light leading-relaxed text-muted">
+              Which is the single most useful sentence on this page, and it is almost never said
+              before a ring is ordered. The correction changes again at every width, so both are
+              worked out here rather than discovered at the fitting.
+            </p>
+          </div>
+
+          <BandProfileSelector />
         </div>
       </section>
 

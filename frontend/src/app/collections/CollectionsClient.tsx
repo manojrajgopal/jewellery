@@ -17,6 +17,12 @@ import VelvetTray from '@/components/motion/VelvetTray';
 import RippleGrid from '@/components/motion/RippleGrid';
 import MosaicShuffle from '@/components/motion/MosaicShuffle';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import RackFocusPlates, { type FocusPlate } from '@/components/motion/RackFocusPlates';
+import StageSweep from '@/components/motion/StageSweep';
+import BokehDrift from '@/components/motion/BokehDrift';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import ChromaSplit from '@/components/motion/ChromaSplit';
 import PriceLadder from '@/components/ui/PriceLadder';
 import { StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 import { collections } from '@/data/collections';
@@ -56,6 +62,39 @@ const PLATE_WALL: ColumnPlate[] = [
 const CATEGORY_WORDS = Array.from(new Set(products.map((p) => p.category))).map(
   (c) => c.charAt(0).toUpperCase() + c.slice(1)
 );
+
+/**
+ * Three plates for the focus pull, chosen to be three *scales* of the same
+ * decision rather than three different pieces.
+ *
+ * The whole point of a rack focus is that only one thing is sharp at a time, so
+ * the plates have to be answers to the same question at different distances \u2014
+ * here: the whole collection, one suite, one stone. Three unrelated products
+ * would read as a slideshow with a blur on it.
+ *
+ * Drawn from the live collection list where possible, so a change to the
+ * catalogue does not leave this section pointing at something retired.
+ */
+const CHOOSING_PLATES: FocusPlate[] = [
+  {
+    src: collections[0]?.image ?? '/images/collections/bridal.jpg',
+    alt: 'A full collection laid out',
+    caption: 'The collection. Which is a question about who you are, and takes about a minute.',
+    mark: 'Collection',
+  },
+  {
+    src: collections[1]?.image ?? '/images/collections/heritage.jpg',
+    alt: 'One suite from the collection',
+    caption: 'The suite. Which is a question about the occasion, and takes about an hour.',
+    mark: 'Suite',
+  },
+  {
+    src: '/images/products/ring.jpg',
+    alt: 'A single piece, close',
+    caption: 'The piece. Which is a question about the next forty years, and should take longer.',
+    mark: 'Piece',
+  },
+];
 
 export default function CollectionsClient() {
   const [active, setActive] = useState('all');
@@ -260,6 +299,50 @@ export default function CollectionsClient() {
               className="mb-14"
             />
             <PriceLadder />
+          </section>
+
+
+          {/* ---- Three scales of the same decision ----
+               The wall above sorts by collection and the ladder sorts by price;
+               both are ways of narrowing. This is about the narrowing itself \u2014
+               three plates at three distances, one sharp at a time, pulled by the
+               scroll or by hand.
+
+               The plates are deliberately the same decision at three scales rather
+               than three different pieces. A focus pull between unrelated subjects
+               is a slideshow with a blur on it; going one step closer each time is
+               what makes it read as one person making up their mind. */}
+          <section className="relative mt-24 overflow-hidden rounded-[2.5rem] border border-hairline bg-canvas-alt/40 px-6 py-20 md:px-12 md:py-28">
+            <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+              <StageSweep scrollDriven intensity={0.22} width={0.22} crossed />
+              <BokehDrift count={16} intensity={0.36} speed={0.55} blades={6} />
+              <LightLeakOverlay intensity={0.28} interval={12} onClick />
+            </div>
+
+            <div className="relative z-10 mx-auto max-w-5xl">
+              <div className="mb-14 text-center">
+                <ChromaSplit amount={5} saturateAt={2100}>
+                  <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                    Pull focus
+                  </p>
+                </ChromaSplit>
+
+                <TypeSlamHeading
+                  lines={['Choosing happens', 'at three distances.']}
+                  highlightWords={['three']}
+                  as="h2"
+                  className="mx-auto max-w-3xl font-display text-3xl leading-[1.12] text-primary md:text-5xl"
+                />
+
+                <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                  And most people spend the least time on the last one, which is the only one that
+                  matters. Scroll to pull focus through all three, or take the ring below and hold
+                  it wherever you actually are.
+                </p>
+              </div>
+
+              <RackFocusPlates plates={CHOOSING_PLATES} frameClassName="aspect-[16/9]" />
+            </div>
           </section>
 
           <GoldRibbonWeave className="mt-24" height={100} ribbons={4} />

@@ -20,6 +20,11 @@ import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
 import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
 import InkBleedReveal from '@/components/motion/InkBleedReveal';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import DeckShuffle, { type DeckCard } from '@/components/motion/DeckShuffle';
+import GemFacetTunnel from '@/components/motion/GemFacetTunnel';
+import BokehDrift from '@/components/motion/BokehDrift';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 
 import { lookbookLeaves, contactSheet } from '@/data/editorial';
 import { collections } from '@/data/collections';
@@ -97,6 +102,39 @@ const PLATES = [
  * reader either wants to turn pages, scan everything at once, or be walked through
  * it, and which one they want is not something the page can know in advance.
  */
+/**
+ * The season's chapters, as a hand rather than a bound book.
+ *
+ * Built from the lookbook leaves rather than from the contact sheet, because a
+ * leaf already carries the two things a card needs — a title and a line worth
+ * reading — where a contact frame carries only a slate.
+ *
+ * Every field on a leaf face is optional, and the imagery is not consistently on
+ * one side: some leaves carry the plate on the recto and the words on the verso,
+ * others the reverse. So each field is taken from whichever face has it, and any
+ * leaf that ends up without a picture is dropped rather than rendered as an empty
+ * card. Dropping is right here — a deck is a selection, not a complete index, and
+ * the bound book above already shows everything.
+ */
+const SEASON_CARDS: DeckCard[] = lookbookLeaves
+  .map((leaf) => {
+    const image = leaf.recto.image ?? leaf.verso.image;
+    if (!image) return null;
+    return {
+      id: leaf.id,
+      title: leaf.verso.title ?? leaf.recto.title ?? 'This season',
+      meta: leaf.verso.kicker ?? leaf.recto.kicker ?? leaf.verso.plate ?? 'Plate',
+      image,
+      note:
+        leaf.verso.quote ??
+        leaf.recto.quote ??
+        leaf.verso.body ??
+        'Shot on the floor, under the light the piece will actually be seen in.',
+    } satisfies DeckCard;
+  })
+  .filter((card): card is DeckCard => card !== null)
+  .slice(0, 6);
+
 export default function LookbookClient() {
   // A fixed date rather than a computed one: the private view is a real event, and a
   // countdown to "three weeks from whenever you loaded this" is theatre.
@@ -266,6 +304,63 @@ export default function LookbookClient() {
                 </CTAButton>
               </div>
             </div>
+          </div>
+        </section>
+
+
+        {/* ---- The season, dealt ----
+             The plate wall above is the season arranged; this is the season
+             handed over. Cut the deck or throw the top card aside \u2014 it is the
+             same six looks and an entirely different relationship to them, and it
+             is the only place on the site where the imagery can be touched
+             rather than only scrolled past. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/40 py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={18} intensity={0.4} speed={0.6} blades={6} />
+            <LightLeakOverlay intensity={0.32} interval={10} onClick />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Hand"
+              title="Six looks, dealt rather than hung"
+              highlightWords={['dealt']}
+              subtitle="Drag the top card off, or cut the deck and see where it lands. The order is not curated once you start moving them, which is roughly how a season actually gets chosen."
+              align="center"
+              className="mb-14"
+            />
+
+            <DeckShuffle cards={SEASON_CARDS} />
+          </div>
+        </section>
+
+        {/* ---- Into the stone ----
+             A short held passage before the closing invitation. The facet tunnel
+             is the one effect on the site that reads as going *inside* something
+             rather than looking at it, which is the right last note for a book of
+             surfaces. */}
+        <section className="relative overflow-hidden bg-surface-sunken py-28 md:py-36">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <GemFacetTunnel rings={13} sides={8} intensity={0.5} twist={38} />
+            <div className="absolute inset-0 bg-[radial-gradient(56%_44%_at_50%_50%,rgb(var(--canvas)/0.78),transparent_78%)]" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-3xl px-6 text-center md:px-12">
+            <p className="mb-8 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Past the surface
+            </p>
+            <TypeSlamHeading
+              lines={['Every plate here', 'is the outside', 'of something.']}
+              highlightWords={['outside']}
+              as="h2"
+              gap={0.18}
+              className="font-display text-3xl leading-[1.1] text-primary md:text-5xl"
+            />
+            <p className="mx-auto mt-8 max-w-xl font-sans text-base font-light leading-relaxed text-secondary">
+              A lookbook can only ever photograph the face of a thing. What decides whether you keep
+              it is underneath \u2014 the setting, the profile of the band, and the forty minutes at
+              the bench that none of this shows.
+            </p>
           </div>
         </section>
 

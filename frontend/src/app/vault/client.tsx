@@ -7,15 +7,66 @@ import CTAButton from '@/components/ui/CTAButton';
 import ClientVault from '@/components/ui/ClientVault';
 import HeirloomNote from '@/components/ui/HeirloomNote';
 import StackBuilder from '@/components/ui/StackBuilder';
+import HouseCircle from '@/components/ui/HouseCircle';
+import AnniversaryDial from '@/components/ui/AnniversaryDial';
 import OccasionReminder from '@/components/ui/OccasionReminder';
 
 import MosaicShuffle from '@/components/motion/MosaicShuffle';
 import KaleidoscopeGem from '@/components/motion/KaleidoscopeGem';
+import BokehDrift from '@/components/motion/BokehDrift';
+import StageSweep from '@/components/motion/StageSweep';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import ScrollSpineTimeline, { type SpineNode } from '@/components/motion/ScrollSpineTimeline';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
 import RippleGrid from '@/components/motion/RippleGrid';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+
+/**
+ * What the house does with a piece over a lifetime, as the sequence it actually
+ * happens in rather than as a list of services.
+ *
+ * Written as intervals rather than as dates because a vault page is read by
+ * somebody at an unknown point in that sequence, and 'every eighteen months' is
+ * useful to all of them where '2027' is useful to none.
+ */
+const LIFETIME: SpineNode[] = [
+  {
+    marker: 'Day one',
+    title: 'The file opens',
+    body: 'Sizes, the alloy, the stone\u2019s report number, and a photograph of the piece before it has been worn. Everything a claim or a repair will ever need, recorded while it is still easy.',
+    aside: 'Kept whether or not you ever come back',
+  },
+  {
+    marker: 'Month 6',
+    title: 'The first check',
+    body: 'Claws settle in the first half-year more than in the ten after it. We look at every one of them, tighten what has moved, and say nothing if nothing has.',
+    aside: 'No charge, no appointment, no receipt needed',
+  },
+  {
+    marker: 'Every 18 months',
+    title: 'Clean, and look again',
+    body: 'An ultrasonic bath for what can take it and a hand clean for what cannot, then the same claw check under ten magnifications. This is the interval at which a loose stone is still a tightening rather than a loss.',
+  },
+  {
+    marker: 'Year 3',
+    title: 'Revalue',
+    body: 'Metal and stone prices move enough in three years to underinsure a piece by a third. A written valuation at replacement cost, dated, in a form an insurer accepts.',
+    aside: 'The commonest cause of a low settlement is an old valuation',
+  },
+  {
+    marker: 'Year 10',
+    title: 'The first real service',
+    body: 'Shank thinning is measured rather than guessed at, worn claw tips are re-tipped rather than polished away, and any plating is renewed. This is the point at which a well-made ring stops being new and starts being kept.',
+  },
+  {
+    marker: 'Whenever',
+    title: 'It changes hands',
+    body: 'Resized for a different finger, reset into something the next wearer will actually wear, or simply recorded against a new name. The file follows the piece, not the buyer.',
+    aside: 'The only entry here with no interval attached',
+  },
+];
 
 /**
  * The visitor's own page.
@@ -162,6 +213,88 @@ export default function VaultClient() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+
+        <GoldDivider variant="wide" className="px-6" />
+
+        {/* ---- Standing ----
+             The vault is the one page addressed to somebody who has already
+             bought, which makes it the only honest place to publish the tiers.
+             Both routes are shown: cumulative spend, and years since the first
+             piece. Somebody who bought one ring in 1998 and nothing since is a
+             patron of this house, and a scheme that counts only money says
+             otherwise. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-raised/30 py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <StageSweep intensity={0.2} width={0.26} seconds={19} />
+            <BokehDrift count={20} intensity={0.42} speed={0.55} blades={6} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Your Standing"
+              title="What we owe you afterwards"
+              highlightWords={['afterwards']}
+              subtitle="Every house in this trade keeps its customers in tiers and almost none publish where the lines are \u2014 which is how a house avoids ever honouring the top one. Ours are below, with both routes to each, and not one of the benefits is a discount."
+              align="center"
+              className="mb-14"
+            />
+
+            <HouseCircle />
+          </div>
+        </section>
+
+        {/* ---- The dates ----
+             Directly under the standings, because one of the two routes to a
+             standing is measured in years and this is the calendar those years
+             are counted on. Apart, the second route looks like an afterthought. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <RippleGrid spacing={52} reach={180} dot={1} />
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Dates"
+              title="Two traditions, and they disagree"
+              highlightWords={['disagree']}
+              subtitle="The older list is materials \u2014 paper, cotton, leather \u2014 and it runs out of ideas by year fifteen. The gemstone list was written by a retail jewellers\u2019 association in 1937, largely because the first list had almost no jewellery in it. Both are here, and labelled."
+              align="center"
+              className="mb-14"
+            />
+
+            <AnniversaryDial />
+          </div>
+        </section>
+
+        {/* ---- The long sequence ----
+             Drawn rather than listed. The line arrives at each entry as you
+             scroll to it, which is the only way to make an interval-based
+             schedule read as a sequence rather than as a price list. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/40 py-20 md:py-28">
+          <CausticsCanvas intensity={0.3} lobes={5} speed={34} />
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <div className="mb-16 text-center">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Over a lifetime
+              </p>
+              <EchoTrailText
+                text="A piece is not finished when you take it home."
+                as="h2"
+                echoes={3}
+                spread={16}
+                direction="left"
+                persistent
+                className="mx-auto max-w-2xl font-display text-3xl leading-snug text-primary md:text-4xl"
+              />
+              <p className="mx-auto mt-5 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                Intervals rather than dates, because you are reading this at an unknown point in the
+                sequence. Everything below happens whether or not you ask for it.
+              </p>
+            </div>
+
+            <ScrollSpineTimeline nodes={LIFETIME} />
           </div>
         </section>
 

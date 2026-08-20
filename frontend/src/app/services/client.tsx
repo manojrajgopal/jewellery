@@ -16,6 +16,13 @@ import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import RippleGrid from '@/components/motion/RippleGrid';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
+import ScrollSpineTimeline, { type SpineNode } from '@/components/motion/ScrollSpineTimeline';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import MetaballGold from '@/components/motion/MetaballGold';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import StageSweep from '@/components/motion/StageSweep';
+import VertigoZoom from '@/components/motion/VertigoZoom';
 import RepairTriage from '@/components/ui/RepairTriage';
 import SavingsPlanner from '@/components/ui/SavingsPlanner';
 import PackagingConfigurator from '@/components/ui/PackagingConfigurator';
@@ -154,6 +161,56 @@ const FAQS = [
     question: 'What does the lifetime care programme include?',
     answer:
       'Annual ultrasonic cleaning, setting inspection, and re-polishing for any AURUM piece, at no charge, for as long as you own it.',
+  },
+];
+
+/**
+ * What actually happens to a piece between the counter and the collection call.
+ *
+ * Written as the sequence rather than as a list of services, because the anxiety
+ * a customer has when handing over something irreplaceable is not about the price
+ * list \u2014 it is about where the piece is and who has it. Every entry names the
+ * point at which the customer is told something, for the same reason.
+ *
+ * `aside` carries the honest timing, including the two places where the answer is
+ * that it waits.
+ */
+const BENCH_SEQUENCE: SpineNode[] = [
+  {
+    marker: 'At the counter',
+    title: 'Weighed, photographed, receipted',
+    body: 'Before it leaves your hands: total weight to two decimal places, photographs from six angles including any inscription, and a written note of every existing chip and worn claw. You keep a copy.',
+    aside: 'Takes about eight minutes and settles most of what people worry about',
+  },
+  {
+    marker: 'Same day',
+    title: 'Assessed under ten magnifications',
+    body: 'A bench jeweller \u2014 not a counter assistant \u2014 looks at what you have described and at what you have not. Most pieces come in for one fault and have two.',
+    aside: 'You are told the second one before any work starts, not after',
+  },
+  {
+    marker: 'Before anything is done',
+    title: 'The quote, itemised by operation',
+    body: 'Not a single figure. Each operation priced separately, so you can decline the polish and keep the re-tipping, or take the structural work now and the cosmetic work later.',
+    aside: 'Nothing is begun without a yes to a specific line',
+  },
+  {
+    marker: 'Day 1 to 14',
+    title: 'On the bench, or waiting for stone',
+    body: 'Straightforward work is done within a fortnight. Where a stone has to be matched, the piece waits in the strongroom rather than sitting part-finished on a bench \u2014 and matching a stone honestly can take months.',
+    aside: 'The two-week figure is for the work, not for the waiting',
+  },
+  {
+    marker: 'On completion',
+    title: 'Checked by someone who did not do it',
+    body: 'A second bench jeweller inspects the work, because the person who set a stone is the worst-placed person to notice they set it a degree off.',
+    aside: 'It is why the last day of a repair is a day of doing nothing',
+  },
+  {
+    marker: 'Back at the counter',
+    title: 'Photographed again, weighed again',
+    body: 'The same six angles and the same scale, handed to you beside the originals. Any weight difference is explained \u2014 polishing removes metal, and you should be told how much.',
+    aside: 'The only claim we make about our own work that you can check yourself',
   },
 ];
 
@@ -372,6 +429,75 @@ export default function ServicesClient() {
 
           <PackagingConfigurator />
         </div>
+      </section>
+
+
+      {/* ---- The sequence ----
+           The cards above say what we do; this says what happens, in order, to
+           the specific object you handed over. That is a different anxiety and
+           it is the one people actually have \u2014 nobody hesitates over the price
+           of a re-tip, they hesitate over letting go of the ring.
+
+           Drawn rather than listed, so the line reaches each stage as you scroll
+           to it. A repair is a sequence with waiting in it, and a bulleted list
+           flattens the waiting out of it. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <MetaballGold count={5} intensity={0.24} step={4} attract={false} />
+          <SmokeVeil intensity={0.2} originX={0.24} speed={0.65} count={15} />
+          <div className="absolute inset-0 bg-gradient-to-b from-canvas via-canvas/40 to-canvas" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <div className="mb-16 text-center">
+            <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              After you hand it over
+            </p>
+            <TypeSlamHeading
+              lines={['Nobody hesitates', 'over the price.', 'They hesitate over letting go.']}
+              highlightWords={['go.']}
+              as="h2"
+              gap={0.17}
+              className="mx-auto max-w-4xl font-display text-3xl leading-[1.1] text-primary md:text-5xl"
+            />
+            <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+              So here is every step between the counter and the collection call, including the two
+              places where the honest answer is that your piece is sitting in the strongroom waiting
+              for a stone to be matched properly.
+            </p>
+          </div>
+
+          <ScrollSpineTimeline nodes={BENCH_SEQUENCE} />
+        </div>
+      </section>
+
+      {/* ---- The guarantee ----
+           One held shot before the questions. Everything above is procedure;
+           this is the single sentence the procedure exists to make true. */}
+      <section className="relative overflow-hidden bg-surface-sunken py-28 md:py-36">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <StageSweep intensity={0.24} width={0.3} crossed seconds={17} />
+          <div className="absolute inset-0 bg-[radial-gradient(58%_46%_at_50%_50%,rgb(var(--canvas)/0.8),transparent_78%)]" />
+        </div>
+
+        <VertigoZoom intensity={0.7} className="relative z-10">
+          <div className="mx-auto max-w-3xl px-6 text-center md:px-12">
+            <EchoTrailText
+              text="Anything we made, for as long as it exists."
+              as="h2"
+              echoes={3}
+              spread={18}
+              direction="left"
+              persistent
+              className="font-display text-3xl leading-snug text-primary md:text-5xl"
+            />
+            <p className="mx-auto mt-8 max-w-xl font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+              Whether or not you were the one who bought it, whether or not you have a receipt, and
+              with no time limit at all. The mark inside the shank tells us it is ours, which is the
+              only proof the guarantee has ever required.
+            </p>
+          </div>
+        </VertigoZoom>
       </section>
 
       {/* FAQ */}

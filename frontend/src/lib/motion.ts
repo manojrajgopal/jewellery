@@ -1072,3 +1072,426 @@ export const onceInViewFull = { once: true, margin: '-30% 0px -30% 0px' } as con
 
 /** For rails and marquees: fires early and re-fires, because they loop. */
 export const alwaysInView = { once: false, margin: '10% 0px 10% 0px' } as const;
+
+/* ===========================================================================
+   CINEMA II — a second grammar, added rather than replacing the first.
+   Everything above stays as it was; what follows is the vocabulary the newer
+   sections are built from. The split is deliberate: the original set is tuned
+   for reveals (something arrives), this set is tuned for *camera* (the frame
+   itself moves, focuses, or is cut).
+   =========================================================================== */
+
+/**
+ * Easing curves borrowed from camera hardware rather than from UI convention.
+ *
+ * A physical lens does not ease the way a CSS default does — a focus ring has
+ * mass and backlash, a zoom rocker ramps, a shutter is nearly instant at both
+ * ends. These are the curves that make a transform read as an optical event
+ * instead of a div moving.
+ */
+export const easeLens = {
+  /** Focus ring: slow to break static friction, then quick, then a hair of settle. */
+  focusRing: [0.16, 0.84, 0.24, 1] as const,
+  /** Zoom rocker: linear-ish middle with soft ends, the way a servo ramps. */
+  rocker: [0.45, 0.05, 0.55, 0.95] as const,
+  /** Shutter: violent open, violent close. */
+  shutter: [0.85, 0, 0.15, 1] as const,
+  /** Whip: everything happens in the first fifth of the duration. */
+  whip: [0.05, 0.7, 0.1, 1] as const,
+  /** Crash: overshoots hard, the way a crash zoom lands past its mark. */
+  crash: [0.5, 1.6, 0.3, 1] as const,
+  /** Gravity: accelerates all the way in, no ease-out — for anything falling. */
+  gravity: [0.55, 0.02, 0.9, 0.35] as const,
+  /** Silk drape: fabric settling, long tail. */
+  drape: [0.12, 0.62, 0.2, 1] as const,
+} as const;
+
+/**
+ * Spring presets keyed by the physical thing they imitate, so a call site reads
+ * as a decision about material rather than a pair of magic numbers.
+ */
+export const springsHeavy = {
+  /** A vault door — enormous mass, almost no bounce. */
+  vault: { type: 'spring', stiffness: 42, damping: 26, mass: 2.6 },
+  /** A velvet tray sliding on a runner. */
+  tray: { type: 'spring', stiffness: 120, damping: 22, mass: 1.3 },
+  /** A gemstone dropped into a setting — quick, one small rebound. */
+  seat: { type: 'spring', stiffness: 420, damping: 20, mass: 0.6 },
+  /** A pendant on a chain — swings twice before it stills. */
+  pendant: { type: 'spring', stiffness: 90, damping: 9, mass: 1 },
+  /** A loupe snapping to its detent. */
+  detent: { type: 'spring', stiffness: 700, damping: 34, mass: 0.5 },
+  /** Paper — light, over-damped, no overshoot at all. */
+  leaf: { type: 'spring', stiffness: 180, damping: 30, mass: 0.4 },
+} as const;
+
+/**
+ * Rack focus: the background gives up sharpness as the subject takes it.
+ *
+ * Used as a pair — `rackFocusNear` on the layer that ends sharp, `rackFocusFar`
+ * on the one that ends soft. Both animate `filter` and a whisker of scale,
+ * because a real lens breathes: pulling focus changes the field of view very
+ * slightly, and without that the two plates read as a crossfade instead.
+ */
+export const rackFocusNear: Variants = {
+  hidden: { opacity: 0.55, filter: 'blur(14px) saturate(0.8)', scale: 1.06 },
+  visible: {
+    opacity: 1,
+    filter: 'blur(0px) saturate(1)',
+    scale: 1,
+    transition: { duration: 1.1, ease: easeLens.focusRing },
+  },
+};
+
+export const rackFocusFar: Variants = {
+  hidden: { opacity: 1, filter: 'blur(0px) saturate(1)', scale: 1 },
+  visible: {
+    opacity: 0.7,
+    filter: 'blur(10px) saturate(0.82)',
+    scale: 1.04,
+    transition: { duration: 1.1, ease: easeLens.focusRing },
+  },
+};
+
+/**
+ * Dolly zoom — the vertigo shot. Subject holds its size while the field of view
+ * collapses around it, which on a flat page means scaling the frame up while
+ * pulling perspective down.
+ *
+ * It has to be applied to a container with `transformStyle: preserve-3d` and a
+ * child that counter-scales, otherwise it is just a zoom. `VertigoZoom` does
+ * that wiring; this is the variant it drives.
+ */
+export const vertigoPush: Variants = {
+  hidden: { scale: 1, perspective: 1400 },
+  visible: {
+    scale: 1.35,
+    perspective: 380,
+    transition: { duration: 1.6, ease: easeLens.rocker },
+  },
+};
+
+/** The counter-transform the subject inside a vertigo frame needs. */
+export const vertigoHold: Variants = {
+  hidden: { scale: 1, z: 0 },
+  visible: { scale: 0.74, z: 120, transition: { duration: 1.6, ease: easeLens.rocker } },
+};
+
+/**
+ * Crash zoom: a hard push that lands past its mark and snaps back. Deliberately
+ * short — anything over about 500ms stops reading as a crash and starts reading
+ * as a slow zoom that happens to overshoot.
+ */
+export const crashZoom: Variants = {
+  hidden: { scale: 0.62, opacity: 0, filter: 'blur(8px)' },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 0.48, ease: easeLens.crash },
+  },
+};
+
+/**
+ * Match cut: the outgoing and incoming frames share a silhouette, so the cut
+ * lands on the shape rather than on the content. Scale and rotation stay put;
+ * only the fill changes.
+ */
+export const matchCut: Variants = {
+  hidden: { opacity: 0, filter: 'brightness(2.4) contrast(0.6)' },
+  visible: {
+    opacity: 1,
+    filter: 'brightness(1) contrast(1)',
+    transition: { duration: 0.55, ease: easeLens.shutter },
+  },
+};
+
+/**
+ * Swish pan — a whip with motion blur baked into the skew. The blur is faked
+ * with skewX rather than a filter because a real blur filter on a full-bleed
+ * plate is a repaint the compositor cannot hand to the GPU.
+ */
+export const swishPan = (from: 'left' | 'right' = 'right'): Variants => {
+  const dir = from === 'right' ? 1 : -1;
+  return {
+    hidden: { x: `${dir * 55}%`, skewX: dir * -14, opacity: 0 },
+    visible: {
+      x: '0%',
+      skewX: 0,
+      opacity: 1,
+      transition: { duration: 0.72, ease: easeLens.whip },
+    },
+  };
+};
+
+/** A film-burn flash: the frame blooms white-hot, then resolves. */
+export const filmBurn: Variants = {
+  hidden: { opacity: 0, filter: 'brightness(3) saturate(0) blur(6px)', scale: 1.08 },
+  visible: {
+    opacity: 1,
+    filter: 'brightness(1) saturate(1) blur(0px)',
+    scale: 1,
+    transition: { duration: 0.9, ease: easeLens.shutter, filter: { duration: 1.2 } },
+  },
+};
+
+/**
+ * Parallax depth, expressed as a plate number rather than a pixel offset.
+ *
+ * Plate 0 is the matte painting at infinity, plate 4 is the foreground gauze.
+ * Keeping it ordinal means a scene stays internally consistent when someone
+ * changes the scroll distance later — the plates keep their relationship.
+ */
+export const platePlane = (plate = 0) => {
+  const depth = Math.max(0, Math.min(4, plate));
+  return {
+    /** Multiplier to apply to a scroll-linked translate. */
+    rate: 0.16 + depth * 0.22,
+    /** Plates further back are hazier and slightly desaturated. */
+    haze: Math.max(0, (2 - depth) * 0.09),
+    scale: 1 + (4 - depth) * 0.012,
+  };
+};
+
+/**
+ * Gravity drop: accelerates the whole way down and lands without a bounce, then
+ * the shadow catches up. For anything that should feel like it has weight —
+ * an ingot, a case lid, a stone into a tray.
+ */
+export const gravityDrop: Variants = {
+  hidden: { y: -140, opacity: 0, rotate: -4 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    rotate: 0,
+    transition: { duration: 0.62, ease: easeLens.gravity },
+  },
+};
+
+/** Elastic unfold — a hinged panel opening past flat and settling back. */
+export const elasticUnfold: Variants = {
+  hidden: { rotateX: -92, opacity: 0, transformPerspective: 1000 },
+  visible: {
+    rotateX: 0,
+    opacity: 1,
+    transformPerspective: 1000,
+    transition: springsHeavy.leaf,
+  },
+};
+
+/** Revolve on Y — a plate turning to face the reader. */
+export const revolveY = (from: -1 | 1 = 1): Variants => ({
+  hidden: { rotateY: from * 78, opacity: 0, transformPerspective: 1200 },
+  visible: {
+    rotateY: 0,
+    opacity: 1,
+    transformPerspective: 1200,
+    transition: { duration: 0.95, ease: easeLens.drape },
+  },
+});
+
+/**
+ * Prism split: the three channels arrive from slightly different places, the
+ * way white light does through a wedge. The offsets are deliberately uneven —
+ * a symmetric split reads as a mistake rather than as dispersion.
+ */
+export const prismSplit: Variants = {
+  hidden: {
+    opacity: 0,
+    textShadow: '-8px 0 0 rgb(255 60 60 / 0.6), 7px 2px 0 rgb(60 200 255 / 0.55)',
+    letterSpacing: '0.24em',
+  },
+  visible: {
+    opacity: 1,
+    textShadow: '0px 0 0 rgb(255 60 60 / 0), 0px 0 0 rgb(60 200 255 / 0)',
+    letterSpacing: '0em',
+    transition: { duration: 1.05, ease: easeLens.focusRing },
+  },
+};
+
+/** Clock wipe — a conic sweep, useful for anything that measures or times. */
+export const clockWipe: Variants = {
+  hidden: { clipPath: 'polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%)' },
+  visible: {
+    clipPath: 'polygon(50% 50%, 50% -60%, 160% -60%, 160% 160%, -60% 160%, -60% -60%, 50% -60%)',
+    transition: { duration: 1.2, ease: easeLens.rocker },
+  },
+};
+
+/** A vertical iris that opens from the centre line outward. */
+export const verticalWipe: Variants = {
+  hidden: { clipPath: 'inset(50% 0% 50% 0%)' },
+  visible: {
+    clipPath: 'inset(0% 0% 0% 0%)',
+    transition: { duration: 0.9, ease: easeLens.shutter },
+  },
+};
+
+/** Page turn — a leaf lifting off the stack at its spine. */
+export const pageTurn: Variants = {
+  hidden: { rotateY: 0, opacity: 1 },
+  visible: {
+    rotateY: -168,
+    opacity: 0.15,
+    transition: { duration: 1.05, ease: easeLens.drape },
+  },
+};
+
+/**
+ * Two-dimensional stagger. A flat index stagger sweeps a grid diagonally in one
+ * direction only; this lets the wave start from any corner or the centre, which
+ * matters when a grid sits next to the thing that "caused" the animation.
+ */
+export const gridWave = (
+  col: number,
+  row: number,
+  cols: number,
+  rows: number,
+  from: 'tl' | 'tr' | 'bl' | 'br' | 'centre' = 'tl',
+  step = 0.045,
+) => {
+  const cx = from === 'centre' ? (cols - 1) / 2 : from === 'tr' || from === 'br' ? cols - 1 : 0;
+  const cy = from === 'centre' ? (rows - 1) / 2 : from === 'bl' || from === 'br' ? rows - 1 : 0;
+  return Math.hypot(col - cx, row - cy) * step;
+};
+
+/**
+ * Magnetic settle — arrives fast, is pulled a little past centre, and is drawn
+ * back as if by a magnet rather than a spring. The difference from a spring is
+ * that there is exactly one overshoot, which reads as intent instead of bounce.
+ */
+export const magneticSettle: Variants = {
+  hidden: { scale: 0.9, opacity: 0 },
+  visible: {
+    scale: [0.9, 1.045, 1],
+    opacity: [0, 1, 1],
+    transition: { duration: 0.7, times: [0, 0.62, 1], ease: easeLens.focusRing },
+  },
+};
+
+/** A held breath before a reveal — for anything that should feel anticipated. */
+export const anticipate: Variants = {
+  hidden: { scale: 1, y: 0 },
+  visible: {
+    scale: [1, 0.965, 1.02, 1],
+    y: [0, 6, -4, 0],
+    transition: { duration: 0.85, times: [0, 0.3, 0.62, 1], ease: easeLens.focusRing },
+  },
+};
+
+/** Ghost trail — the element leaves copies of itself behind as it arrives. */
+export const ghostTrail: Variants = {
+  hidden: { x: -40, opacity: 0, filter: 'blur(3px)' },
+  visible: {
+    x: 0,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: { duration: 0.8, ease: easeLens.whip },
+  },
+};
+
+/** Slow orbital arrival — comes in along an arc rather than a straight line. */
+export const orbitalIn = (radius = 60, angle = -40): Variants => {
+  const rad = (angle * Math.PI) / 180;
+  return {
+    hidden: {
+      x: Math.cos(rad) * radius,
+      y: Math.sin(rad) * radius,
+      rotate: angle * 0.25,
+      opacity: 0,
+      scale: 0.88,
+    },
+    visible: {
+      x: 0,
+      y: 0,
+      rotate: 0,
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 1, ease: easeLens.drape },
+    },
+  };
+};
+
+/**
+ * Type slam: a heading that lands hard enough to move the air around it. Pair
+ * with a shockwave element using `shockwave` below, keyed to the same delay.
+ */
+export const typeSlam: Variants = {
+  hidden: { scale: 1.9, opacity: 0, filter: 'blur(14px)', letterSpacing: '0.3em' },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    filter: 'blur(0px)',
+    letterSpacing: '0em',
+    transition: { duration: 0.55, ease: easeLens.shutter },
+  },
+};
+
+/** The ring of displaced air a slammed title throws off. */
+export const shockwave: Variants = {
+  hidden: { scale: 0.4, opacity: 0 },
+  visible: {
+    scale: 2.6,
+    opacity: [0, 0.5, 0],
+    transition: { duration: 0.9, times: [0, 0.18, 1], ease: 'easeOut' },
+  },
+};
+
+/** Liquid morph — a blob shape easing between two organic radii. */
+export const liquidMorph: Variants = {
+  hidden: { borderRadius: '42% 58% 63% 37% / 41% 44% 56% 59%', scale: 0.94, opacity: 0 },
+  visible: {
+    borderRadius: [
+      '42% 58% 63% 37% / 41% 44% 56% 59%',
+      '62% 38% 34% 66% / 58% 62% 38% 42%',
+      '38% 62% 57% 43% / 47% 39% 61% 53%',
+      '42% 58% 63% 37% / 41% 44% 56% 59%',
+    ],
+    scale: 1,
+    opacity: 1,
+    transition: {
+      borderRadius: { duration: 16, repeat: Infinity, ease: 'easeInOut' },
+      scale: { duration: 0.9, ease: easeLens.drape },
+      opacity: { duration: 0.9 },
+    },
+  },
+};
+
+/**
+ * Scroll-linked helper: map a 0–1 progress to a value that rises, holds, then
+ * falls. `holdRange` above does the input side; this does the output side for
+ * the common case of a three-point envelope.
+ */
+export const envelope = <T,>(rise: T, hold: T, fall: T) => ({
+  points: [0, 0.28, 0.72, 1] as const,
+  values: [rise, hold, hold, fall] as const,
+});
+
+/** Press feedback with a little more travel than `pressIn`, for large plates. */
+export const plateePress = {
+  whileHover: { y: -4, scale: 1.012 },
+  whileTap: { y: 1, scale: 0.985 },
+  transition: springsHeavy.detent,
+};
+
+/** A slow, permanent shimmer for anything meant to read as precious metal. */
+export const metalIdle = (seconds = 7): Variants => ({
+  animate: {
+    backgroundPosition: ['0% 50%', '200% 50%'],
+    transition: { duration: seconds, repeat: Infinity, ease: 'linear' },
+  },
+});
+
+/** A candle-flicker opacity loop — irregular on purpose. */
+export const candleFlicker: Variants = {
+  animate: {
+    opacity: [0.82, 1, 0.88, 0.97, 0.84, 1],
+    transition: { duration: 5.2, repeat: Infinity, ease: 'easeInOut' },
+  },
+};
+
+/** Viewport preset for scenes that should re-run every time they are passed. */
+export const replayInView = { once: false, margin: '-15% 0px -15% 0px' } as const;
+
+/** Viewport preset that fires the moment any part of the element appears. */
+export const eagerInView = { once: true, margin: '0px 0px -2% 0px' } as const;

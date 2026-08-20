@@ -26,6 +26,13 @@ import InkBleedReveal from '@/components/motion/InkBleedReveal';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import CinematicLetterbox from '@/components/motion/CinematicLetterbox';
 import MosaicShuffle from '@/components/motion/MosaicShuffle';
+import ScrollSpineTimeline, { type SpineNode } from '@/components/motion/ScrollSpineTimeline';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import VertigoZoom from '@/components/motion/VertigoZoom';
+import StageSweep from '@/components/motion/StageSweep';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import MetaballGold from '@/components/motion/MetaballGold';
 import { brandData } from '@/data/brand';
 
 /**
@@ -142,6 +149,56 @@ const CHARTER = [
   'The proportion that returns light shall be preferred to the proportion that returns weight.',
   'Every piece shall carry the mark of the person who finished it.',
   'Any piece of this house shall be serviced without charge for as long as it exists, whoever brings it in.',
+];
+
+/**
+ * The house's own turning points, chosen for what they cost rather than for what
+ * they achieved.
+ *
+ * A heritage timeline that lists only expansions is a brochure. These are the six
+ * decisions that were genuinely difficult at the time \u2014 including the two that
+ * lost money for a decade \u2014 because a house's character is visible in what it
+ * declined to do, and nowhere else.
+ *
+ * The dates are the house's own. `aside` carries the cost, where there was one.
+ */
+const TURNING_POINTS: SpineNode[] = [
+  {
+    marker: '1892',
+    title: 'One bench, above a grain merchant',
+    body: 'Ramanathan opened with a single bench, a foot-treadle lathe and no shopfront. Work came in through the merchant downstairs, who took a cut for the introduction.',
+    aside: 'No shopfront for the first nineteen years',
+  },
+  {
+    marker: '1926',
+    title: 'The house refuses machine-set work',
+    body: 'Mechanical setting arrived and halved the price of a pav\u00e9 band overnight. The second generation declined it, on the grounds that a machine cannot feel a stone seat.',
+    aside: 'Cost the house most of its middle-market trade for a decade',
+  },
+  {
+    marker: '1947',
+    title: 'The archive is started',
+    body: 'Every piece leaving the bench photographed, weighed and drawn to scale. Nobody asked for it and it slowed the workshop down by a day a week.',
+    aside: 'It is the only reason we can still repair something from 1940',
+  },
+  {
+    marker: '1968',
+    title: 'Salaried, not piece-rate',
+    body: 'The bench moved off piece-rate, which is what produces the fourteen-hour days this trade is known for. Output fell by a fifth and stayed there.',
+    aside: 'The single most expensive decision in the ledger',
+  },
+  {
+    marker: '1994',
+    title: 'Every stone above 0.30ct certified',
+    body: 'Independent grading on everything above a third of a carat, whether or not the customer asked. It meant publishing grades on stones we had previously described in adjectives.',
+    aside: 'Several long-standing suppliers stopped selling to us',
+  },
+  {
+    marker: '2019',
+    title: 'The buy-back, with no time limit',
+    body: 'Anything this house has ever made, taken back at the day\u2019s metal rate, from anyone, for ever. It caps what a piece can lose and it is a permanent liability on the balance sheet.',
+    aside: 'Regardless of who owns it now, or whether they bought it here',
+  },
 ];
 
 export default function AboutClient() {
@@ -480,6 +537,74 @@ export default function AboutClient() {
               speed={10}
             />
           </div>
+        </section>
+
+
+        {/* ---- The turning points ----
+             The archive wall above is what the house kept; this is what it chose,
+             which is a different and more revealing list. Every entry here cost
+             something at the time, and two of them lost money for a decade \u2014 a
+             heritage timeline made only of expansions is a brochure.
+
+             Drawn rather than listed: the spine reaches each entry as you scroll
+             to it, so the six decisions read as a sequence with consequences
+             rather than as six achievements laid side by side. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <MetaballGold count={5} intensity={0.24} step={4} attract={false} />
+            <SmokeVeil intensity={0.2} originX={0.78} speed={0.6} count={14} />
+            <div className="absolute inset-0 bg-gradient-to-b from-canvas via-canvas/40 to-canvas" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <div className="mb-16 text-center">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                What it cost
+              </p>
+              <TypeSlamHeading
+                lines={['A house is what', 'it turned down.']}
+                highlightWords={['down.']}
+                as="h2"
+                className="mx-auto max-w-3xl font-display text-3xl leading-[1.1] text-primary md:text-6xl"
+              />
+              <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                Six decisions, chosen for what they cost rather than for what they achieved. Two of
+                them lost money for a decade. They are the reason everything above this line is
+                still true.
+              </p>
+            </div>
+
+            <ScrollSpineTimeline nodes={TURNING_POINTS} />
+          </div>
+        </section>
+
+        {/* ---- The wager ----
+             One held shot between the timeline and the closing invitation. No
+             controls and nothing to read carefully \u2014 the page has been dense
+             for a while and the CTA below lands harder after a pause. */}
+        <section className="relative overflow-hidden bg-surface-sunken py-28 md:py-36">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <StageSweep intensity={0.24} width={0.3} crossed seconds={17} />
+            <div className="absolute inset-0 bg-[radial-gradient(58%_46%_at_50%_50%,rgb(var(--canvas)/0.8),transparent_78%)]" />
+          </div>
+
+          <VertigoZoom intensity={0.7} className="relative z-10">
+            <div className="mx-auto max-w-3xl px-6 text-center md:px-12">
+              <EchoTrailText
+                text="Four generations is not a boast."
+                as="h2"
+                echoes={3}
+                spread={18}
+                direction="left"
+                persistent
+                className="font-display text-3xl leading-snug text-primary md:text-5xl"
+              />
+              <p className="mx-auto mt-8 max-w-xl font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+                It is a wager that the person who made your ring will not be the last person who can
+                repair it. Everything on this page is in service of keeping that bet.
+              </p>
+            </div>
+          </VertigoZoom>
         </section>
 
         {/* CTA */}

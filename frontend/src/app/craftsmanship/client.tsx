@@ -25,6 +25,12 @@ import MoltenPour from '@/components/motion/MoltenPour';
 import VaultDoorReveal from '@/components/motion/VaultDoorReveal';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import PrismDispersion from '@/components/motion/PrismDispersion';
+import RackFocusPlates, { type FocusPlate } from '@/components/motion/RackFocusPlates';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import MetaballGold from '@/components/motion/MetaballGold';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import StageSweep from '@/components/motion/StageSweep';
 import { Reveal } from '@/components/animations/Reveal';
 
 /** Hotspots along the pan. `at` is a fraction of the strip's full width. */
@@ -217,6 +223,35 @@ const MATERIALS = [
     title: 'Rare Gemstones',
     desc: 'From vibrant Colombian emeralds to deep Ceylon sapphires, we travel the world to procure the most exceptional precious stones.',
     image: '/images/products/earrings.jpg',
+  },
+];
+
+/**
+ * Three depths in the same workshop, for the focus pull.
+ *
+ * Chosen so the pull travels *inward* \u2014 the room, then the bench, then the work
+ * itself \u2014 because a rack focus that jumps between unrelated subjects reads as
+ * a slideshow. Going one step deeper each time is what makes it read as one
+ * camera making a decision.
+ */
+const WORKSHOP_PLATES: FocusPlate[] = [
+  {
+    src: '/images/hero/craftsmanship.jpg',
+    alt: 'The workshop floor, benches in a row under north light',
+    caption: 'The room. North-facing, because north light does not move through the day.',
+    mark: 'The room',
+  },
+  {
+    src: '/images/collections/heritage.jpg',
+    alt: 'A single bench with tools laid out',
+    caption: 'The bench. Every tool within one arm\u2019s reach, arranged by the person using it.',
+    mark: 'The bench',
+  },
+  {
+    src: '/images/products/ring.jpg',
+    alt: 'A ring held under the loupe, mid-setting',
+    caption: 'The work. Ten magnifications, four claws, and roughly forty minutes.',
+    mark: 'The work',
   },
 ];
 
@@ -488,6 +523,69 @@ export default function CraftsmanshipClient() {
       </section>
 
       <GoldRibbonWeave className="px-6" height={110} ribbons={4} />
+
+
+      {/* ---- Pulling focus through the workshop ----
+           The panorama earlier lets a visitor look around the room; this does the
+           opposite and looks *into* it. Three plates at three depths \u2014 room,
+           bench, work \u2014 with exactly one sharp at a time, pulled by the scroll.
+
+           The order is inward on purpose. A focus pull between unrelated subjects
+           reads as a slideshow; going one step deeper each time is what makes it
+           read as one camera deciding what matters. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/40 py-24 md:py-32">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <SmokeVeil intensity={0.26} originX={0.22} speed={0.75} count={18} />
+          <LightLeakOverlay intensity={0.3} interval={11} onClick />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Depth Of Field"
+            title="One room, three distances"
+            highlightWords={['three']}
+            subtitle="Scroll and the focus travels from the floor to the bench to the forty minutes it takes to seat four claws. Or take the focus ring yourself and hold it wherever you want to look."
+            align="center"
+            className="mb-14"
+          />
+
+          <RackFocusPlates plates={WORKSHOP_PLATES} frameClassName="aspect-[16/9]" />
+        </div>
+      </section>
+
+      {/* ---- The heat ----
+           A held shot between the workshop and the closing quotation. The molten
+           field is the only place on this page where the atmosphere reads as
+           material rather than as light, which is right directly after a section
+           about a furnace. */}
+      <section className="relative overflow-hidden bg-surface-sunken py-28 md:py-36">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <MetaballGold count={7} intensity={0.42} step={3} />
+          <StageSweep intensity={0.2} width={0.28} seconds={18} />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_48%_at_50%_50%,rgb(var(--canvas)/0.74),transparent_80%)]" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center md:px-12">
+          <p className="mb-8 font-accent text-[10px] uppercase tracking-luxest text-accent">
+            1064 degrees
+          </p>
+
+          <TypeSlamHeading
+            lines={['Gold does not', 'forgive impatience.', 'It forgives everything else.']}
+            highlightWords={['impatience.']}
+            as="h2"
+            gap={0.18}
+            className="font-display text-3xl leading-[1.1] text-primary sm:text-4xl md:text-6xl"
+          />
+
+          <p className="mx-auto mt-10 max-w-xl font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+            Worked cold for too long it cracks; annealed properly it can be beaten thin enough to
+            see through and hammered back into a bangle. Almost nothing else we handle can be
+            un-made and re-made this many times, which is the whole reason a piece from here can
+            still be something else in eighty years.
+          </p>
+        </div>
+      </section>
 
       {/* ---- The strongroom ----
            Where work-in-progress sleeps. A mechanism rather than a paragraph,

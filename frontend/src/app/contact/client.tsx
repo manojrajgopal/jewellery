@@ -18,6 +18,13 @@ import OccasionReminder from '@/components/ui/OccasionReminder';
 import VisitChecklist from '@/components/ui/VisitChecklist';
 import AtelierLiveStatus from '@/components/ui/AtelierLiveStatus';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
+import BokehDrift from '@/components/motion/BokehDrift';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import StageSweep from '@/components/motion/StageSweep';
+import EchoTrailText from '@/components/motion/EchoTrailText';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import ChromaSplit from '@/components/motion/ChromaSplit';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -442,6 +449,97 @@ export default function ContactClient() {
               14 November 2026 · 6pm · {brandData.contact.address.split(',')[0]}
             </p>
           </div>
+        </div>
+      </section>
+
+
+      {/* ---- What happens when you send it ----
+           A contact form is the one place on a site where a visitor gives
+           something and gets nothing back but a spinner, and the anxiety is
+           always the same: did that go anywhere, and who reads it.
+
+           So this answers both, in the plainest language on the site, and it is
+           placed directly after the form rather than buried in a policy page.
+           The atmosphere here is the lightest on any page \u2014 this section is
+           reassurance, and reassurance should not be theatrical. */}
+      <section className="relative overflow-hidden py-24 md:py-28">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <BokehDrift count={14} intensity={0.32} speed={0.5} blades={6} />
+          <SmokeVeil intensity={0.16} originX={0.8} speed={0.55} count={12} />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center md:px-12">
+          <ChromaSplit amount={4} saturateAt={2400}>
+            <p className="mb-6 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              After you press send
+            </p>
+          </ChromaSplit>
+
+          <TypeSlamHeading
+            lines={['A person reads it.', 'Usually the same day.']}
+            highlightWords={['person']}
+            as="h2"
+            gap={0.18}
+            className="font-display text-3xl leading-[1.1] text-primary md:text-5xl"
+          />
+
+          <div className="mt-12 grid gap-6 text-left sm:grid-cols-3">
+            {[
+              {
+                k: 'Who reads it',
+                v: 'One of four people, all of whom work on the floor. There is no queue and no ticket number.',
+              },
+              {
+                k: 'How long',
+                v: 'Same working day for anything sent before four; next morning otherwise. If it will be longer, we say so rather than going quiet.',
+              },
+              {
+                k: 'What we do with it',
+                v: 'Answer it. Your details are not sold, not shared, and not added to anything you did not ask for.',
+              },
+            ].map((row) => (
+              <div
+                key={row.k}
+                className="rounded-2xl border border-hairline bg-canvas-alt/50 p-6"
+              >
+                <span className="font-accent text-[10px] uppercase tracking-luxer text-accent">
+                  {row.k}
+                </span>
+                <p className="mt-3 font-sans text-sm font-light leading-relaxed text-secondary">
+                  {row.v}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---- The invitation ----
+           One held shot before the closing call to action. The page above is all
+           logistics \u2014 hours, addresses, checklists \u2014 and a visitor who has
+           read all of it deserves a reason rather than another instruction. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-28 md:py-36">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <StageSweep intensity={0.26} width={0.3} crossed seconds={16} />
+          <LightLeakOverlay intensity={0.34} interval={10} onClick />
+          <div className="absolute inset-0 bg-[radial-gradient(58%_46%_at_50%_50%,rgb(var(--canvas)/0.8),transparent_78%)]" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center md:px-12">
+          <EchoTrailText
+            text="You are not expected to buy anything."
+            as="h2"
+            echoes={3}
+            spread={18}
+            direction="left"
+            persistent
+            className="font-display text-3xl leading-snug text-primary md:text-5xl"
+          />
+          <p className="mx-auto mt-8 max-w-xl font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+            People come in to have a clasp looked at, to ask what a grandmother\u2019s ring is, or
+            because they want to see a stone properly before deciding anything at all. All three are
+            a normal Tuesday here, and none of them cost anything.
+          </p>
         </div>
       </section>
 

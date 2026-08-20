@@ -23,8 +23,15 @@ import CountUp from '@/components/motion/CountUp';
 import Marquee from '@/components/motion/Marquee';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import PrismDispersion from '@/components/motion/PrismDispersion';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import BokehDrift from '@/components/motion/BokehDrift';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import EchoTrailText from '@/components/motion/EchoTrailText';
 
 import StorageAdvisor from '@/components/ui/StorageAdvisor';
+import SkinToneMatcher from '@/components/ui/SkinToneMatcher';
+import AppraisalKit from '@/components/ui/AppraisalKit';
 
 /** The five stories every jeweller has. Rendered as warnings, not as anecdotes. */
 const DISASTERS = [
@@ -352,6 +359,86 @@ export default function CareClient() {
             ))}
           </Marquee>
         </div>
+
+
+        {/* ---- Which metal, against you ----
+             Care is mostly about what a piece survives; this is the other half,
+             which is whether it gets worn at all. A ring that does not suit the
+             wearer's colouring lives in a drawer, and a piece in a drawer needs no
+             care and gives no pleasure.
+
+             The vein test is the primary route in because it is the only at-home
+             check that works and it costs nothing. Depth of complexion is
+             deliberately not asked about \u2014 it barely matters here, and every
+             tool that leads with it gets olive undertones backwards. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt/50 py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <BokehDrift count={18} intensity={0.4} speed={0.6} blades={7} />
+            <LightLeakOverlay intensity={0.26} interval={12} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Against The Skin"
+              title="Which metal is actually yours"
+              highlightWords={['yours']}
+              subtitle="Not how light or dark you are \u2014 that barely matters. What decides this is undertone, and a deep cool complexion and a fair cool complexion want exactly the same metals. Turn your wrist over in daylight and look at the veins."
+              align="center"
+              className="mb-14"
+            />
+
+            <SkinToneMatcher />
+          </div>
+        </section>
+
+        {/* ---- The file ----
+             The last piece of care, and the one nobody thinks of as care at all.
+             Everything above keeps a piece intact; this is what happens when it
+             is not \u2014 and insurance for jewellery fails in a small number of
+             entirely predictable ways, all of them avoidable in an afternoon. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <SmokeVeil intensity={0.2} originX={0.24} speed={0.65} count={14} />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <div className="mb-14 text-center">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                If the worst happens
+              </p>
+              <TypeSlamHeading
+                lines={['A photograph of you', 'wearing it beats', 'any certificate.']}
+                highlightWords={['certificate.']}
+                as="h2"
+                className="mx-auto max-w-3xl font-display text-3xl leading-[1.12] text-primary md:text-5xl"
+              />
+              <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                Because it establishes possession on a date, which no studio image of the item can.
+                Essentially nobody has one, and it is free. Here is the rest of the file, ordered by
+                what each item is worth at claim time rather than by how easy it is to get.
+              </p>
+            </div>
+
+            <AppraisalKit />
+
+            <div className="mt-16 text-center">
+              <EchoTrailText
+                text="Insured is not the same as covered."
+                as="p"
+                echoes={2}
+                spread={14}
+                direction="right"
+                persistent
+                className="font-display text-2xl leading-snug text-primary md:text-3xl"
+              />
+              <p className="mx-auto mt-4 max-w-xl font-sans text-sm font-light leading-relaxed text-faint">
+                Most contents policies carry a single-article limit and many cover jewellery in the
+                house and nowhere else. Both are in the wording rather than the summary, and both
+                are the reason a claim fails.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* ---- FAQ ---- */}
         <section className="relative py-20 md:py-28">

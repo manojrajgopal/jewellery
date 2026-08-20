@@ -19,6 +19,13 @@ import MoltenPour from '@/components/motion/MoltenPour';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import RippleGrid from '@/components/motion/RippleGrid';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
+import StageSweep from '@/components/motion/StageSweep';
+import SmokeVeil from '@/components/motion/SmokeVeil';
+import BokehDrift from '@/components/motion/BokehDrift';
+import LightLeakOverlay from '@/components/motion/LightLeakOverlay';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
+import VertigoZoom from '@/components/motion/VertigoZoom';
+import EchoTrailText from '@/components/motion/EchoTrailText';
 
 /**
  * The four senses a visit uses, and what each one gets. Written as sensory claims
@@ -224,6 +231,61 @@ export default function ExperiencesClient() {
         </section>
 
         <GoldDivider variant="wide" className="px-6" />
+
+
+        {/* ---- The lighting itself ----
+             Everything above describes what happens in the room. This is about
+             the room \u2014 specifically about its light, which is the single
+             largest difference between seeing a stone here and seeing one on a
+             screen, and the thing a visitor cannot be shown any other way.
+
+             So the section is built from light rather than from copy: two beams
+             crossing on a physical pivot, smoke to make them visible, and leaks
+             at the edges. It is the only place on the site where the atmospheric
+             layers are the content rather than the texture underneath it. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-surface-sunken py-28 md:py-36">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <StageSweep intensity={0.3} width={0.28} crossed seconds={15} />
+            <SmokeVeil intensity={0.32} originX={0.3} speed={0.85} count={22} />
+            <BokehDrift count={20} intensity={0.44} speed={0.6} blades={7} />
+            <LightLeakOverlay intensity={0.4} interval={8} onClick />
+            <div className="absolute inset-0 bg-[radial-gradient(58%_46%_at_50%_50%,rgb(var(--canvas)/0.8),transparent_78%)]" />
+          </div>
+
+          <VertigoZoom intensity={0.7} className="relative z-10">
+            <div className="mx-auto max-w-3xl px-6 text-center md:px-12">
+              <p className="mb-8 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                4000 kelvin, from four directions
+              </p>
+
+              <TypeSlamHeading
+                lines={['No screen has ever', 'shown you a stone.']}
+                highlightWords={['never', 'stone.']}
+                as="h2"
+                gap={0.2}
+                className="font-display text-3xl leading-[1.1] text-primary sm:text-4xl md:text-6xl"
+              />
+
+              <p className="mx-auto mt-10 max-w-xl font-sans text-base font-light leading-relaxed text-secondary md:text-lg">
+                A display emits light. A diamond returns it, from forty-odd facets, differently every
+                time your head moves. That is the entire property you are buying and it is the one
+                thing a photograph structurally cannot record.
+              </p>
+
+              <div className="mt-10">
+                <EchoTrailText
+                  text="Which is why the room is worth the journey."
+                  as="p"
+                  echoes={3}
+                  spread={16}
+                  direction="right"
+                  persistent
+                  className="font-display text-2xl leading-snug text-primary md:text-3xl"
+                />
+              </div>
+            </div>
+          </VertigoZoom>
+        </section>
 
         {/* ---- Close ---- */}
         <section className="relative px-6 py-24 text-center md:py-32">

@@ -28,6 +28,10 @@ import MoodboardSection from '@/app/_sections/home/MoodboardSection';
 import LightStudySection from '@/app/_sections/home/LightStudySection';
 import StylingSection from '@/app/_sections/home/StylingSection';
 import ExperienceInviteSection from '@/app/_sections/home/ExperienceInviteSection';
+import LexiconSection from '@/app/_sections/home/LexiconSection';
+import CabinetSection from '@/app/_sections/home/CabinetSection';
+import LedgerSection from '@/app/_sections/home/LedgerSection';
+import ManifestoSection from '@/app/_sections/home/ManifestoSection';
 import GoldDivider from '@/components/ui/GoldDivider';
 
 /**
@@ -81,11 +85,21 @@ export default function Home() {
       {/* And then the library the dials are measured against */}
       <StoneLibrarySection />
 
+      {/* The words for all of it. Placed here because this is the point of
+          maximum vocabulary debt — four dials and a dozen mineral names in,
+          and nobody has yet said what a girdle is. */}
+      <LexiconSection />
+
       <CraftsmanshipSection />
 
       {/* The bench, by name — placed against the atelier rather than the heritage
           block, because these are the people in the photographs above. */}
       <ArtisansSection />
+
+      {/* The collections as objects rather than as a display — dealt, cut and
+          thrown. Sits here rather than in the browsing run because handing
+          something over only means anything once the looking is finished. */}
+      <CabinetSection />
 
       {/* Tentpole two: collections passing sideways */}
       <VitrineSection />
@@ -98,8 +112,17 @@ export default function Home() {
           the claim and its evidence belong on the same stretch of page. */}
       <ProvenanceSection />
 
+      {/* The claims themselves, weighted by what they are worth as evidence —
+          including the two this house cannot make. The custody claim is above;
+          this is the audit of it. */}
+      <LedgerSection />
+
       {/* The practical half: sizer, live rates, restoration bench */}
       <AtelierToolsSection />
+
+      {/* A held breath before the commercial half of the page. No controls, no
+          reading — one shot, and the house saying what it is for. */}
+      <ManifestoSection />
 
       {/* The house's positions, stacked. Far from the lookbook rail, so the two
           sticky stacks never sit back to back. */}
@@ -138,6 +161,7 @@ export default function Home() {
       <BoutiqueSection />
 
       <AppointmentSection />
+
       <CTASection />
     </>
   );

@@ -11,9 +11,15 @@ import MetalComparator from '@/components/ui/MetalComparator';
 import ProvenanceMap from '@/components/ui/ProvenanceMap';
 
 import CaratScaleComparator from '@/components/ui/CaratScaleComparator';
+import GemSpectroscope from '@/components/ui/GemSpectroscope';
+import FluorescenceViewer from '@/components/ui/FluorescenceViewer';
 import HallmarkDecoder from '@/components/ui/HallmarkDecoder';
 
 import MorphGemPath from '@/components/motion/MorphGemPath';
+import GemFacetTunnel from '@/components/motion/GemFacetTunnel';
+import StageSweep from '@/components/motion/StageSweep';
+import BokehDrift from '@/components/motion/BokehDrift';
+import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import MosaicShuffle from '@/components/motion/MosaicShuffle';
 import PrismDispersion from '@/components/motion/PrismDispersion';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
@@ -184,6 +190,63 @@ export default function GemstonesClient() {
                 ))}
               </dl>
             </div>
+          </div>
+        </section>
+
+
+        {/* ---- What the stone does to light ----
+             Straight after the loupe, and deliberately so. The loupe above teaches
+             a visitor to look *into* a stone for flaws; this asks the opposite
+             question — what is coming back out of it — and the two together are
+             the whole of what a grading report describes. The tunnel behind the
+             heading is the only place on the site it appears at full strength. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-20 md:py-28">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <GemFacetTunnel rings={12} sides={8} intensity={0.35} twist={26} />
+            <StageSweep scrollDriven intensity={0.22} width={0.2} crossed />
+            <div className="absolute inset-0 bg-gradient-to-b from-canvas via-transparent to-canvas" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The Spectroscope"
+              title="Two numbers decide everything"
+              highlightWords={['everything']}
+              subtitle="How hard the stone bends light, and how far it pulls the colours apart. Both are printed on every certificate and neither is ever explained. Change the light source and watch the spectrum change with it — nothing here is decorative, every band is the product of two real figures."
+              align="center"
+              className="mb-14"
+            />
+
+            <GemSpectroscope />
+          </div>
+        </section>
+
+        {/* ---- The grade the market prices backwards ----
+             Needs the spectroscope above it: the fluorescence argument only works
+             once a visitor has seen that blue and yellow are opposite ends of the
+             same spectrum. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <BokehDrift count={18} intensity={0.4} speed={0.6} blades={8} />
+
+          <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
+            <div className="mb-14 text-center">
+              <p className="mb-5 font-accent text-[10px] uppercase tracking-luxest text-accent">
+                Under the lamp
+              </p>
+              <TypeSlamHeading
+                lines={['One grade is discounted', 'for making a stone', 'look better.']}
+                highlightWords={['better.']}
+                as="h2"
+                className="mx-auto max-w-3xl font-display text-3xl leading-[1.12] text-primary md:text-5xl"
+              />
+              <p className="mx-auto mt-6 max-w-xl font-sans text-base font-light leading-relaxed text-muted">
+                Blue fluorescence is the complement of yellow body colour, so it cancels it. In a
+                J-grade stone that is a visible improvement in daylight, and the trade discounts the
+                stone for it anyway. Turn the lamp on and change the colour grade.
+              </p>
+            </div>
+
+            <FluorescenceViewer />
           </div>
         </section>
 

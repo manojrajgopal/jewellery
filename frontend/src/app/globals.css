@@ -977,6 +977,73 @@ html[data-theme='light'][data-cinema='on'] {
     mask-image: radial-gradient(closest-side, black 55%, transparent 100%);
   }
 
+  /* ---------- Overlaid range control ----------
+     For a slider whose track is drawn as real elements underneath it — a rail
+     with tier markers on it, say — rather than by the browser.
+
+     `appearance: none` is what lets the native track disappear so the drawn one
+     shows through, and it is also what removes the thumb, which is the trap:
+     WebKit and Firefox both stop rendering a thumb entirely unless one is
+     redeclared. So both vendor pseudo-elements are given an explicit gold thumb
+     here. Without this the control is invisible and unusable by pointer, while
+     still working perfectly by keyboard — which is the kind of bug that survives
+     a long time.
+
+     The track itself stays fully transparent and keeps its hit area, so the
+     whole width remains draggable. */
+  .range-overlay {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .range-overlay::-webkit-slider-runnable-track {
+    background: transparent;
+    height: 100%;
+  }
+
+  .range-overlay::-moz-range-track {
+    background: transparent;
+    height: 100%;
+  }
+
+  .range-overlay::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: rgb(var(--accent));
+    border: 2px solid rgb(var(--canvas));
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.5), 0 0 18px 3px rgb(var(--gold-500) / 0.45);
+    transition: transform var(--dur-fast) var(--ease-luxury);
+  }
+
+  .range-overlay::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    background: rgb(var(--accent));
+    border: 2px solid rgb(var(--canvas));
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.5), 0 0 18px 3px rgb(var(--gold-500) / 0.45);
+  }
+
+  .range-overlay:active::-webkit-slider-thumb { transform: scale(1.12); }
+  .range-overlay:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.45), 0 0 18px 3px rgb(var(--gold-500) / 0.45);
+  }
+  .range-overlay:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 3px rgb(var(--accent) / 0.45), 0 0 18px 3px rgb(var(--gold-500) / 0.45);
+  }
+
+  /* The thumb is decoration over a drawn rail; under a reduced-motion
+     preference the scale response is the only thing worth dropping. */
+  @media (prefers-reduced-motion: reduce) {
+    .range-overlay::-webkit-slider-thumb { transition: none; }
+    .range-overlay:active::-webkit-slider-thumb { transform: none; }
+  }
+
   /* ---------- Numeric readouts ---------- */
   .nums-tabular { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
   .nums-lining  { font-variant-numeric: lining-nums; }
