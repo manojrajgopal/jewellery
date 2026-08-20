@@ -40,6 +40,13 @@ import SustainabilitySection from '@/app/_sections/home/SustainabilitySection';
 import SuiteSection from '@/app/_sections/home/SuiteSection';
 import HelixSection from '@/app/_sections/home/HelixSection';
 import GateSection from '@/app/_sections/home/GateSection';
+import BlueprintSection from '@/app/_sections/home/BlueprintSection';
+import AlloySection from '@/app/_sections/home/AlloySection';
+import ForgeSection from '@/app/_sections/home/ForgeSection';
+import CaptureSection from '@/app/_sections/home/CaptureSection';
+import StrikeSection from '@/app/_sections/home/StrikeSection';
+import StrandSection from '@/app/_sections/home/StrandSection';
+import ApproachSection from '@/app/_sections/home/ApproachSection';
 import GoldDivider from '@/components/ui/GoldDivider';
 
 /**
@@ -129,10 +136,40 @@ export default function Home() {
           block, because these are the people in the photographs above. */}
       <ArtisansSection />
 
+      {/* The making run, in the order it actually happens. The page has always
+          shown finished work being refined and has never shown the two days
+          before that, when the material is not yet an object: a drawing, an
+          alloy, a forge, a setting, a punch. It sits here rather than earlier
+          because none of it means anything until the people at the bench have
+          been introduced by name — these are the five things the faces above
+          spend their week doing.
+
+          The pacing rule holds. Nothing in this run pins, every scene is driven
+          by ordinary scroll, and the two that hold a reader longest — the forge
+          and the polishing bench — are separated by the setting, which is over
+          in four seconds. */}
+      <BlueprintSection />
+
+      <AlloySection />
+
+      <ForgeSection />
+
+      <CaptureSection />
+
+      {/* Genuinely the last thing done to a finished piece, so it closes the
+          run rather than sitting anywhere inside it. */}
+      <StrikeSection />
+
       {/* The most bench-side subject on the page, next to the people whose
           decision it actually is. Every other section here is about what a piece
           looks like; this one is about whether it gets worn. */}
       <ClaspSection />
+
+      {/* The same question from the other end: a clasp is how a necklace is
+          closed and a knot is how it survives being open. Adjacent on purpose —
+          both are engineering decisions taken by a bench rather than by a
+          designer, and apart they would each read as a curiosity. */}
+      <StrandSection />
 
       {/* The collections as objects rather than as a display — dealt, cut and
           thrown. Sits here rather than in the browsing run because handing
@@ -209,6 +246,13 @@ export default function Home() {
 
       {/* The three questions about timing — the doors, the money, the occasion */}
       <PrivateViewSection />
+
+      {/* The page's one camera move, at the point where the subject changes
+          from what we have to coming here. A change of subject that large
+          deserves a shot rather than a heading, and this is the only place on
+          the site where the camera itself travels rather than the layers being
+          pushed about under a pointer. */}
+      <ApproachSection />
 
       {/* What the room is actually like, before the address of it */}
       <ExperienceInviteSection />

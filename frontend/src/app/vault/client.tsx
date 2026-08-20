@@ -26,6 +26,8 @@ import RippleGrid from '@/components/motion/RippleGrid';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import PortfolioBalance from '@/components/ui/PortfolioBalance';
+import MetalRateHistory from '@/components/ui/MetalRateHistory';
+import CoverageGap from '@/components/ui/CoverageGap';
 
 /**
  * What the house does with a piece over a lifetime, as the sequence it actually
@@ -378,6 +380,53 @@ export default function VaultClient() {
         </section>
 
         <GoldDivider variant="wide" className="px-6" />
+
+        {/* ---- What the metal has done ----
+             The vault lists the pieces and says which are due a service. This
+             is the other axis, and it is the one a holder actually wonders
+             about between visits.
+
+             Indexed rather than plotted at face value, which is the whole
+             design decision: gold at six thousand rupees a gram and silver at
+             ninety cannot share an axis honestly, and the usual fix — a second
+             y-axis — lets whoever draws the chart choose where the lines
+             cross. One axis, one meaning. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Two years of metal"
+              title="Indexed, because a second axis is a way of choosing your own conclusion"
+              highlightWords={['choosing']}
+              subtitle="Every line starts at 100 on the day the window opens, so a line at 118 has risen 18% whichever metal it is. The rupee figures are in the tooltip and in the table — they are simply never the thing that sets the geometry."
+              align="left"
+              className="mb-14"
+            />
+
+            <MetalRateHistory />
+          </div>
+        </section>
+
+        {/* ---- And what it is covered for ----
+             Directly after the rates, because the rates are the cause. A
+             collection valued four years ago is insured for what gold cost
+             four years ago, and the way most policies handle that is worse
+             than paying the shortfall — under average, a schedule that is 30%
+             short can reduce a claim on a fully covered single piece by the
+             same 30%. */}
+        <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The clause nobody reads"
+              title="What you would actually be paid, rather than what you are insured for"
+              highlightWords={['actually']}
+              subtitle="Three traps and all three are ordinary: an unspecified piece is capped at about ₹50,000 however large the policy, average reduces a claim by however short the schedule is, and indemnity pays second-hand value. Work out your own number below."
+              align="left"
+              className="mb-14"
+            />
+
+            <CoverageGap />
+          </div>
+        </section>
 
         <section className="relative px-6 py-20 text-center md:py-28">
           <div className="mx-auto flex max-w-4xl flex-col items-center">

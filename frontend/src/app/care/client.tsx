@@ -30,6 +30,8 @@ import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import EchoTrailText from '@/components/motion/EchoTrailText';
 
 import StorageAdvisor from '@/components/ui/StorageAdvisor';
+import ChainWeaveLibrary from '@/components/ui/ChainWeaveLibrary';
+import FingerSizeDrift from '@/components/ui/FingerSizeDrift';
 import SkinToneMatcher from '@/components/ui/SkinToneMatcher';
 import AppraisalKit from '@/components/ui/AppraisalKit';
 import WristFitCalculator from '@/components/ui/WristFitCalculator';
@@ -682,6 +684,48 @@ export default function CareClient() {
             />
 
             <FAQAccordion items={CARE_FAQ} />
+          </div>
+        </section>
+
+        {/* ---- The chain itself ----
+             The care page can already measure a wrist, a neck and a finger,
+             and can triage what has broken. What it has never covered is the
+             structure of the thing most likely to break — and most chain
+             failures are not failures of metal at all. They are kinks, and
+             whether a kink is survivable is decided entirely by the weave. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Eight weaves"
+              title="A chain almost never breaks because the gold was weak"
+              highlightWords={['weak']}
+              subtitle="It breaks because a link was forced out of its plane and the next one then loaded it edge-on. Which weave you own decides whether that is a ten-minute repair or the end of the chain — and one of the eight below carries no pendant at all."
+              align="left"
+              className="mb-14"
+            />
+
+            <ChainWeaveLibrary />
+          </div>
+        </section>
+
+        {/* ---- The finger that is never the same size twice ----
+             Directly after the chain, and immediately before the closing
+             invitation, because it is the single most common reason somebody
+             walks back through the door. The sizer elsewhere on this page
+             gives a number; this gives the window that number sits inside, and
+             the window is a size and a half wide. */}
+        <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Why it fitted in the shop"
+              title="Your finger is not one size, it is a range"
+              highlightWords={['range']}
+              subtitle="Cold hands take three quarters of a size off. A hot afternoon puts most of it back. Add a wide band, a long flight and a decade, and the honest answer to “what size are you” is a window rather than a number — so here is yours, and where in it to sit a particular ring."
+              align="left"
+              className="mb-14"
+            />
+
+            <FingerSizeDrift />
           </div>
         </section>
 

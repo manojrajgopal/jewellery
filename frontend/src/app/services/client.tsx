@@ -30,6 +30,7 @@ import BuybackLadder from '@/components/ui/BuybackLadder';
 import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import SolderWeldPath from '@/components/motion/SolderWeldPath';
 import WarrantyDecoder from '@/components/ui/WarrantyDecoder';
+import SecureTransitTracker from '@/components/ui/SecureTransitTracker';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 
 /**
@@ -592,6 +593,32 @@ export default function ServicesClient() {
           />
 
           <WarrantyDecoder />
+        </div>
+      </section>
+
+      {/* ---- Getting it to you ----
+           The services page covers what happens to a piece while we have it.
+           This is the two days we do not, and it is deliberately organised by
+           custody rather than by location — because a tracking page answers
+           "where" and the only question that matters in transit is whose
+           problem it is if the box goes missing right now.
+
+           Two things are said here that most sellers leave vague: the
+           carrier's own liability is a fixed and very small figure regardless
+           of contents, and a signature on delivery is not the same as an
+           identity being checked. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The two days we are not holding it"
+            title="Seven handovers, and who carries the loss at each"
+            highlightWords={['loss']}
+            subtitle="Not a map. A chain of custody, with the evidence that proves each handover happened — because the carrier’s own liability is a few thousand rupees whatever is in the box, and everything above that is a separate policy bought per consignment."
+            align="left"
+            className="mb-14"
+          />
+
+          <SecureTransitTracker />
         </div>
       </section>
 

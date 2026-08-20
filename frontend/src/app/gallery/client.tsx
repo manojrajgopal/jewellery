@@ -30,6 +30,8 @@ import ElasticRail from '@/components/motion/ElasticRail';
 import CanvasGemRain from '@/components/motion/CanvasGemRain';
 import TypeOnPath from '@/components/motion/TypeOnPath';
 import ProjectorGate from '@/components/motion/ProjectorGate';
+import ContactSheetGrader from '@/components/ui/ContactSheetGrader';
+import TiltShiftDiorama from '@/components/motion/TiltShiftDiorama';
 
 const CATEGORIES = ['All', 'Necklaces', 'Rings', 'Earrings', 'Bracelets', 'Collections'];
 
@@ -573,6 +575,79 @@ export default function GalleryClient() {
               className="font-display text-2xl leading-snug text-primary md:text-3xl"
             />
           </div>
+        </div>
+      </section>
+
+      {/* ---- The sheet the selection was made on ----
+           A gallery is a finished selection, which means the choosing has
+           already happened and is invisible. This hands it back: thirty-six
+           frames of one sequence and a chinagraph pencil, and then it shows
+           what we marked.
+
+           The comparison is the whole feature. Frame 16 is the technically
+           perfect one and it is on the cutting-room floor; frame 22 has motion
+           blur in the chain and is the one everybody stops on. A gallery is an
+           argument rather than a record, and this is the only honest way to
+           say so. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <div className="mb-14 max-w-2xl">
+            <p className="mb-4 font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Before anything was hung
+            </p>
+            <h2 className="font-display text-3xl leading-[1.12] text-primary md:text-5xl">
+              Thirty-six frames, and a wax pencil.
+            </h2>
+            <p className="mt-6 font-sans text-base font-light leading-relaxed text-muted">
+              A roll was contact-printed onto one sheet and gone over with a
+              chinagraph — a ring meant print it, a cross meant never. Every
+              photograph anybody remembers from the last century was chosen this
+              way, by two people arguing over one sheet. Mark yours, then see
+              what we marked.
+            </p>
+          </div>
+
+          <ContactSheetGrader />
+        </div>
+      </section>
+
+      {/* ---- The bench, as a model of itself ----
+           A shift lens focuses on a plane that is not parallel to the sensor,
+           so only a narrow band of a scene is sharp. An eye reads that as depth
+           of field that shallow, which only happens very close to something
+           very small — so a real workshop photographs as a diorama of one.
+
+           Which is the correct reading for this particular room. A bench shot
+           straight looks like a workplace; shot like this it looks like the
+           scale model of a workplace that somebody who has never seen one
+           carries around in their head. The band travels with the scroll, so
+           the sharp part of the frame is always the part just arrived at. */}
+      <section className="relative overflow-hidden bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <TiltShiftDiorama
+            blur={7}
+            caption="The Bandra bench, mid-morning — 35mm, no lights brought in"
+          >
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-[linear-gradient(160deg,rgb(var(--ink-800)),rgb(var(--ink-950)))]">
+              {/* Drawn rather than photographed: three benches, a window and
+                  the one warm lamp, laid out in depth so the band has
+                  something to travel across. */}
+              <div className="absolute inset-x-0 top-0 h-1/3 bg-[linear-gradient(180deg,rgb(var(--gold-200)/0.18),transparent)]" />
+              <div className="absolute left-[8%] top-[42%] h-[34%] w-[26%] rounded-sm bg-[linear-gradient(180deg,rgb(var(--ink-600)),rgb(var(--ink-800)))]" />
+              <div className="absolute left-[38%] top-[48%] h-[30%] w-[24%] rounded-sm bg-[linear-gradient(180deg,rgb(var(--ink-500)),rgb(var(--ink-700)))]" />
+              <div className="absolute left-[66%] top-[44%] h-[32%] w-[26%] rounded-sm bg-[linear-gradient(180deg,rgb(var(--ink-600)),rgb(var(--ink-800)))]" />
+              <div className="absolute left-[44%] top-[30%] h-16 w-16 rounded-full bg-[radial-gradient(circle,rgb(var(--gold-200)/0.9),rgb(var(--gold-600)/0.3)_54%,transparent_74%)]" />
+              <div className="absolute inset-x-0 bottom-0 h-1/4 bg-[linear-gradient(0deg,rgb(var(--ink-950)),transparent)]" />
+            </div>
+          </TiltShiftDiorama>
+
+          <p className="mx-auto mt-8 max-w-2xl text-center font-sans text-base font-light leading-relaxed text-muted">
+            The blur is not a filter. It is a masked second copy of the frame,
+            feathered so the plane of focus has an edge that falls off the way a
+            lens does — and the band moves down the picture as you scroll,
+            because a rack focus is a thing somebody does rather than a state a
+            photograph is in.
+          </p>
         </div>
       </section>
 

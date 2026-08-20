@@ -36,6 +36,7 @@ import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import StageSweep from '@/components/motion/StageSweep';
 import HeatShimmer from '@/components/motion/HeatShimmer';
 import EnamelAtlas from '@/components/ui/EnamelAtlas';
+import SurfaceFinishAtlas from '@/components/ui/SurfaceFinishAtlas';
 import { Reveal } from '@/components/animations/Reveal';
 
 /** Hotspots along the pan. `at` is a fraction of the strip's full width. */
@@ -727,6 +728,31 @@ export default function CraftsmanshipClient() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ---- The last hour, and the first thing to go ----
+           Placed at the close of the workshop tour because a finish genuinely
+           is the last operation, and because the page has spent two thousand
+           words on processes that leave permanent structure and has not yet
+           said that the visible surface of all of it is temporary.
+
+           The eight-year toggle is the argument. The most expensive finish on
+           the list is the least durable, the cheapest survives everything, and
+           the one that looks hardest-wearing is the only one that cannot be
+           restored — which is the exact opposite of what anybody assumes. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="The last hour on the bench"
+            title="Seven finishes, and what each looks like in eight years"
+            highlightWords={['eight']}
+            subtitle="A mirror polish is the most expensive surface here and the least durable — it picks up its first visible scratch within a fortnight. A bead blast is the cheapest and survives everything. Nobody is told this before they choose, so here it is with the wear turned on."
+            align="left"
+            className="mb-14"
+          />
+
+          <SurfaceFinishAtlas />
         </div>
       </section>
 

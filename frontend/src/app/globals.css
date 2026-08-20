@@ -133,6 +133,22 @@
   --nav-tint-alpha: 0.45;
   --nav-tint-alpha-scrolled: 0.85;
 
+  /* ---------- Categorical series ----------
+     Six panels on this site plot something, and until they shared these they
+     each picked their own colours — which meant gold was one thing on the rate
+     history and something else on the coverage panel.
+
+     The order is fixed and never cycled: series one is always jade, series two
+     always gold, and a filter that removes a series never repaints the ones
+     that survive. Both sets were checked rather than chosen by eye — the four
+     are separable for deutan, protan and tritan vision against their own
+     surface, and only the last one differs between the themes, because
+     burgundy at its house value falls under 3:1 on obsidian. */
+  --series-1: 26 138 111;   /* jade 500      */
+  --series-2: 184 132 42;   /* gold 600      */
+  --series-3: 138 92 199;   /* amethyst 500  */
+  --series-4: 185 60 96;    /* burgundy, lifted for obsidian */
+
   /* ---------- Motion ---------- */
   --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-silk: cubic-bezier(0.65, 0, 0.35, 1);
@@ -201,6 +217,13 @@
 
   --nav-tint-alpha: 0.72;
   --nav-tint-alpha-scrolled: 0.92;
+
+  /* Only the fourth series moves between the themes. On cream the house
+     burgundy is the right weight; on obsidian it fell under 3:1 against the
+     canvas, so the dark set lifts it. The other three hold their values in both
+     modes, which is what keeps a legend learned on one page true on the next. */
+  --series-4: 158 47 80;    /* burgundy 500 */
+
   color-scheme: light;
 }
 
@@ -2885,5 +2908,459 @@ html[data-theme='light'][data-cinema='on'] {
 
   .cast-shadow {
     transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   v7 — THE FORGE, THE BENCH DRAWING, AND THE CHART SURFACE
+   ==========================================================================
+   Three groups arrive together here.
+
+   The first is the forge: everything that happens to metal before it is a
+   thing. Annealing colours, the quench, the draw plate, the rolling mill and
+   the hallmark punch. All of them are *material* treatments rather than
+   lighting ones, which is what separates them from the v6 optics block above.
+
+   The second is the drawing: the caliper, the dimension line, the fine
+   blueprint field and the silverpoint hatch. A bench works from a drawing
+   before it works from metal, and the site had every stage of the process
+   except the one where somebody decides a number.
+
+   The third is the chart surface. Six of the newer panels plot something, and
+   until now each drew its own grid and picked its own colours. These give them
+   one recessive grid, one categorical series order and one tooltip plate, so a
+   colour means the same thing in every panel on the site.
+   ========================================================================== */
+
+@layer utilities {
+  /* ---------- The forge ---------- */
+
+  /* Metal changing colour as it is brought up to annealing heat. The ramp is
+     the real one a bench watches for — straw, brown, purple, then the dull
+     cherry red that says the grain has recrystallised and the piece can be
+     worked again. Applied to text, it clips to the glyphs. */
+  .anneal-skin {
+    background-image: linear-gradient(
+      100deg,
+      rgb(var(--ink-300)) 0%,
+      rgb(var(--gold-200)) 18%,
+      rgb(var(--gold-500)) 34%,
+      rgb(var(--rose-500)) 52%,
+      rgb(var(--amethyst-500)) 66%,
+      rgb(var(--burgundy-500)) 82%,
+      rgb(var(--burgundy-700)) 100%
+    );
+    background-size: 320% 100%;
+    background-position: var(--anneal-pos, 0%) 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: background-position 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* The moment it goes into the water. A white bloom that collapses to nothing
+     — the flash of steam rather than the ripple, which the quench-ripple class
+     above already draws. */
+  .quench-flash {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      42% 42% at var(--flash-x, 50%) var(--flash-y, 50%),
+      rgb(var(--cream-50) / 0.85),
+      rgb(var(--gold-100) / 0.32) 44%,
+      transparent 72%
+    );
+    animation: quench-hiss 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    pointer-events: none;
+  }
+
+  /* The draw plate: a tapered hole in a steel block, seen edge on. Wire is
+     pulled through it and comes out thinner. */
+  .draw-die {
+    background:
+      linear-gradient(90deg, rgb(var(--ink-700)), rgb(var(--ink-500)) 42%, rgb(var(--ink-800)));
+    box-shadow:
+      inset 0 1px 0 rgb(var(--hairline) / 0.14),
+      inset 0 -2px 6px rgb(var(--shadow-color) / 0.5);
+  }
+
+  /* A mill roller, lit from above and turning. The stripe is the ground finish
+     on the roller face; it is what makes the rotation legible at all, because a
+     plain cylinder turning looks like a cylinder standing still. */
+  .mill-roller {
+    background:
+      repeating-linear-gradient(
+        90deg,
+        rgb(var(--hairline) / 0.09) 0 2px,
+        transparent 2px 9px
+      ),
+      linear-gradient(
+        180deg,
+        rgb(var(--ink-400)),
+        rgb(var(--ink-200)) 22%,
+        rgb(var(--ink-600)) 58%,
+        rgb(var(--ink-800))
+      );
+    background-size: 11px 100%, 100% 100%;
+    animation: mill-turn 1.4s linear infinite;
+  }
+
+  /* The face of a hallmark punch, and the bruise it leaves. The inner shadow is
+     the impression; the outer highlight is the metal that had to go somewhere
+     when the punch displaced it. */
+  .punch-face {
+    box-shadow:
+      inset 0 2px 5px rgb(var(--shadow-color) / 0.62),
+      inset 0 -1px 0 rgb(var(--hairline) / 0.2),
+      0 0 0 1px rgb(var(--gold-500) / 0.28),
+      0 1px 2px rgb(var(--gold-200) / 0.24);
+  }
+
+  /* The bed a granulation swarm settles onto — fine charcoal, so the beads read
+     as gold rather than as white dots. */
+  .granule-bed {
+    background:
+      radial-gradient(60% 70% at 50% 40%, rgb(var(--gold-500) / 0.07), transparent 70%),
+      linear-gradient(180deg, rgb(var(--surface-sunken)), rgb(var(--canvas)));
+  }
+
+  /* ---------- The drawing ---------- */
+
+  /* A caliper jaw. Square on the measuring face, tapered on the back — which is
+     the only detail that stops it reading as a plain rectangle. */
+  .caliper-jaw {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--ink-200)) 0%,
+      rgb(var(--ink-400)) 38%,
+      rgb(var(--ink-600)) 100%
+    );
+    clip-path: polygon(0 0, 100% 0, 100% 62%, 46% 100%, 0 100%);
+  }
+
+  /* A dimension line: the hairline with a tick at each end, the way a technical
+     drawing writes a measurement rather than the way an arrow does. */
+  .dimension-line {
+    position: relative;
+    height: 1px;
+    background: rgb(var(--accent) / 0.55);
+  }
+  .dimension-line::before,
+  .dimension-line::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    width: 1px;
+    height: 9px;
+    background: rgb(var(--accent) / 0.75);
+  }
+  .dimension-line::before { left: 0; }
+  .dimension-line::after  { right: 0; }
+
+  /* A finer blueprint field than the existing one — 8px rather than 32px — for
+     panels where the drawing itself is small. */
+  .blueprint-grid-fine {
+    background-image:
+      linear-gradient(rgb(var(--accent) / 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent) / 0.055) 1px, transparent 1px),
+      linear-gradient(rgb(var(--accent) / 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--accent) / 0.1) 1px, transparent 1px);
+    background-size: 8px 8px, 8px 8px, 40px 40px, 40px 40px;
+  }
+
+  /* Silverpoint: a metal stylus on prepared ground. It cannot be erased and it
+     cannot be made darker in one pass, so tone is built by hatching — which is
+     what this is, three crossing rules at the angles a draughtsman actually
+     uses. `--hatch` drives how much of it has been laid down. */
+  .silverpoint-hatch {
+    background-image:
+      repeating-linear-gradient(52deg, rgb(var(--ink-500) / 0.42) 0 1px, transparent 1px 5px),
+      repeating-linear-gradient(-38deg, rgb(var(--ink-500) / 0.3) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(8deg, rgb(var(--ink-500) / 0.2) 0 1px, transparent 1px 11px);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 var(--hatch, 0%), transparent var(--hatch, 0%));
+    mask-image: linear-gradient(180deg, #000 0%, #000 var(--hatch, 0%), transparent var(--hatch, 0%));
+  }
+
+  /* Letterpress: type pressed *into* the sheet. Two shadows, one above the
+     glyph and one below, and no fill change at all — the colour of debossed
+     type is the colour of the paper, which is the whole point. */
+  .letterpress-deboss {
+    color: rgb(var(--text-secondary));
+    text-shadow:
+      0 1px 0 rgb(var(--hairline) / 0.22),
+      0 -1px 1px rgb(var(--shadow-color) / 0.3);
+  }
+
+  /* A fold in a sheet of paper: the shade that falls across the leaf below it.
+     `--fold` is the fold angle in degrees, 0 flat. */
+  .fold-crease {
+    background: linear-gradient(
+      180deg,
+      rgb(var(--shadow-color) / calc(var(--fold-shade, 0) * 0.42)),
+      transparent 62%
+    );
+  }
+
+  /* ---------- Surfaces and touch ---------- */
+
+  /* Velvet has a nap: brushed one way it is dark, the other way it is light.
+     The pointer leaves a trail because the pile stays where it was pushed. */
+  .velvet-nap {
+    background:
+      radial-gradient(
+        120px 120px at var(--nap-x, 50%) var(--nap-y, 50%),
+        rgb(var(--hairline) / 0.16),
+        transparent 68%
+      ),
+      linear-gradient(160deg, rgb(var(--burgundy-900)), rgb(var(--ink-950)) 62%);
+    transition: background-position 400ms ease-out;
+  }
+
+  /* A tilt-shift band: sharp through the middle, defocused at both edges, which
+     is what makes a real scene read as a model of itself. */
+  .tilt-shift-band {
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      #000 0%,
+      transparent calc(var(--tilt-centre, 50%) - 26%),
+      transparent calc(var(--tilt-centre, 50%) + 26%),
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      #000 0%,
+      transparent calc(var(--tilt-centre, 50%) - 26%),
+      transparent calc(var(--tilt-centre, 50%) + 26%),
+      #000 100%
+    );
+    filter: blur(var(--tilt-blur, 5px));
+  }
+
+  /* A matte scrim — the black card a photographer puts between a lamp and the
+     lens. Flatter than the vignette above, and it does not darken the centre. */
+  .matte-scrim {
+    background: linear-gradient(
+      var(--scrim-angle, 90deg),
+      rgb(var(--canvas)) 0%,
+      rgb(var(--canvas) / 0.72) 12%,
+      transparent 34%,
+      transparent 66%,
+      rgb(var(--canvas) / 0.72) 88%,
+      rgb(var(--canvas)) 100%
+    );
+  }
+
+  /* The sawn face of a piece of rough — frosted, greasy, and nothing like the
+     polished stone it becomes. */
+  .rough-stone-face {
+    background:
+      radial-gradient(38% 44% at 32% 28%, rgb(var(--cream-50) / 0.2), transparent 70%),
+      radial-gradient(52% 40% at 72% 74%, rgb(var(--ink-400) / 0.34), transparent 74%),
+      linear-gradient(148deg, rgb(var(--ink-300)), rgb(var(--ink-500)) 54%, rgb(var(--ink-700)));
+    filter: contrast(0.94) saturate(0.7);
+  }
+
+  /* ---------- The chart surface ----------
+     One grid, one series order, one tooltip. Every panel that plots something
+     reads from these, so a colour means the same thing across the whole site
+     and a reader does not have to relearn the legend on each page. */
+
+  .chart-surface {
+    background: rgb(var(--surface-raised) / 0.5);
+    border: 1px solid rgb(var(--hairline) / var(--hairline-alpha));
+  }
+
+  /* Recessive by design: the grid is a reference, not a subject. */
+  .chart-grid {
+    background-image:
+      linear-gradient(rgb(var(--hairline) / calc(var(--hairline-alpha) * 0.8)) 1px, transparent 1px);
+    background-size: 100% var(--grid-step, 25%);
+  }
+
+  /* A 2px surface ring, so overlapping marks stay separable without a stroke
+     colour that competes with the series colour itself. */
+  .mark-ring {
+    box-shadow: 0 0 0 2px rgb(var(--surface-raised));
+  }
+
+  .series-swatch {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .tooltip-plate {
+    background: rgb(var(--surface-raised));
+    border: 1px solid rgb(var(--hairline) / calc(var(--hairline-alpha) * 2));
+    box-shadow: 0 18px 40px -24px rgb(var(--shadow-color) / 0.7);
+  }
+
+  /* An axis tick that does not shout. Used on the rate history and the yield
+     bench, both of which have a dense x-axis. */
+  .rule-tick {
+    width: 1px;
+    height: 5px;
+    background: rgb(var(--hairline) / calc(var(--hairline-alpha) * 2.4));
+  }
+
+  /* The 45° hand-drawn texture, for the CVD / print / forced-colours case. Any
+     series can carry it as a second encoding without changing its colour. */
+  .series-texture {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(var(--hairline) / 0.28) 0 1.5px,
+      transparent 1.5px 5px
+    );
+  }
+
+  @media (forced-colors: active) {
+    .series-texture { forced-color-adjust: none; }
+  }
+
+  /* ---------- Plates ---------- */
+
+  /* A spec plate: the small slab a number is set on across the new panels, so a
+     figure always arrives on the same surface. */
+  .spec-plate {
+    background:
+      linear-gradient(180deg, rgb(var(--hairline) / 0.05), transparent 58%),
+      rgb(var(--surface-raised) / 0.55);
+    border: 1px solid rgb(var(--hairline) / var(--hairline-alpha));
+    border-radius: 0.5rem;
+  }
+
+  /* A yield bar: what survives, and what is sawn away. The lost part is drawn
+     as texture rather than as a second colour, because it is an absence. */
+  .yield-bar {
+    background:
+      repeating-linear-gradient(
+        135deg,
+        rgb(var(--hairline) / 0.16) 0 2px,
+        transparent 2px 7px
+      );
+  }
+
+  /* A motif tile — the ground a regional pattern is drawn on. Quiet, warm, and
+     slightly domed, so a flat SVG pattern reads as an object. */
+  .motif-tile {
+    background:
+      radial-gradient(72% 62% at 50% 26%, rgb(var(--gold-300) / 0.12), transparent 72%),
+      linear-gradient(180deg, rgb(var(--surface-raised)), rgb(var(--surface-sunken)));
+    box-shadow:
+      inset 0 1px 0 rgb(var(--hairline) / 0.12),
+      inset 0 -14px 24px -18px rgb(var(--shadow-color) / 0.6);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   v7 keyframes
+   -------------------------------------------------------------------------- */
+
+@keyframes quench-hiss {
+  0%   { opacity: 0; transform: scale(0.55); }
+  24%  { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes mill-turn {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 11px 0, 0 0; }
+}
+
+@keyframes die-pull {
+  0%   { transform: translateX(-6%) scaleY(1); }
+  55%  { transform: translateX(2%) scaleY(0.94); }
+  100% { transform: translateX(0) scaleY(1); }
+}
+
+@keyframes punch-recoil {
+  0%   { transform: translateY(-28%); }
+  46%  { transform: translateY(3%); }
+  62%  { transform: translateY(-9%); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes granule-settle {
+  0%   { transform: translateY(-14px) scale(0.5); opacity: 0; }
+  58%  { transform: translateY(2px) scale(1.08); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes lap-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spark-fly {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  70%  { opacity: 0.7; }
+  100% { transform: translate(var(--spark-dx, 40px), var(--spark-dy, -26px)) scale(0.2); opacity: 0; }
+}
+
+@keyframes knot-cinch {
+  0%   { transform: scale(0.3); opacity: 0; }
+  62%  { transform: scale(1.22); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes claw-close {
+  0%   { transform: rotate(var(--claw-open, -26deg)); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes caliper-close {
+  0%   { transform: translateX(var(--caliper-from, -40px)); }
+  78%  { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes hatch-build {
+  0%   { --hatch: 0%; opacity: 0.2; }
+  100% { --hatch: 100%; opacity: 1; }
+}
+
+@keyframes crease-open {
+  0%   { transform: rotateX(-88deg); }
+  100% { transform: rotateX(0deg); }
+}
+
+@keyframes nap-fade {
+  0%   { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+@keyframes anneal-ramp {
+  0%   { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
+}
+
+@keyframes wire-thin {
+  0%   { transform: scaleY(1); }
+  100% { transform: scaleY(var(--wire-to, 0.4)); }
+}
+
+@keyframes tick-sweep {
+  0%   { opacity: 0; transform: scaleY(0.2); }
+  40%  { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0.5; transform: scaleY(1); }
+}
+
+/* The v7 additions follow the same contract as every wave before them: under a
+   reduced-motion preference the material stays and the movement goes. The forge
+   is still hot, the mill is still there and the punch is still struck — none of
+   them move, which is what a photograph of a workshop looks like. */
+@media (prefers-reduced-motion: reduce) {
+  .mill-roller,
+  .quench-flash,
+  .anneal-skin,
+  .velvet-nap {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .tilt-shift-band {
+    filter: none !important;
   }
 }

@@ -29,6 +29,7 @@ import EchoTrailText from '@/components/motion/EchoTrailText';
 import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import ChromaSplit from '@/components/motion/ChromaSplit';
 import CallbackWindow from '@/components/ui/CallbackWindow';
+import AccessNotes from '@/components/ui/AccessNotes';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -661,6 +662,32 @@ export default function ContactClient() {
           />
 
           <CallbackWindow />
+        </div>
+      </section>
+
+      {/* ---- Getting in ----
+           The page can already book an appointment, find the building, say
+           what the room is like and say when somebody is awake at both ends.
+           What none of that answers is the set of questions somebody has to
+           telephone a stranger to ask — and having to ask is itself the
+           barrier.
+
+           So every answer here is a measurement or a plain no. "Accessible"
+           has meant nothing since about 1994; 910mm of clear door width and a
+           12mm chamfered threshold mean something. Where the answer is no it
+           says no, and says what we do instead. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="Before you have to ask"
+            title="Twelve questions nobody should have to telephone about"
+            highlightWords={['telephone']}
+            subtitle="Door widths in millimetres, which way the lavatory rail drops, the size of the lift, where the loop works and where it does not. Three of the twelve answers are “with a limit”, and those are the three worth reading — a carefully phrased yes is how somebody ends up at the bottom of a step."
+            align="left"
+            className="mb-14"
+          />
+
+          <AccessNotes />
         </div>
       </section>
 

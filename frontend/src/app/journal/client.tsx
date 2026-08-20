@@ -30,6 +30,8 @@ import ReadingQueue, { QueueToggle } from '@/components/ui/ReadingQueue';
 import ElasticRail from '@/components/motion/ElasticRail';
 import TypeOnPath from '@/components/motion/TypeOnPath';
 import ReadingLoupe from '@/components/motion/ReadingLoupe';
+import SourcesAndCorrections from '@/components/ui/SourcesAndCorrections';
+import InkPressPlate from '@/components/motion/InkPressPlate';
 
 /**
  * The four stages of the print run. The front of each card is the claim; the sheet
@@ -494,6 +496,41 @@ export default function JournalClient() {
               items={journal.filter((j) => j.pull).map((j) => j.pull as string)}
               radius={170}
               speed={9}
+            />
+          </div>
+        </section>
+
+        {/* ---- Where the figures come from, and where we were wrong ----
+             A journal that prints numbers is doing journalism whether it says
+             so or not, and a site that has spent this long insisting on the
+             difference between a claim and evidence cannot then publish
+             figures with no provenance.
+
+             The corrections half is the part that costs something. The
+             original wording stays rather than being quietly replaced, because
+             if a number was wrong for eight months then the people who read it
+             during those eight months are owed the note. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <SourcesAndCorrections />
+          </div>
+        </section>
+
+        {/* ---- The press ----
+             One quiet plate before the subscription card, and the right note
+             to end a journal on: this thing is printed. Debossed type does not
+             get darker — it gets a highlight on one edge and a shadow on the
+             other, because there is a dent in the paper. The impression slider
+             is the argument printers have been having since about 1890. */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-3xl px-6">
+            <p className="mb-10 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Set in metal, four times a year
+            </p>
+
+            <InkPressPlate
+              lines={['Printed', 'and posted.', 'Never emailed.']}
+              impression={0.5}
             />
           </div>
         </section>

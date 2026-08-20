@@ -32,6 +32,7 @@ import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
 import GravityChainRail from '@/components/motion/GravityChainRail';
 import CollectionCompass from '@/components/ui/CollectionCompass';
+import PieceScaleOverlay from '@/components/ui/PieceScaleOverlay';
 
 /**
  * Filters key off collection ids. The previous version matched a short label
@@ -517,6 +518,35 @@ export default function CollectionsClient() {
           </section>
 
           <GoldDivider variant="wide" className="my-24" />
+
+          {/* ---- True size ----
+               Every product photograph on every jeweller's site in the world
+               is the same size on screen, which means a 4mm stud and a 22mm
+               cocktail ring look identical until the parcel arrives. It is the
+               commonest cause of disappointment in this trade and it is
+               entirely solvable, because a screen has a known pixel density
+               and a bank card has been 85.6mm wide since 1985.
+
+               Placed at the end of the browsing run rather than beside the
+               grid, because it is worth doing once and then remembering — and
+               because a calibration step in the middle of browsing would be an
+               obstacle rather than a tool. */}
+          <section className="relative py-20 md:py-28">
+            <SectionHeading
+              eyebrow="Actually this big"
+              title="Hold a bank card to the screen and every piece below goes life size"
+              highlightWords={['life']}
+              subtitle="One gesture, five seconds. A card has been 85.6mm across since 1985, so matching the outline tells this page exactly how large a millimetre is on your particular display — and then a half carat is a half carat rather than a photograph."
+              align="left"
+              className="mb-14"
+            />
+
+            <PieceScaleOverlay />
+          </section>
+
+          <GoldDivider variant="wide" className="my-24" />
+
+          {/* Closing CTA */}          <GoldDivider variant="wide" className="my-24" />
 
           {/* Closing CTA */}
           <div className="text-center">

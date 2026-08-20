@@ -140,6 +140,124 @@ const config: Config = {
       },
 
       keyframes: {
+        /* ---------- v7: the forge ----------
+           Everything that happens to metal before it is a thing. These are
+           material behaviours rather than lighting ones, which is what keeps
+           them distinct from the optics block further down. */
+        "forge-breath": {
+          "0%, 100%": { opacity: "0.55", filter: "saturate(1) brightness(0.94)" },
+          "44%": { opacity: "0.92", filter: "saturate(1.3) brightness(1.16)" },
+        },
+        "scale-flake": {
+          "0%": { transform: "translate3d(0,0,0) rotate(0deg)", opacity: "0.9" },
+          "100%": {
+            transform: "translate3d(var(--flake-x, 18px), 62px, 0) rotate(180deg)",
+            opacity: "0",
+          },
+        },
+        "hammer-fall": {
+          "0%": { transform: "translateY(-46%) rotate(-9deg)" },
+          "40%": { transform: "translateY(0) rotate(0deg)" },
+          "54%": { transform: "translateY(-14%) rotate(-3deg)" },
+          "100%": { transform: "translateY(0) rotate(0deg)" },
+        },
+        "ingot-squeeze": {
+          "0%": { transform: "scaleY(1) scaleX(1)" },
+          "100%": { transform: "scaleY(0.42) scaleX(1.9)" },
+        },
+        "wire-run": {
+          "0%": { backgroundPosition: "0 0" },
+          "100%": { backgroundPosition: "-64px 0" },
+        },
+        "solder-creep": {
+          "0%": { strokeDashoffset: "1" },
+          "100%": { strokeDashoffset: "0" },
+        },
+
+        /* ---------- v7: the bench drawing ---------- */
+        "leader-draw": {
+          "0%": { transform: "scaleX(0)", opacity: "0" },
+          "18%": { opacity: "1" },
+          "100%": { transform: "scaleX(1)", opacity: "1" },
+        },
+        "vernier-slide": {
+          "0%": { transform: "translateX(var(--vernier-from, -34px))" },
+          "72%": { transform: "translateX(3px)" },
+          "100%": { transform: "translateX(0)" },
+        },
+        "stylus-scratch": {
+          "0%, 100%": { transform: "translate3d(0,0,0)" },
+          "25%": { transform: "translate3d(0.4px,-0.3px,0)" },
+          "75%": { transform: "translate3d(-0.3px,0.4px,0)" },
+        },
+        "tolerance-blink": {
+          "0%, 100%": { opacity: "0.35" },
+          "50%": { opacity: "1" },
+        },
+
+        /* ---------- v7: setting and stringing ---------- */
+        "claw-bend": {
+          "0%": { transform: "rotate(var(--claw-from, -22deg))" },
+          "68%": { transform: "rotate(3deg)" },
+          "100%": { transform: "rotate(0deg)" },
+        },
+        "bead-thread": {
+          "0%": { transform: "translateX(-120%) scale(0.6)", opacity: "0" },
+          "100%": { transform: "translateX(0) scale(1)", opacity: "1" },
+        },
+        "strand-sway": {
+          "0%, 100%": { transform: "rotate(-1.6deg)" },
+          "50%": { transform: "rotate(1.6deg)" },
+        },
+        "lustre-roll": {
+          "0%": { backgroundPosition: "-30% 50%" },
+          "100%": { backgroundPosition: "130% 50%" },
+        },
+
+        /* ---------- v7: camera moves ---------- */
+        "dolly-creep": {
+          "0%": { transform: "perspective(1200px) translateZ(0)" },
+          "100%": { transform: "perspective(1200px) translateZ(90px)" },
+        },
+        "handheld-drift": {
+          "0%, 100%": { transform: "translate3d(0,0,0) rotate(0deg)" },
+          "27%": { transform: "translate3d(-3px,2px,0) rotate(0.18deg)" },
+          "58%": { transform: "translate3d(2px,-3px,0) rotate(-0.22deg)" },
+          "81%": { transform: "translate3d(1px,1px,0) rotate(0.1deg)" },
+        },
+        "focus-hunt": {
+          "0%, 100%": { filter: "blur(0px)" },
+          "38%": { filter: "blur(2.4px)" },
+          "62%": { filter: "blur(0.6px)" },
+        },
+        "shutter-tick": {
+          "0%, 92%, 100%": { opacity: "0" },
+          "94%, 98%": { opacity: "1" },
+        },
+
+        /* ---------- v7: paper, cloth and readouts ---------- */
+        "leaf-unfold": {
+          "0%": { transform: "rotateX(-92deg)", opacity: "0" },
+          "48%": { opacity: "1" },
+          "100%": { transform: "rotateX(0deg)", opacity: "1" },
+        },
+        "nap-brush": {
+          "0%": { opacity: "0.85" },
+          "100%": { opacity: "0" },
+        },
+        "bar-grow": {
+          "0%": { transform: "scaleX(0)" },
+          "100%": { transform: "scaleX(1)" },
+        },
+        "column-grow": {
+          "0%": { transform: "scaleY(0)" },
+          "100%": { transform: "scaleY(1)" },
+        },
+        "crosshair-snap": {
+          "0%": { opacity: "0", transform: "scaleY(0.4)" },
+          "100%": { opacity: "1", transform: "scaleY(1)" },
+        },
+
         float: {
           "0%, 100%": { transform: "translate3d(0,-14px,0)" },
           "50%": { transform: "translate3d(0,0,0)" },
@@ -885,6 +1003,39 @@ const config: Config = {
         "star-twinkle": "star-twinkle 3.4s ease-in-out infinite",
         "type-track": "type-track 1.2s cubic-bezier(0.22,1,0.36,1) both",
         "glint-cross": "glint-cross 4.4s cubic-bezier(0.42,0.02,0.32,1) infinite",
+
+        /* ---------- v7: the forge ---------- */
+        "forge-breath": "forge-breath 3.8s ease-in-out infinite",
+        "scale-flake": "scale-flake 2.6s ease-in infinite",
+        "hammer-fall": "hammer-fall 1.6s cubic-bezier(0.5,0,0.2,1) infinite",
+        "ingot-squeeze": "ingot-squeeze 1.4s cubic-bezier(0.42,0.02,0.32,1) both",
+        "wire-run": "wire-run 1.9s linear infinite",
+        "solder-creep": "solder-creep 2.4s cubic-bezier(0.42,0.02,0.32,1) both",
+
+        /* ---------- v7: the bench drawing ---------- */
+        "leader-draw": "leader-draw 780ms cubic-bezier(0.22,1,0.36,1) both",
+        "vernier-slide": "vernier-slide 1.1s cubic-bezier(0.22,1,0.36,1) both",
+        "stylus-scratch": "stylus-scratch 220ms steps(2) infinite",
+        "tolerance-blink": "tolerance-blink 2.2s ease-in-out infinite",
+
+        /* ---------- v7: setting and stringing ---------- */
+        "claw-bend": "claw-bend 900ms cubic-bezier(0.34,1.42,0.52,1) both",
+        "bead-thread": "bead-thread 620ms cubic-bezier(0.22,1,0.36,1) both",
+        "strand-sway": "strand-sway 6.4s ease-in-out infinite",
+        "lustre-roll": "lustre-roll 4.8s ease-in-out infinite",
+
+        /* ---------- v7: camera moves ---------- */
+        "dolly-creep": "dolly-creep 14s ease-in-out infinite alternate",
+        "handheld-drift": "handheld-drift 9s ease-in-out infinite",
+        "focus-hunt": "focus-hunt 5.2s ease-in-out infinite",
+        "shutter-tick": "shutter-tick 7s steps(1) infinite",
+
+        /* ---------- v7: paper, cloth and readouts ---------- */
+        "leaf-unfold": "leaf-unfold 900ms cubic-bezier(0.22,1,0.36,1) both",
+        "nap-brush": "nap-brush 1.6s ease-out forwards",
+        "bar-grow": "bar-grow 900ms cubic-bezier(0.22,1,0.36,1) both",
+        "column-grow": "column-grow 780ms cubic-bezier(0.22,1,0.36,1) both",
+        "crosshair-snap": "crosshair-snap 180ms cubic-bezier(0.22,1,0.36,1) both",
       },
     },
   },

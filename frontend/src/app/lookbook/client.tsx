@@ -33,6 +33,7 @@ import GravityChainRail from '@/components/motion/GravityChainRail';
 import ElasticRail from '@/components/motion/ElasticRail';
 import TypeOnPath from '@/components/motion/TypeOnPath';
 import SeasonPalette from '@/components/ui/SeasonPalette';
+import ShotListCredits from '@/components/ui/ShotListCredits';
 import { products } from '@/data/products';
 
 /** The chapters, as a pile of cards that stack up while the reader scrolls. */
@@ -579,6 +580,31 @@ export default function LookbookClient() {
             />
 
             <SeasonPalette />
+          </div>
+        </section>
+
+        {/* ---- How each plate was actually made ----
+             The home page admits that jewellery photography is a construction
+             — four exposures of one stone, and which is the real one. This is
+             the follow-through, and it belongs to the lookbook because a
+             lookbook is where the construction is most complete and least
+             visible.
+
+             The retouch column draws the line that matters commercially: dust,
+             sensor spots and the photographer reflected in a table facet are
+             removed; inclusions, colour, proportion and true size are not. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="709 frames, four plates"
+              title="Nothing in a lookbook is found. All of it is built."
+              highlightWords={['built.']}
+              subtitle="Focal length, aperture, where the lamps were, who was in the room, and exactly what was retouched. The most useful number is the aperture — a ring at f/16 is a different object from the same ring at f/2.8, and almost every jeweller shoots the second one because it hides everything behind the front claw."
+              align="left"
+              className="mb-14"
+            />
+
+            <ShotListCredits />
           </div>
         </section>
 

@@ -34,6 +34,8 @@ import MetaballGold from '@/components/motion/MetaballGold';
 import SilkWave from '@/components/motion/SilkWave';
 import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import StoneSourcingBrief from '@/components/ui/StoneSourcingBrief';
+import StoneMatchingBench from '@/components/ui/StoneMatchingBench';
+import SilverpointSketch from '@/components/motion/SilverpointSketch';
 
 const JOURNEY = [
   {
@@ -540,6 +542,68 @@ export default function BespokeClient() {
           />
 
           <StoneSourcingBrief />
+        </div>
+      </section>
+
+      {/* ---- The second stone ----
+           The sourcing brief above prices one stone. This is the question that
+           catches people out the moment they ask for earrings or a three-stone:
+           a matched stone is not the same thing as a stone with the same
+           numbers on its report.
+
+           Two identical certificates can describe visibly different stones —
+           fluorescence is the usual culprit and almost nobody checks it. And
+           past a certain tightness the honest answer is that we cannot promise
+           a date, which the panel says rather than quoting eight weeks and
+           hoping. */}
+      <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+          <SectionHeading
+            eyebrow="If you need two of them"
+            title="A matched stone is not a stone with the same report"
+            highlightWords={['matched']}
+            subtitle="Two certificates can read H VS1 and sit three centimetres apart on a face looking like different stones — usually because one fluoresces strong blue and the other is inert. Tighten the five constraints below and watch the search go from a week to a date nobody can give you."
+            align="left"
+            className="mb-14"
+          />
+
+          <StoneMatchingBench />
+        </div>
+      </section>
+
+      {/* ---- How it is drawn ----
+           A quiet section between the two dense ones. Silverpoint is the right
+           medium to show here for a reason that is not nostalgia: it cannot be
+           erased and it cannot be pressed darker, so a drawing made in it is
+           built out of committed lines and crossed hatching rather than
+           corrected into existence. Which is exactly what a commission is. */}
+      <section className="relative overflow-hidden bg-canvas-alt py-24 md:py-32">
+        <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-center">
+            <SilverpointSketch subject="ring" />
+
+            <div>
+              <p className="font-accent text-[10px] uppercase tracking-luxe text-accent">
+                Before the studio, there is a sheet
+              </p>
+              <h2 className="mt-4 font-display text-3xl leading-[1.14] text-primary md:text-4xl">
+                A line that cannot be taken back.
+              </h2>
+              <p className="mt-5 font-sans text-sm font-light leading-relaxed text-muted">
+                Silverpoint is a silver stylus on a ground of bone ash. It is
+                what everybody drew with before graphite, and it has two
+                properties that make it the honest medium for a commission: it
+                cannot be erased, and it cannot be made darker by pressing
+                harder. Tone is built by crossing more lines, one committed
+                stroke at a time.
+              </p>
+              <p className="mt-4 font-sans text-sm font-light leading-relaxed text-muted">
+                It also tarnishes. A drawing made today is grey and warms to
+                brown over about six months — the same reaction, on paper, that
+                is already happening on the piece it describes.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -35,6 +35,9 @@ import TypeOnPath from '@/components/motion/TypeOnPath';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import PearlGrader from '@/components/ui/PearlGrader';
 import TreatmentDisclosure from '@/components/ui/TreatmentDisclosure';
+import ProportionScope from '@/components/ui/ProportionScope';
+import StoneCutYield from '@/components/ui/StoneCutYield';
+import LabGrownLedger from '@/components/ui/LabGrownLedger';
 
 /**
  * The stone library — the reference half of the site.
@@ -503,6 +506,72 @@ export default function GemstonesClient() {
             />
 
             <TreatmentDisclosure />
+          </div>
+        </section>
+
+        {/* ---- The three angles, and the physics behind them ----
+             The page has taught the four Cs, the mineral library and what has
+             been done to the stone. What none of that covers is the one thing
+             a cutter actually controls, which is a set of angles measured to a
+             tenth of a degree.
+
+             It goes here rather than beside the grading dials because it is
+             the answer to the question those dials produce: a visitor who now
+             knows what "excellent cut" means on a report immediately wants to
+             know what it means in the stone. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="Under a degree"
+              title="A diamond is a mirror box, and the walls have a tolerance"
+              highlightWords={['mirror']}
+              subtitle="Light that hits an internal facet at more than 24.4° from the normal cannot get out — it is trapped and has to bounce again. Everything the trade calls a well-cut stone is that one number being respected, and every leak is it being ignored to keep weight."
+              align="left"
+              className="mb-14"
+            />
+
+            <ProportionScope />
+          </div>
+        </section>
+
+        {/* ---- What it cost to get there ----
+             Straight after the proportions, because the two are the same
+             argument seen from opposite ends. The panel above says what the
+             right angles are; this says what the right angles cost in carats,
+             and therefore why so many stones do not have them. */}
+        <section className="relative overflow-hidden bg-canvas py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The part nobody prices out loud"
+              title="Most of what came out of the ground is dust"
+              highlightWords={['dust']}
+              subtitle="A polished stone is the survivor of a much larger one. Between a third and two thirds of the rough is sawn off and swept up — and the price you are quoted contains all of it, including the part that no longer exists."
+              align="left"
+              className="mb-14"
+            />
+
+            <StoneCutYield />
+          </div>
+        </section>
+
+        {/* ---- Grown and mined ----
+             The last reference section on the page and the most loaded
+             question on any counter. Placed after the yield bench on purpose:
+             a visitor who has just watched two thirds of a crystal become dust
+             is in the right frame of mind for a conversation about where the
+             price of a mined stone actually comes from. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The question everybody asks last"
+              title="Grown, mined, and the four rows where it genuinely matters"
+              highlightWords={['genuinely']}
+              subtitle="Same lattice, same hardness, same fire, same laboratories. Three of the seven rows below are differences a wearer will never encounter and two of them will decide what the piece is worth in twenty years. We sell both and we will not tell you one of them is not a real diamond."
+              align="left"
+              className="mb-14"
+            />
+
+            <LabGrownLedger />
           </div>
         </section>
 

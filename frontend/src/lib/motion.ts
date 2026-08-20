@@ -2287,3 +2287,497 @@ export const onceFullyInView = { once: true, margin: '-45% 0px -45% 0px' } as co
 
 /** Replays, and fires early enough that a tall scene is already moving. */
 export const replayInViewEager = { once: false, margin: '8% 0px 8% 0px' } as const;
+
+/* ===========================================================================
+   v8 — the workshop, and the bench drawing that precedes it
+   ---------------------------------------------------------------------------
+   The batch number is one ahead of the CSS wave that landed with it, because
+   this file reached "the projection layer" a wave earlier than the stylesheet
+   did. Nothing is renamed to reconcile them — the numbers are labels for the
+   order things arrived in, not a version anybody depends on.
+
+   Every earlier batch here describes how something is *seen*: a camera move, a
+   lens artefact, a projection fault, a light. This one describes how something
+   is *made*. Metal is heated until its grain relaxes and then quenched. An
+   ingot is squeezed between two rollers and comes out longer. Wire is dragged
+   through a hole smaller than itself. A punch is struck. Four claws are bent
+   over a stone. A strand is knotted between every pearl.
+
+   That difference has a real consequence for the curves rather than being a
+   thematic note. A camera move is chosen by a person, so it eases: slow in,
+   slow out. A workshop process is governed by material, so it does not. Metal
+   under a roller accelerates as it thins because the same force acts on less
+   section. A punch decelerates against nothing at all — it stops because the
+   metal stops it, which is a collision and not an ease. A drawn wire creeps
+   and then runs. The curves below are shaped from that rather than from taste,
+   which is why several of them are asymmetric in a way none of the cinematic
+   ones are.
+
+   As always: nothing here replaces an existing export. Where a name reads close
+   to one above, the mechanism differs and the comment says how.
+   =========================================================================== */
+
+/**
+ * Curves taken from material rather than from a camera operator.
+ *
+ * `draw` is a wire coming through a die: nothing happens for a long moment
+ * while the load builds, then it runs. `roll` is the opposite — an ingot moves
+ * fastest at the instant it is bitten and slows as the section thickens toward
+ * the tail. `strike` has almost no out-curve at all, because a punch stops
+ * against metal rather than easing to rest, and `anneal` is nearly linear
+ * because heat soaks at a rate the smith cannot hurry.
+ */
+export const easeForge = {
+  draw: [0.86, 0.02, 0.34, 1] as const,
+  roll: [0.1, 0.72, 0.32, 1] as const,
+  strike: [0.62, 0, 0.86, 0.24] as const,
+  anneal: [0.4, 0.06, 0.6, 0.94] as const,
+  /** A quench: violent, then absolutely finished. */
+  quench: [0.05, 0.92, 0.12, 1] as const,
+};
+
+/**
+ * Springs for parts that are held by something rather than floating.
+ *
+ * `claw` is stiff and barely bounces, because gold that has been bent over a
+ * girdle does not spring back — if it did, the stone would be loose. `strand`
+ * is the opposite: a knotted pearl strand is heavy and lightly damped, so it
+ * swings for a while. `jaw` is a caliper closing, which is a slide with
+ * friction rather than a spring at all, so it is heavily overdamped.
+ */
+export const springsBench = {
+  claw: { type: 'spring', stiffness: 420, damping: 34, mass: 0.7 } as const,
+  strand: { type: 'spring', stiffness: 90, damping: 12, mass: 1.4 } as const,
+  jaw: { type: 'spring', stiffness: 260, damping: 40, mass: 1 } as const,
+  punch: { type: 'spring', stiffness: 900, damping: 26, mass: 1.6 } as const,
+};
+
+/**
+ * Metal coming up to annealing heat, as a background-position sweep across the
+ * colour ramp in `.anneal-skin`.
+ *
+ * The ramp is the one a bench actually watches for. Steel and silver both run
+ * straw → brown → purple → blue; gold alloys skip most of it and go to a dull
+ * cherry. Either way the smith is reading a *colour* to decide a *temperature*,
+ * which is one of the last places in any trade where that is still true, and it
+ * is the reason this is a gradient sweep rather than a fade to orange.
+ */
+export const annealRamp: Variants = {
+  hidden: { backgroundPosition: '0% 0' },
+  visible: {
+    backgroundPosition: '100% 0',
+    transition: { duration: 2.4, ease: easeForge.anneal },
+  },
+};
+
+/**
+ * The quench. Down fast, a shudder as the steam jacket collapses, and then
+ * completely still — colder and harder than it started.
+ */
+export const quenchDrop: Variants = {
+  hidden: { y: -18, scale: 1.04, filter: 'brightness(1.5) saturate(1.4)' },
+  visible: {
+    y: [-18, 6, 0],
+    scale: [1.04, 0.98, 1],
+    filter: [
+      'brightness(1.5) saturate(1.4)',
+      'brightness(1.05) saturate(1.05)',
+      'brightness(1) saturate(1)',
+    ],
+    transition: { duration: 0.72, ease: easeForge.quench, times: [0, 0.42, 1] },
+  },
+};
+
+/**
+ * An ingot bitten by a rolling mill: it gets thinner and, because the volume
+ * has nowhere else to go, exactly that much longer.
+ *
+ * `pass` is which pass through the mill this is — the mill is closed a little
+ * further each time, so every pass takes less and the piece approaches its
+ * final section asymptotically rather than linearly. Three passes is the usual
+ * number before the metal has to be annealed again.
+ */
+export const rollPass = (pass = 1): Variants => {
+  const reduction = 1 - 0.26 / pass;
+  return {
+    hidden: { scaleY: 1, scaleX: 1 },
+    visible: {
+      scaleY: reduction,
+      scaleX: 1 / reduction,
+      transition: { duration: 0.9, ease: easeForge.roll },
+    },
+  };
+};
+
+/**
+ * Wire pulled through a draw plate. It creeps while the load builds and then
+ * runs, and it comes out of the far side thinner by the square root of the area
+ * ratio — which is why `to` is applied to the cross-section and not to the
+ * width the caller thinks it is setting.
+ */
+export const wireDraw = (to = 0.62): Variants => ({
+  hidden: { scaleY: 1, x: '-4%' },
+  visible: {
+    scaleY: Math.sqrt(to),
+    x: '0%',
+    transition: { duration: 1.3, ease: easeForge.draw },
+  },
+});
+
+/**
+ * A punch struck, and the recoil that follows it.
+ *
+ * The recoil is the detail. A hallmark is struck once and the punch bounces —
+ * and the bounce is *small*, because most of the energy went into the metal.
+ * Anything springier than this reads as a toy hammer.
+ */
+export const punchStrike: Variants = {
+  hidden: { y: '-140%', opacity: 0 },
+  visible: {
+    y: ['-140%', '0%', '-16%', '0%'],
+    opacity: 1,
+    transition: { duration: 0.54, ease: easeForge.strike, times: [0, 0.52, 0.7, 1] },
+  },
+};
+
+/**
+ * The bruise a punch leaves: the impression appears at the instant of contact
+ * and the displaced metal rises around it a beat later, because metal takes a
+ * moment to flow.
+ */
+export const punchImpression: Variants = {
+  hidden: { opacity: 0, scale: 0.86 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.3, delay: 0.28, ease: easeForge.strike },
+  },
+};
+
+/**
+ * Four claws bent over a girdle, one after another.
+ *
+ * A setter does not close claws in a circle — they close opposite pairs, the
+ * way a wheel nut is tightened, so the stone cannot walk out of true. `index`
+ * is the claw's position and the delay order below is 0, 2, 1, 3 rather than
+ * 0, 1, 2, 3 for exactly that reason.
+ */
+export const clawClose = (index = 0, total = 4): Variants => {
+  const half = Math.max(1, Math.floor(total / 2));
+  const order = index % 2 === 0 ? index / 2 : half + (index - 1) / 2;
+  return {
+    hidden: { rotate: index % 2 === 0 ? -26 : 26 },
+    visible: {
+      rotate: 0,
+      transition: { ...springsBench.claw, delay: order * 0.16 },
+    },
+  };
+};
+
+/**
+ * A pearl threaded onto a strand and the knot cinched behind it.
+ *
+ * Knotting between pearls is the one piece of stringing that everybody
+ * recognises and almost nobody knows the reason for: it is not decoration and
+ * it is not spacing. It is so that a broken strand loses one pearl rather than
+ * all of them, and so that the pearls cannot abrade each other's nacre.
+ */
+export const beadThread = (index = 0, step = 0.055): Variants => ({
+  hidden: { x: '-90%', scale: 0.5, opacity: 0 },
+  visible: {
+    x: '0%',
+    scale: 1,
+    opacity: 1,
+    transition: { ...springsBench.jaw, delay: index * step },
+  },
+});
+
+export const knotCinch = (index = 0, step = 0.055): Variants => ({
+  hidden: { scale: 0.2, opacity: 0 },
+  visible: {
+    scale: [0.2, 1.24, 1],
+    opacity: 1,
+    transition: {
+      duration: 0.34,
+      delay: index * step + 0.12,
+      ease: [0.34, 1.42, 0.52, 1],
+      times: [0, 0.62, 1],
+    },
+  },
+});
+
+/**
+ * A caliper closing onto something and stopping dead against it.
+ *
+ * `from` is how far open the jaw starts, in pixels. There is deliberately no
+ * overshoot on the closing jaw — a caliper that bounced off the work would be a
+ * caliper you could not trust — but there *is* a tiny settle, because the
+ * thumbwheel is turned by a hand and a hand overshoots.
+ */
+export const caliperClose = (from = 44): Variants => ({
+  hidden: { x: -from },
+  visible: {
+    x: [-from, 2, 0],
+    transition: { duration: 0.86, ease: easeForge.draw, times: [0, 0.82, 1] },
+  },
+});
+
+/**
+ * A dimension line drawn across a drawing, then its figure written above it.
+ *
+ * Two exports rather than one because the order is the whole convention: a
+ * draughtsman rules the extension lines, then the dimension line between them,
+ * then writes the figure. A figure that appears before its line has nothing to
+ * refer to.
+ */
+export const dimensionRule = (delay = 0): Variants => ({
+  hidden: { scaleX: 0, opacity: 0 },
+  visible: {
+    scaleX: 1,
+    opacity: 1,
+    transition: { duration: 0.62, delay, ease: [0.22, 1, 0.36, 1] },
+  },
+});
+
+export const dimensionFigure = (delay = 0): Variants => ({
+  hidden: { opacity: 0, y: 5 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, delay: delay + 0.44, ease: [0.22, 1, 0.36, 1] },
+  },
+});
+
+/**
+ * Silverpoint hatching, building tone in passes.
+ *
+ * A silverpoint line cannot be made darker by pressing harder — the stylus lays
+ * down a fixed amount of metal — so a draughtsman builds tone by crossing more
+ * lines over the same area. That is why this animates a *mask* rather than an
+ * opacity: opacity would fade a finished drawing in, and what actually happens
+ * is that an unfinished drawing gets more lines.
+ */
+export const hatchBuild = (passes = 3): Variants => ({
+  hidden: { clipPath: 'inset(0 0 100% 0)' },
+  visible: {
+    clipPath: 'inset(0 0 0% 0)',
+    transition: { duration: 0.5 * passes, ease: [0.42, 0.02, 0.32, 1] },
+  },
+});
+
+/**
+ * A sheet unfolding along a crease.
+ *
+ * Distinct from `foldOpen` and `unwrapY` above: both of those rotate a whole
+ * panel about an edge. This one carries the *shade* the raised leaf throws on
+ * the leaf beneath it, which is the only thing that makes a fold read as paper
+ * rather than as a hinged card.
+ */
+export const creaseOpen = (index = 0): Variants => ({
+  hidden: { rotateX: -92, opacity: 0 },
+  visible: {
+    rotateX: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.78,
+      delay: index * 0.22,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  },
+});
+
+/** The shade cast into the fold, which is deepest exactly while it is moving. */
+export const creaseShade = (index = 0): Variants => ({
+  hidden: { opacity: 0.55 },
+  visible: {
+    opacity: [0.55, 0.28, 0],
+    transition: { duration: 0.78, delay: index * 0.22, times: [0, 0.6, 1] },
+  },
+});
+
+/**
+ * A camera rig driven by scroll rather than by time.
+ *
+ * Returns the four numbers a move is actually made of, given a 0–1 progress:
+ * how far the camera has travelled in, how far it has panned, how far it has
+ * tilted, and how much roll it has picked up. Keeping them together matters,
+ * because a dolly with no roll at all reads as a slider and a dolly with too
+ * much reads as a drone — the ratio between them is the personality of the move
+ * and it is the thing worth having one definition of.
+ */
+export const cameraMove = (
+  progress: number,
+  opts: { dolly?: number; pan?: number; tilt?: number; roll?: number } = {}
+) => {
+  const { dolly = 120, pan = 0, tilt = 0, roll = 0 } = opts;
+  // Eased rather than linear: a scroll is linear and a camera operator is not.
+  const t = progress * progress * (3 - 2 * progress);
+  return {
+    z: t * dolly,
+    x: (t - 0.5) * 2 * pan,
+    rotateX: (t - 0.5) * 2 * tilt,
+    rotateZ: (t - 0.5) * 2 * roll,
+  };
+};
+
+/**
+ * How much a layer at `depth` moves for a given camera translation.
+ *
+ * Real parallax is a division, not a multiplication: a layer twice as far away
+ * moves half as much, and the near layer is the one that should be fast. Most
+ * web parallax gets this backwards by assigning speeds directly, which is why
+ * it so often reads as a set of sliding planes rather than as depth.
+ */
+export const parallaxAt = (depth = 1, travel = 100) => travel / Math.max(0.2, depth);
+
+/**
+ * Granules seeking their positions in a pattern.
+ *
+ * Granulation is gold beads fused to a surface without solder, and the beads
+ * are placed one at a time with a brush and a held breath. The delay is
+ * proportional to distance from the centre of the pattern, because that is the
+ * order somebody laying them would work in — outside in would leave nowhere to
+ * rest a hand.
+ */
+export const granuleSettle = (distance = 0, spread = 0.9): Variants => ({
+  hidden: { scale: 0, opacity: 0, y: -10 },
+  visible: {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.44,
+      delay: distance * spread,
+      ease: [0.34, 1.42, 0.52, 1],
+    },
+  },
+});
+
+/**
+ * A polishing lap turning, and slowing when it is let go of.
+ *
+ * Constant while the section is in view, then a long spin-down rather than a
+ * stop: a lap wheel is heavy and it coasts for a surprisingly long time, which
+ * is the reason bench guards exist.
+ */
+export const lapSpin = (rpm = 40): Variants => ({
+  hidden: { rotate: 0 },
+  visible: {
+    rotate: 360,
+    transition: { duration: 60 / rpm, ease: 'linear', repeat: Infinity },
+  },
+});
+
+/**
+ * Sparks off a lap. `angle` is where the stone meets the wheel, so the spray
+ * leaves on the tangent rather than radially — which is the single thing that
+ * separates a spark spray from a firework.
+ */
+export const sparkFly = (angle: number, index: number): Variants => {
+  const spread = ((index % 7) - 3) * 0.13;
+  const theta = angle + spread;
+  const reach = 34 + (index % 5) * 13;
+  return {
+    hidden: { x: 0, y: 0, scale: 1, opacity: 0 },
+    visible: {
+      x: Math.cos(theta) * reach,
+      y: Math.sin(theta) * reach,
+      scale: 0.2,
+      opacity: [0, 1, 0],
+      transition: {
+        duration: 0.5 + (index % 4) * 0.12,
+        delay: (index % 9) * 0.07,
+        ease: 'easeOut',
+        repeat: Infinity,
+        repeatDelay: 0.5,
+      },
+    },
+  };
+};
+
+/**
+ * A bar or a column growing from its own baseline.
+ *
+ * Kept here rather than written at each call site because the origin is the
+ * part that is easy to get wrong, and a bar that grows from its centre is a bar
+ * that lies about where zero is.
+ */
+export const barGrow = (index = 0, step = 0.06, axis: 'x' | 'y' = 'x'): Variants => ({
+  hidden: axis === 'x' ? { scaleX: 0 } : { scaleY: 0 },
+  visible: {
+    ...(axis === 'x' ? { scaleX: 1 } : { scaleY: 1 }),
+    transition: { duration: 0.72, delay: index * step, ease: [0.22, 1, 0.36, 1] },
+  },
+});
+
+/**
+ * A plotted line drawing itself left to right.
+ *
+ * Paired with `barGrow` so a panel with both never has to invent two different
+ * arrival speeds for the same data.
+ */
+export const traceLine = (delay = 0, seconds = 1.1): Variants => ({
+  hidden: { pathLength: 0, opacity: 0 },
+  visible: {
+    pathLength: 1,
+    opacity: 1,
+    transition: {
+      pathLength: { duration: seconds, delay, ease: [0.42, 0.02, 0.32, 1] },
+      opacity: { duration: 0.2, delay },
+    },
+  },
+});
+
+/**
+ * A crosshair snapping to the nearest sample.
+ *
+ * Fast on purpose. A tooltip that eases into place lags the pointer and reads
+ * as broken; the only thing that should be smooth about a crosshair is where it
+ * lands, not how long it takes.
+ */
+export const crosshairSnap: Variants = {
+  hidden: { opacity: 0, scaleY: 0.5 },
+  visible: { opacity: 1, scaleY: 1, transition: { duration: 0.12 } },
+};
+
+/**
+ * Nap left in velvet by a pointer, fading as the pile stands back up.
+ *
+ * The fade is slow and the appearance is instant, which is the whole behaviour
+ * of a pile fabric: it takes the mark immediately and gives it up over seconds.
+ */
+export const napTrail: Variants = {
+  hidden: { opacity: 0.85 },
+  visible: { opacity: 0, transition: { duration: 1.7, ease: 'easeOut' } },
+};
+
+/**
+ * A tilt-shift band tightening as a section is scrolled through — the plane of
+ * focus narrowing until the scene reads as a model of itself.
+ */
+export const tiltShiftBand = (progress: number, maxBlur = 6) => ({
+  '--tilt-blur': `${(1 - Math.abs(progress - 0.5) * 2) * maxBlur}px`,
+  '--tilt-centre': `${30 + progress * 40}%`,
+});
+
+/**
+ * Rough being sawn, and the two halves parting.
+ *
+ * `side` is which half. The parting is not symmetrical: a sawn stone is cleaved
+ * or laser-sawn along one plane and the two halves are almost never the same
+ * size, which is the fact the whole yield question rests on.
+ */
+export const sawPart = (side: -1 | 1, share = 0.5): Variants => ({
+  hidden: { x: 0, rotate: 0, opacity: 1 },
+  visible: {
+    x: side * (26 + share * 30),
+    rotate: side * (4 + share * 6),
+    transition: { duration: 0.9, ease: easeForge.draw },
+  },
+});
+
+/** Fires as soon as any part of a tall panel is on screen. */
+export const inViewLoose = { once: true, margin: '0px 0px -6% 0px' } as const;
+
+/** Replays every time, and only once the element is properly central. */
+export const replayInViewCentred = { once: false, margin: '-34% 0px -34% 0px' } as const;

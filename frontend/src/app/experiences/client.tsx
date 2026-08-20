@@ -36,6 +36,7 @@ import PerspectiveCorridor from '@/components/motion/PerspectiveCorridor';
 import WaxSealReveal from '@/components/motion/WaxSealReveal';
 import TypeOnPath from '@/components/motion/TypeOnPath';
 import EtiquetteBriefing from '@/components/ui/EtiquetteBriefing';
+import TrunkShowCalendar from '@/components/ui/TrunkShowCalendar';
 
 const SENSES = [
   {
@@ -400,6 +401,30 @@ export default function ExperiencesClient() {
                 </div>
               </div>
             </WaxSealReveal>
+          </div>
+        </section>
+
+        {/* ---- The diary ----
+             The booker above handles the standing experiences — the things
+             that happen whenever somebody asks. These are the other kind:
+             dated, once, because a parcel is in the building for four days or
+             somebody has flown in.
+
+             The seat counts are real and small, and publishing them is the
+             difference between an invitation and a marketing email. Six chairs
+             is six chairs; a stone-sourcing viewing does not scale. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-5xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="The diary"
+              title="Five things happening on a date, and then not again"
+              highlightWords={['date']}
+              subtitle="A ruby parcel that is with us for four days. Two hours at a bench with a graver and a copper plate. The archive out of its cabinet. Each has a seat count, each count is the real one, and each is small for a reason the entry gives you."
+              align="left"
+              className="mb-14"
+            />
+
+            <TrunkShowCalendar />
           </div>
         </section>
 

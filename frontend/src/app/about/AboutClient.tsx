@@ -36,6 +36,8 @@ import MetaballGold from '@/components/motion/MetaballGold';
 import { brandData } from '@/data/brand';
 import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import StitchPathReveal from '@/components/motion/StitchPathReveal';
+import CulturalMotifAtlas from '@/components/ui/CulturalMotifAtlas';
+import FoldedNoteUnfold from '@/components/motion/FoldedNoteUnfold';
 import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
 import GoldLeafGild from '@/components/motion/GoldLeafGild';
@@ -749,6 +751,86 @@ export default function AboutClient() {
             </div>
 
             <ArchiveDrawer />
+          </div>
+        </section>
+
+        {/* ---- Where the vocabulary came from ----
+             Placed after the archive and before the wager, because the archive
+             is the honest account of what this house has kept and this is the
+             honest account of what it did not invent.
+
+             A Bombay house that has been trading since 1892 learned almost
+             everything it knows from somewhere else in this country, and
+             saying "heritage" without naming those places is the polite way of
+             taking credit for them. So this names them — the town, the
+             century, the technique — and it publishes the number nobody
+             publishes, which is how many people can still do each one.
+
+             The fragility figures are the point of the whole section. Thewa is
+             one extended family. Bidri is under a hundred. A trade that cannot
+             say those numbers out loud will find them out by their absence. */}
+        <section className="relative overflow-hidden bg-canvas-alt py-24 md:py-32">
+          <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
+            <SectionHeading
+              eyebrow="What we did not invent"
+              title="Seven traditions, and how many people are left who can do them"
+              highlightWords={['left']}
+              subtitle="Almost everything this house knows was carried here from somewhere else — Pratapgarh, Cuttack, Bidar, Jaipur, Thanjavur. Naming the places is the least a shop can do. Counting the people who are still doing it is the part that should worry everybody."
+              align="left"
+              className="mb-14"
+            />
+
+            <CulturalMotifAtlas />
+          </div>
+        </section>
+
+        {/* ---- The letter ----
+             One sheet, folded in three, opening. It sits between the atlas and
+             the wager because both of those are arguments and this is a person
+             — and a page about four generations should at some point let one
+             of them speak in the first person rather than being described.
+
+             The trifold is the real one: the bottom panel goes up first and the
+             top comes down over it, so opening lifts the top leaf before the
+             bottom drops. That is why the panels arrive out of reading order. */}
+        <section className="relative overflow-hidden border-y border-hairline bg-canvas py-24 md:py-32">
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_30%,rgb(var(--gold-500)/0.08),transparent_74%)]" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-4xl px-6 md:px-12">
+            <p className="mb-12 text-center font-accent text-[10px] uppercase tracking-luxest text-accent">
+              Found in the 1974 order book, in the margin
+            </p>
+
+            <FoldedNoteUnfold
+              stock="ruled"
+              signature="Vasant Aurum"
+              role="Third generation — written to his daughter, and never sent"
+              panels={[
+                <p key="a" className="font-display text-xl italic leading-relaxed text-ink-800 md:text-2xl">
+                  You will be told that this trade is about beautiful things. It
+                  is not. It is about somebody walking back through that door in
+                  thirty years holding something we made, and finding that we are
+                  still able to mend it.
+                </p>,
+                <p key="b" className="font-sans text-sm font-light leading-relaxed text-ink-700 md:text-base">
+                  Everything else — the window, the boxes, the way we speak to
+                  people — is arrangement. The only question that has ever
+                  mattered in this building is whether the person who made a
+                  thing has passed on how to repair it, and there have been two
+                  years in my life when the answer was no. I would rather you
+                  knew that than inherited a nice story about us.
+                </p>,
+                <p key="c" className="font-sans text-sm font-light leading-relaxed text-ink-700 md:text-base">
+                  So: keep the drawings, even the ones nobody can attribute. Keep
+                  the ledgers, especially the bad years. And never let anybody
+                  polish a piece so hard it loses the marks of the hand that made
+                  it — those marks are the only signature we have that cannot
+                  be forged.
+                </p>,
+              ]}
+            />
           </div>
         </section>
 
