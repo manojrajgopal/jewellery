@@ -447,7 +447,7 @@ export default function VaultClient() {
               subtitle="Read the list off your phone at the counter. It is the fastest appointment anyone has here, and the one that ends in the right piece."
             />
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <CTAButton variant="primary" href="/contact" size="lg" showArrow>
+              <CTAButton variant="primary" href="/book-appointment" size="lg" showArrow>
                 Arrange the visit
               </CTAButton>
               <CTAButton variant="ghost" href="/collections" size="lg">

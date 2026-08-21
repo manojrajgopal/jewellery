@@ -89,12 +89,12 @@ export default function Home() {
     <div data-home-sections style={{ display: 'contents' }}>
       <HeroSection />
       <TrustStrip />
-      <CollectionsSection />
+      {/* <CollectionsSection /> */}
 
-      <GoldDivider variant="wide" className="px-6" />
+      {/* <GoldDivider variant="wide" className="px-6" /> */}
 
       {/* Browse — coverflow rail, then the orbiting pieces */}
-      <CoverflowSection />
+      {/* <CoverflowSection /> */}
 
       {/* The season as an editorial wall, before the film — a visitor who has just
           browsed pieces is still in a looking mood, not yet a reading one. */}
@@ -111,6 +111,9 @@ export default function Home() {
           page where a visitor has just been asked to judge something from an
           image and has not yet been told who lit it. */}
       <GateSection />
+
+      {/* Tentpole two: collections passing sideways */}
+      <VitrineSection />
 
       {/* Tentpole three, and the quietest of them: a walk from the stone into the
           workshop. No controls, nothing to read but five lines passed under. A
@@ -140,6 +143,13 @@ export default function Home() {
           in four seconds. */}
       <BlueprintSection />
 
+      <CollectionsSection />
+
+      <GoldDivider variant="wide" className="px-6" />
+
+      {/* Browse — coverflow rail, then the orbiting pieces */}
+      <CoverflowSection />
+
       <AlloySection />
 
       <ForgeSection />
@@ -155,9 +165,6 @@ export default function Home() {
           anywhere near the catalogue. Its former neighbour — the clasp library —
           now lives only on /care, where the rest of the wear-and-fit material is. */}
       <StrandSection />
-
-      {/* Tentpole two: collections passing sideways */}
-      <VitrineSection />
 
       <GoldDivider variant="wide" className="px-6" />
 

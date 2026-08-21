@@ -99,7 +99,7 @@ export default function ApproachSection() {
                     locked — ask, and somebody will take you through it.
                   </p>
                   <div className="mt-8 flex flex-wrap justify-center gap-4">
-                    <CTAButton variant="primary" href="/contact" size="md" showArrow>
+                    <CTAButton variant="primary" href="/book-appointment" size="md" showArrow>
                       Arrange a visit
                     </CTAButton>
                     <CTAButton variant="outline-light" href="/experiences" size="md">

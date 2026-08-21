@@ -703,7 +703,7 @@ export default function ContactClient() {
             align="center"
             className="mb-10"
           />
-          <CTAButton href="/contact" variant="primary" size="lg" showArrow>
+          <CTAButton href="/book-appointment" variant="primary" size="lg" showArrow>
             Schedule a Private Viewing
           </CTAButton>
         </Reveal>

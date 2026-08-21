@@ -558,7 +558,7 @@ export default function CollectionsClient() {
               align="center"
               className="mb-10"
             />
-            <CTAButton variant="primary" size="lg" showArrow href="/contact">
+            <CTAButton variant="primary" size="lg" showArrow href="/book-appointment">
               Book a Consultation
             </CTAButton>
           </div>

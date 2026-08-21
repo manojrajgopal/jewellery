@@ -116,7 +116,7 @@ export default function VitrineSection() {
           proper light.
         </p>
         <Link
-          href="/contact"
+          href="/book-appointment"
           className="link-underline mt-1 inline-flex items-center gap-2 font-accent text-[11px] uppercase tracking-luxe text-accent"
         >
           Book a viewing

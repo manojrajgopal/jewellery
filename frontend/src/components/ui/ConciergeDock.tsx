@@ -133,7 +133,7 @@ export default function ConciergeDock() {
       label: 'Book a private viewing',
       detail: 'One hour, by appointment, no obligation',
       icon: CalendarHeart,
-      href: '/contact',
+      href: '/book-appointment',
     },
     {
       label: 'Find your size',

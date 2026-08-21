@@ -818,7 +818,7 @@ export default function CraftsmanshipClient() {
             className="mx-auto mb-12 max-w-4xl font-display text-3xl italic leading-tight text-primary md:text-5xl"
           />
 
-          <CTAButton href="/contact" variant="primary" size="lg" showArrow>
+          <CTAButton href="/bespoke" variant="primary" size="lg" showArrow>
             Commission a Bespoke Piece
           </CTAButton>
         </div>

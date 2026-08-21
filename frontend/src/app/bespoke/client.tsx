@@ -117,7 +117,7 @@ export default function BespokeClient() {
       <PageBanner
         title="The Bespoke Studio"
         subtitle="Four thousand five hundred combinations, one bench, and nothing cut until you have seen it drawn."
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Bespoke' }]}
+        breadcrumbs={[{ label: 'Bespoke' }]}
         backgroundImage="/images/hero/hero-main.jpg"
       />
 
@@ -421,7 +421,7 @@ export default function BespokeClient() {
                   </p>
 
                   <div className="mt-8 flex flex-wrap gap-4">
-                    <CTAButton variant="primary" size="md" href="/contact" showArrow>
+                    <CTAButton variant="primary" size="md" href="/book-appointment" showArrow>
                       Take a place in the book
                     </CTAButton>
                     <CTAButton variant="secondary" size="md" href="/services">

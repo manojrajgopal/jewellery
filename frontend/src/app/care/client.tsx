@@ -740,7 +740,7 @@ export default function CareClient() {
             className="mb-10"
           />
           <div className="flex flex-wrap justify-center gap-4">
-            <CTAButton variant="primary" size="lg" href="/contact" showArrow>
+            <CTAButton variant="primary" size="lg" href="/book-appointment" showArrow>
               Book the bench
             </CTAButton>
             <CTAButton variant="secondary" size="lg" href="/gemstones">
