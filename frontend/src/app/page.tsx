@@ -2,43 +2,29 @@ import HeroSection from '@/app/_sections/home/HeroSection';
 import TrustStrip from '@/app/_sections/home/TrustStrip';
 import CollectionsSection from '@/app/_sections/home/CollectionsSection';
 import CoverflowSection from '@/app/_sections/home/CoverflowSection';
-import SignaturePieces from '@/app/_sections/home/SignaturePieces';
 import FilmSection from '@/app/_sections/home/FilmSection';
 import ShowcaseSection from '@/app/_sections/home/ShowcaseSection';
-import StoneSchoolSection from '@/app/_sections/home/StoneSchoolSection';
 import VitrineSection from '@/app/_sections/home/VitrineSection';
 import CraftsmanshipSection from '@/app/_sections/home/CraftsmanshipSection';
 import HeritageSection from '@/app/_sections/home/HeritageSection';
 import AtelierToolsSection from '@/app/_sections/home/AtelierToolsSection';
-import BespokeSection from '@/app/_sections/home/BespokeSection';
 import TestimonialsSection from '@/app/_sections/home/TestimonialsSection';
 import ServicesSection from '@/app/_sections/home/ServicesSection';
-import AppointmentSection from '@/app/_sections/home/AppointmentSection';
 import GiftFinderSection from '@/app/_sections/home/GiftFinderSection';
-import BoutiqueSection from '@/app/_sections/home/BoutiqueSection';
 import CTASection from '@/app/_sections/home/CTASection';
 import LookbookSection from '@/app/_sections/home/LookbookSection';
-import StoneLibrarySection from '@/app/_sections/home/StoneLibrarySection';
 import ArtisansSection from '@/app/_sections/home/ArtisansSection';
 import ProvenanceSection from '@/app/_sections/home/ProvenanceSection';
 import JournalSection from '@/app/_sections/home/JournalSection';
-import PresentationSection from '@/app/_sections/home/PresentationSection';
-import PrivateViewSection from '@/app/_sections/home/PrivateViewSection';
-import MoodboardSection from '@/app/_sections/home/MoodboardSection';
-import LightStudySection from '@/app/_sections/home/LightStudySection';
-import StylingSection from '@/app/_sections/home/StylingSection';
 import ExperienceInviteSection from '@/app/_sections/home/ExperienceInviteSection';
 import LexiconSection from '@/app/_sections/home/LexiconSection';
-import CabinetSection from '@/app/_sections/home/CabinetSection';
 import LedgerSection from '@/app/_sections/home/LedgerSection';
 import ManifestoSection from '@/app/_sections/home/ManifestoSection';
 import LightingRoomSection from '@/app/_sections/home/LightingRoomSection';
 import ThresholdSection from '@/app/_sections/home/ThresholdSection';
-import ClaspSection from '@/app/_sections/home/ClaspSection';
 import HeirloomSection from '@/app/_sections/home/HeirloomSection';
 import SustainabilitySection from '@/app/_sections/home/SustainabilitySection';
 import SuiteSection from '@/app/_sections/home/SuiteSection';
-import HelixSection from '@/app/_sections/home/HelixSection';
 import GateSection from '@/app/_sections/home/GateSection';
 import BlueprintSection from '@/app/_sections/home/BlueprintSection';
 import AlloySection from '@/app/_sections/home/AlloySection';
@@ -50,27 +36,43 @@ import ApproachSection from '@/app/_sections/home/ApproachSection';
 import GoldDivider from '@/components/ui/GoldDivider';
 
 /**
- * Home is paced deliberately: four pinned scroll scenes are the page's
+ * Home is paced deliberately: three pinned scroll scenes are the page's
  * tentpoles, and they are kept far apart so the visitor never hits two long pins
  * back to back. Everything between them is ordinary vertical scroll, which is
  * what makes the pins land.
  *
- * In order down the page they are the film sequence, the threshold corridor, the
- * vitrine rail and the collections helix — and they are deliberately of
- * decreasing length as well as increasing distance apart, because a visitor's
- * tolerance for being held in one place falls the further into a page they are.
- * The corridor and the helix are the two quiet ones: no controls, nothing to
- * operate, and each is placed where the page changes what it is talking about.
+ * In order down the page they are the film sequence, the threshold corridor and
+ * the vitrine rail — deliberately of decreasing length as well as increasing
+ * distance apart, because a visitor's tolerance for being held in one place falls
+ * the further into a page they are. The corridor is the quiet one: no controls,
+ * nothing to operate, placed where the page changes what it is talking about.
  *
- * The same rule governs the two sticky stacks that arrived with the editorial
- * sections. A sticky stack behaves like a short pin, so the lookbook rail and the
- * journal positions are separated by the whole atelier run — and neither is placed
- * adjacent to a tentpole.
+ * The same rule governs the two sticky stacks. A sticky stack behaves like a
+ * short pin, so the lookbook rail and the journal positions are separated by the
+ * whole atelier run — and neither is placed adjacent to a tentpole.
  *
  * Order follows the arc of a visit rather than importance: look, then understand,
- * then trust, then decide, then arrange. The reference material (stones, provenance,
- * the journal) sits in the middle third, where a visitor who is interested has
- * committed to reading but has not yet started choosing.
+ * then trust, then decide, then arrange.
+ *
+ * ---------------------------------------------------------------------------
+ * What this page deliberately does *not* carry
+ * ---------------------------------------------------------------------------
+ * Home is a route through the house, not a second copy of it. Fourteen sections
+ * that duplicated a dedicated page were taken out, because a visitor who reaches
+ * the same tool twice learns nothing the second time and the page pays for it
+ * either way. The stone reference belongs to /gemstones, fit and wear to /care,
+ * the product grid to /collections, the commission studio to /bespoke, engraving
+ * and packaging to /bespoke and /services, the locator and the booking form to
+ * /contact. What is kept here is the material that exists nowhere else — the film,
+ * the corridor, the vitrine, the turnable stone, the five-step making run — plus
+ * the short teasers that send a visitor to the page that owns the subject.
+ *
+ * Sections are rendered and hydrated normally. Deferring hydration per section
+ * was tried and abandoned: React cannot hydrate a subtree whose render
+ * suspended, so a Suspense boundary used that way discards its server HTML and
+ * client-renders instead — which either blanks the section or saves nothing,
+ * depending on the fallback. The cost is dealt with where it actually lives
+ * instead: the scenes themselves no longer run when they are off screen.
  */
 export default function Home() {
   return (
@@ -83,8 +85,6 @@ export default function Home() {
 
       {/* Browse — coverflow rail, then the orbiting pieces */}
       <CoverflowSection />
-
-      <SignaturePieces />
 
       {/* The season as an editorial wall, before the film — a visitor who has just
           browsed pieces is still in a looking mood, not yet a reading one. */}
@@ -101,17 +101,6 @@ export default function Home() {
           page where a visitor has just been asked to judge something from an
           image and has not yet been told who lit it. */}
       <GateSection />
-
-      {/* The physics before the vocabulary. A visitor who has just watched a stone
-          turn is looking at fire and scintillation without having names for them,
-          and the grading dials below are far more legible once they do. */}
-      <LightStudySection />
-
-      {/* Having just watched one turn, the visitor is handed the grading dials */}
-      <StoneSchoolSection />
-
-      {/* And then the library the dials are measured against */}
-      <StoneLibrarySection />
 
       {/* The room the stone will actually be looked at in. Placed here because
           this is the point of maximum faith in paper — a dozen mineral names and
@@ -160,21 +149,11 @@ export default function Home() {
           run rather than sitting anywhere inside it. */}
       <StrikeSection />
 
-      {/* The most bench-side subject on the page, next to the people whose
-          decision it actually is. Every other section here is about what a piece
-          looks like; this one is about whether it gets worn. */}
-      <ClaspSection />
-
-      {/* The same question from the other end: a clasp is how a necklace is
-          closed and a knot is how it survives being open. Adjacent on purpose —
-          both are engineering decisions taken by a bench rather than by a
-          designer, and apart they would each read as a curiosity. */}
+      {/* The knot is an engineering decision taken by a bench rather than by a
+          designer, which is why it sits at the end of the making run rather than
+          anywhere near the catalogue. Its former neighbour — the clasp library —
+          now lives only on /care, where the rest of the wear-and-fit material is. */}
       <StrandSection />
-
-      {/* The collections as objects rather than as a display — dealt, cut and
-          thrown. Sits here rather than in the browsing run because handing
-          something over only means anything once the looking is finished. */}
-      <CabinetSection />
 
       {/* Tentpole two: collections passing sideways */}
       <VitrineSection />
@@ -212,12 +191,6 @@ export default function Home() {
           sticky stacks never sit back to back. */}
       <JournalSection />
 
-      {/* The commission itself — a ring the visitor draws, priced live */}
-      <BespokeSection />
-
-      {/* What it says and what it arrives in — asked only once something is chosen */}
-      <PresentationSection />
-
       {/* The band that has to live beside the ring for fifty years. Straight
           after the commission, because the head height just chosen has already
           decided which bands are available — a year before anybody finds out. */}
@@ -228,24 +201,7 @@ export default function Home() {
       {/* Four questions, scored against the catalogue */}
       <GiftFinderSection />
 
-      {/* The wearer's own three constraints, answered in inches and outlines. The
-          gift finder above scores pieces against an occasion; this scores pieces
-          against the person wearing them, which is a different question. */}
-      <StylingSection />
-
       <ServicesSection />
-
-      {/* Everything the visitor has saved, arranged by them, plus the two guides
-          they reach for while deciding. Late on purpose: by here most people have
-          saved something, so the board is not empty. */}
-      <MoodboardSection />
-
-      {/* The catalogue's last appearance, and the only one that refuses
-          comparison: six collections threaded on one axis and met singly. */}
-      <HelixSection />
-
-      {/* The three questions about timing — the doors, the money, the occasion */}
-      <PrivateViewSection />
 
       {/* The page's one camera move, at the point where the subject changes
           from what we have to coming here. A change of subject that large
@@ -256,11 +212,6 @@ export default function Home() {
 
       {/* What the room is actually like, before the address of it */}
       <ExperienceInviteSection />
-
-      {/* Somewhere concrete for the appointment form to point at */}
-      <BoutiqueSection />
-
-      <AppointmentSection />
 
       <CTASection />
     </>

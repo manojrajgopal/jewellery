@@ -15,6 +15,7 @@ import CircularText from '@/components/motion/CircularText';
 import CountUp from '@/components/motion/CountUp';
 import CTAButton from '@/components/ui/CTAButton';
 import GlassPanel from '@/components/ui/GlassPanel';
+import { usePerfBudget } from '@/hooks/useSceneFrame';
 
 const STATS = [
   { label: 'Legacy', value: 130, suffix: '+ Years' },
@@ -24,6 +25,7 @@ const STATS = [
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement>(null);
+  const budget = usePerfBudget();
 
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -45,8 +47,16 @@ export default function HeroSection() {
   // The light shafts rake further across as the hero leaves, and the whole
   // frame loses a little focus — a rack-focus pull off the subject.
   const raysOpacity = useTransform(smooth, [0, 0.7], [1, 0]);
+  // The rack focus is the most expensive thing on the page's first screen. A
+  // `filter: blur()` animated on a full-viewport element cannot be handed to the
+  // compositor — every frame of the scroll re-rasterises the whole subtree,
+  // headline, buttons and stat cards included, at a new radius. On a capable
+  // machine it is worth it. On a weak one it is why the very first scroll of the
+  // visit stutters, which is the worst possible first impression, so those
+  // devices keep the parallax and the fade and lose only the defocus.
   const blur = useTransform(smooth, [0, 1], [0, 7]);
   const contentBlur = useTransform(blur, (b) => `blur(${b}px)`);
+  const blurFilter = budget.scrollFilters ? contentBlur : undefined;
 
   return (
     <section
@@ -117,7 +127,7 @@ export default function HeroSection() {
 
       {/* Content */}
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity, filter: contentBlur }}
+        style={{ y: contentY, opacity: contentOpacity, filter: blurFilter }}
         className="relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-6 pb-40 pt-28 md:px-12"
       >
         <div className="max-w-4xl text-center md:text-left">

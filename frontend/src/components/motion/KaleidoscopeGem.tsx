@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { onFrame } from '@/lib/frameLoop';
+import { canvasDpr, getPerfBudget } from '@/lib/perf';
+
 interface KaleidoscopeGemProps {
   /** The photograph fed into the mirrors. */
   src: string;
@@ -55,11 +58,10 @@ export default function KaleidoscopeGem({
     const img = new Image();
     img.decoding = 'async';
     let ready = false;
-    let raf = 0;
     let size = 0;
     let rotation = 0;
     let last = performance.now();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = canvasDpr();
 
     const resize = () => {
       const r = parent.getBoundingClientRect();
@@ -93,7 +95,7 @@ export default function KaleidoscopeGem({
     };
     window.addEventListener('pointermove', onMove, { passive: true });
 
-    const draw = (now: number) => {
+    const draw = (_step: number, now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
@@ -106,10 +108,10 @@ export default function KaleidoscopeGem({
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.clearRect(0, 0, s, s);
 
-      if (!ready) {
-        raf = requestAnimationFrame(draw);
-        return;
-      }
+      // The source image has not arrived yet. Returning leaves the loop
+      // running, so the first frame after it loads is drawn without waiting to
+      // be rescheduled.
+      if (!ready) return;
 
       const half = s / 2;
       const wedge = (Math.PI * 2) / segments;
@@ -157,20 +159,55 @@ export default function KaleidoscopeGem({
       ctx.arc(half, half, half * 0.16, 0, Math.PI * 2);
       ctx.fill();
 
-      if (!reduced) raf = requestAnimationFrame(draw);
+    };
+
+    /* --- loop control -----------------------------------------------------
+       Under a reduced-motion preference this scene is a single still frame, so
+       it is painted once rather than subscribed at all. Otherwise it joins the
+       shared loop, and only while it is on screen. */
+    let stopLoop: (() => void) | null = null;
+    let visible = false;
+
+    const resume = () => {
+      if (reduced) {
+        // One frame, on demand — enough to put the still image up.
+        draw(1, performance.now());
+        return;
+      }
+      if (!stopLoop) {
+        last = performance.now();
+        stopLoop = onFrame(draw, { fps: getPerfBudget().fps, order: 120 });
+      }
+    };
+    const suspend = () => {
+      stopLoop?.();
+      stopLoop = null;
     };
 
     img.onload = () => {
       ready = true;
-      raf = requestAnimationFrame(draw);
+      if (visible) resume();
     };
     img.onerror = () => setFailed(true);
     img.src = src;
 
-    raf = requestAnimationFrame(draw);
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting;
+            if (visible) resume();
+            else suspend();
+          }, { rootMargin: '250px' });
+    if (io) io.observe(canvas);
+    else {
+      visible = true;
+      resume();
+    }
 
     return () => {
-      cancelAnimationFrame(raf);
+      suspend();
+      io?.disconnect();
       ro.disconnect();
       window.removeEventListener('pointermove', onMove);
       img.onload = null;

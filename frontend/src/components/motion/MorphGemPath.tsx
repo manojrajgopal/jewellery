@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
+
 export interface GemShape {
   id: string;
   label: string;
@@ -127,6 +129,7 @@ export default function MorphGemPath({
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const reduced = useReducedMotion();
 
+  const svgRef = useRef<SVGSVGElement>(null);
   const clipRef = useRef<SVGPathElement>(null);
   const outlineRef = useRef<SVGPathElement>(null);
   const facetRef = useRef<SVGGElement>(null);
@@ -157,14 +160,15 @@ export default function MorphGemPath({
     outlineRef.current?.setAttribute('d', d);
   }, []);
 
-  // Autoplay, unless the caller drives it or the OS asked for stillness.
+  // Autoplay, unless the caller drives it, the OS asked for stillness, or the
+  // shape is nowhere near the viewport — each advance starts a path tween, and
+  // tweening an SVG path nobody can see is the most expensive kind of nothing.
+  useVisibleInterval(
+    svgRef,
+    () => setInternal((i) => (i + 1) % shapes.length),
+    index !== undefined || reduced || shapes.length < 2 ? null : (hold + morph) * 1000
+  );
   useEffect(() => {
-    if (index !== undefined || reduced || shapes.length < 2) return;
-    const t = window.setInterval(
-      () => setInternal((i) => (i + 1) % shapes.length),
-      (hold + morph) * 1000
-    );
-    return () => window.clearInterval(t);
   }, [index, reduced, shapes.length, hold, morph]);
 
   // The morph.
@@ -228,7 +232,11 @@ export default function MorphGemPath({
           className="pointer-events-none absolute inset-0 animate-caustic-pool rounded-full bg-gold-radial opacity-[var(--bloom)]"
         />
 
-        <svg viewBox="0 0 100 100" className="relative h-full w-full overflow-visible">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 100 100"
+          className="relative h-full w-full overflow-visible"
+        >
           <defs>
             <linearGradient id={`gem-fill-${uid}`} x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="rgb(var(--gold-200))" stopOpacity="0.34" />

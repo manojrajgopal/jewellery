@@ -1,7 +1,18 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from 'framer-motion';
+
+import { onFrame } from '@/lib/frameLoop';
+import { getPerfBudget } from '@/lib/perf';
 
 interface CylinderMarqueeProps {
   items: string[];
@@ -14,6 +25,68 @@ interface CylinderMarqueeProps {
   scrollCoupled?: boolean;
   /** Reverse the direction of both the idle spin and the scroll coupling. */
   reverse?: boolean;
+}
+
+/**
+ * One word on the drum's surface.
+ *
+ * Split into its own component for one reason: every visual property of a face —
+ * how far it has turned away, and therefore its opacity, its blur and its colour
+ * — is derived from the drum's angle, and deriving those through motion values
+ * means the browser writes them straight to the element. The alternative, and
+ * what this used to do, is hold the angle in React state and re-render the whole
+ * drum on every frame. That is a full reconciliation of every face, sixty times
+ * a second, to change three numbers per face.
+ */
+function Face({
+  item,
+  angle,
+  radius,
+  spin,
+}: {
+  item: string;
+  angle: number;
+  radius: number;
+  spin: MotionValue<number>;
+}) {
+  /** Signed angle from the front of the drum, wrapped to −180…180, as 0–1. */
+  const away = useTransform(spin, (s) => {
+    let facing = (angle + s) % 360;
+    if (facing > 180) facing -= 360;
+    if (facing < -180) facing += 360;
+    return Math.abs(facing) / 180;
+  });
+
+  const opacity = useTransform(away, (a) => Math.max(1 - a * 1.5, 0));
+  const blurPx = useTransform(away, (a) => a * 3.4);
+  const filter = useMotionTemplate`blur(${blurPx}px)`;
+  // Back faces must not intercept the pointer, or the drum eats clicks meant
+  // for whatever is drawn in front of it.
+  const pointerEvents = useTransform(away, (a) => (a < 0.2 ? 'auto' : 'none'));
+  // The front face is gold, the turning ones fall back to ink, so the drum has
+  // one clear focal point at any moment.
+  const color = useTransform(away, (a) =>
+    a < 0.12 ? 'rgb(var(--accent))' : `rgb(var(--text-secondary) / ${(1 - a).toFixed(2)})`
+  );
+
+  return (
+    <motion.div
+      className="absolute inset-x-0 top-1/2 flex items-center justify-center"
+      style={{
+        transform: `translateY(-50%) rotateX(${-angle}deg) translateZ(${radius}px)`,
+        opacity,
+        filter,
+        pointerEvents,
+      }}
+    >
+      <motion.span
+        className="whitespace-nowrap px-6 text-center font-display text-3xl font-light leading-none sm:text-4xl md:text-5xl"
+        style={{ color }}
+      >
+        {item}
+      </motion.span>
+    </motion.div>
+  );
 }
 
 /**
@@ -41,9 +114,10 @@ export default function CylinderMarquee({
   const containerRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
-  // The idle rotation, advanced by rAF. Held in state because the per-face
-  // opacity has to be recomputed from it, which React has to see.
-  const [spin, setSpin] = useState(0);
+  // The idle rotation. A motion value rather than state: the faces read it
+  // directly, so advancing it costs a handful of style writes instead of a
+  // React render of the whole drum.
+  const spin = useMotionValue(0);
   const [visible, setVisible] = useState(false);
 
   const { scrollYProgress } = useScroll({
@@ -53,6 +127,7 @@ export default function CylinderMarquee({
   // A third of a turn across the whole pass — enough that scrolling clearly
   // drives the drum, not so much that it spins into a blur.
   const scrollSpin = useTransform(scrollYProgress, [0, 1], [0, reverse ? -120 : 120]);
+  const idleRotate = useTransform(spin, (s) => s);
 
   const count = items.length;
   const step = count > 0 ? 360 / count : 0;
@@ -71,22 +146,18 @@ export default function CylinderMarquee({
 
   useEffect(() => {
     if (reduced || !visible || count === 0) return;
-    let raf = 0;
-    let last = performance.now();
     const dir = reverse ? -1 : 1;
 
-    const frame = (now: number) => {
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      // Wrapped at 360 so the accumulated value never grows large enough to lose
-      // precision over a long session.
-      setSpin((s) => (s + dir * speed * dt) % 360);
-      raf = requestAnimationFrame(frame);
-    };
-
-    raf = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(raf);
-  }, [reduced, visible, speed, reverse, count]);
+    return onFrame(
+      (dt) => {
+        // Wrapped at 360 so the accumulated value never grows large enough to
+        // lose precision over a long session.
+        const advance = (dir * speed * dt) / 1000;
+        spin.set((spin.get() + advance) % 360);
+      },
+      { fps: getPerfBudget().fps, order: 110 }
+    );
+  }, [reduced, visible, speed, reverse, count, spin]);
 
   if (count === 0) return null;
 
@@ -117,49 +188,20 @@ export default function CylinderMarquee({
           rotateX: scrollCoupled && !reduced ? scrollSpin : 0,
         }}
       >
-        <div
+        <motion.div
           className="absolute inset-0"
-          style={{ transformStyle: 'preserve-3d', transform: `rotateX(${spin}deg)` }}
+          style={{ transformStyle: 'preserve-3d', rotateX: idleRotate }}
         >
-          {items.map((item, i) => {
-            const angle = i * step;
-            // Signed angle from the front of the drum, wrapped to −180…180.
-            let facing = (angle + spin) % 360;
-            if (facing > 180) facing -= 360;
-            if (facing < -180) facing += 360;
-            const away = Math.abs(facing) / 180;
-
-            return (
-              <div
-                key={`${item}-${i}`}
-                aria-hidden={away > 0.35}
-                className="absolute inset-x-0 top-1/2 flex items-center justify-center"
-                style={{
-                  transform: `translateY(-50%) rotateX(${-angle}deg) translateZ(${radius}px)`,
-                  opacity: Math.max(1 - away * 1.5, 0),
-                  filter: `blur(${(away * 3.4).toFixed(2)}px)`,
-                  // Back faces must not intercept the pointer, or the drum eats
-                  // clicks meant for whatever is drawn in front of it.
-                  pointerEvents: away < 0.2 ? 'auto' : 'none',
-                }}
-              >
-                <span
-                  className="whitespace-nowrap px-6 text-center font-display text-3xl font-light leading-none sm:text-4xl md:text-5xl"
-                  style={{
-                    // The front face is gold, the turning ones fall back to ink,
-                    // so the drum has one clear focal point at any moment.
-                    color:
-                      away < 0.12
-                        ? 'rgb(var(--accent))'
-                        : `rgb(var(--text-secondary) / ${(1 - away).toFixed(2)})`,
-                  }}
-                >
-                  {item}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+          {items.map((item, i) => (
+            <Face
+              key={`${item}-${i}`}
+              item={item}
+              angle={i * step}
+              radius={radius}
+              spin={spin}
+            />
+          ))}
+        </motion.div>
       </motion.div>
 
       {/* Front rule, marking the reading line */}

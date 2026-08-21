@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useSceneFrame } from '@/hooks/useSceneFrame';
+import { getPerfBudget } from '@/lib/perf';
 import { useTheme } from '@/components/providers/ThemeProvider';
 
 interface CausticsCanvasProps {
@@ -14,6 +16,9 @@ interface CausticsCanvasProps {
   speed?: number;
 }
 
+/** Pixel size of one pre-rendered lobe tile. */
+const LOBE_TILE = 128;
+
 /**
  * The pooled, rippling light you get when a spot lamp passes through faceted
  * glass — the pattern on the velvet underneath a vitrine.
@@ -24,8 +29,21 @@ interface CausticsCanvasProps {
  * whole trick: a tiling texture reads as a texture, but drifting lobes read as
  * light.
  *
- * Runs at half resolution and blurs on the way up, so it costs a fraction of
+ * Runs at reduced resolution and blurs on the way up, so it costs a fraction of
  * what the apparent smoothness suggests.
+ *
+ * Two costs were not obvious from reading it. The first is that this scene is
+ * used nine times on the home page, and it painted all nine continuously from
+ * the moment the page loaded — including the eight that were nowhere near the
+ * viewport. It now paints only while its own section is in reach.
+ *
+ * The second is `createRadialGradient`. It allocates a gradient object and
+ * rasterises a ramp on every call, and there was one call per lobe per frame:
+ * nine scenes × seven lobes × 60fps is nearly four thousand gradient
+ * rasterisations a second, for three distinct colours. The ramp is now baked
+ * into one tile per tint and stamped with `drawImage`, with the per-frame
+ * strength applied as alpha — the same image, without rebuilding the ramp to
+ * draw it.
  */
 export default function CausticsCanvas({
   className = '',
@@ -42,59 +60,56 @@ export default function CausticsCanvas({
     setEnabled(true);
   }, []);
 
-  useEffect(() => {
-    if (!enabled) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const budget = useMemo(() => (enabled ? getPerfBudget() : null), [enabled]);
 
-    // Half-res buffer: the result is blurred anyway, so full resolution buys
-    // nothing but fill cost.
-    const scale = 0.5;
-    let raf = 0;
-    let width = 0;
-    let height = 0;
-    let start = 0;
-
-    // Light on cream has to be warmer and weaker or it just washes the page out.
-    const tint =
+  // Light on cream has to be warmer and weaker or it just washes the page out.
+  const { tint, gain } = useMemo(() => {
+    const t =
       theme === 'light'
         ? ['184, 132, 42', '212, 160, 58', '150, 104, 31']
         : ['253, 242, 211', '239, 206, 120', '247, 226, 168'];
-    const gain = theme === 'light' ? intensity * 0.5 : intensity;
+    return { tint: t, gain: theme === 'light' ? intensity * 0.5 : intensity };
+  }, [theme, intensity]);
 
-    // Each lobe gets its own drift periods and phase, chosen so no two share a
-    // common multiple within the visible timescale.
-    const seeds = Array.from({ length: lobes }, (_, i) => ({
-      ax: 0.18 + i * 0.037,
-      ay: 0.13 + i * 0.029,
-      px: (i * 2.399) % (Math.PI * 2),
-      py: (i * 1.618) % (Math.PI * 2),
-      radius: 0.22 + ((i * 7) % 5) * 0.06,
-      tint: tint[i % tint.length],
-    }));
+  // Fewer lobes on a weaker device. The pattern is built from overlaps, so it
+  // stays a drifting caustic at four lobes — just a simpler one.
+  const lobeCount = budget
+    ? Math.max(3, Math.round(lobes * (0.55 + budget.density * 0.45)))
+    : lobes;
 
-    const resize = () => {
-      const parent = canvas.parentElement;
-      width = parent?.offsetWidth ?? window.innerWidth;
-      height = parent?.offsetHeight ?? window.innerHeight;
-      canvas.width = Math.max(1, Math.round(width * scale));
-      canvas.height = Math.max(1, Math.round(height * scale));
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-    };
+  /* --- per-frame state, held outside React ----------------------------- */
 
-    const frame = (now: number) => {
-      if (!start) start = now;
-      const t = ((now - start) / 1000) * ((Math.PI * 2) / speed);
+  const tiles = useRef<HTMLCanvasElement[]>([]);
+  const dims = useRef({ w: 1, h: 1, base: 1 });
+  const startedAt = useRef(0);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const seeds = useMemo(
+    () =>
+      // Each lobe gets its own drift periods and phase, chosen so no two share
+      // a common multiple within the visible timescale.
+      Array.from({ length: lobeCount }, (_, i) => ({
+        ax: 0.18 + i * 0.037,
+        ay: 0.13 + i * 0.029,
+        px: (i * 2.399) % (Math.PI * 2),
+        py: (i * 1.618) % (Math.PI * 2),
+        radius: 0.22 + ((i * 7) % 5) * 0.06,
+        tintIndex: i % tint.length,
+      })),
+    [lobeCount, tint.length]
+  );
+
+  const frame = useCallback(
+    (_step: number, now: number) => {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext('2d');
+      if (!canvas || !ctx) return;
+
+      if (!startedAt.current) startedAt.current = now;
+      const t = ((now - startedAt.current) / 1000) * ((Math.PI * 2) / speed);
+
+      const { w, h, base } = dims.current;
+      ctx.clearRect(0, 0, w, h);
       ctx.globalCompositeOperation = 'lighter';
-
-      const w = canvas.width;
-      const h = canvas.height;
-      const base = Math.min(w, h);
 
       for (const s of seeds) {
         // Lissajous drift — the lobe wanders the frame without ever settling.
@@ -103,30 +118,88 @@ export default function CausticsCanvas({
         // Breathing radius keeps the overlaps from freezing into a fixed shape.
         const r = base * s.radius * (0.82 + 0.24 * Math.sin(t * 3.1 + s.px));
         const a = gain * (0.3 + 0.2 * Math.sin(t * 2.3 + s.py));
+        if (a <= 0 || r <= 0) continue;
 
-        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-        g.addColorStop(0, `rgba(${s.tint}, ${Math.max(0, a)})`);
-        g.addColorStop(0.45, `rgba(${s.tint}, ${Math.max(0, a * 0.32)})`);
-        g.addColorStop(1, `rgba(${s.tint}, 0)`);
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
+        const tile = tiles.current[s.tintIndex];
+        if (!tile) continue;
+        ctx.globalAlpha = Math.min(1, a);
+        ctx.drawImage(tile, x - r, y - r, r * 2, r * 2);
       }
 
+      ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
-      raf = requestAnimationFrame(frame);
+    },
+    [seeds, gain, speed]
+  );
+
+  // Paints only while the section it decorates is within reach of the viewport.
+  useSceneFrame(canvasRef, frame, {
+    ready: enabled,
+    fps: budget?.fps,
+    order: 120,
+  });
+
+  /* --- sizing and the baked lobe tiles ---------------------------------- */
+
+  useEffect(() => {
+    if (!enabled || !budget) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Reduced-res buffer: the result is blurred anyway, so full resolution buys
+    // nothing but fill cost. Weaker devices go coarser still — invisible
+    // through a 40px blur.
+    const scale = budget.tier === 'low' ? 0.3 : budget.tier === 'mid' ? 0.4 : 0.5;
+
+    // One tile per tint, alpha profile baked in. The per-frame strength is
+    // applied with globalAlpha, which reproduces the original ramp exactly.
+    tiles.current = tint.map((rgb) => {
+      const tile = document.createElement('canvas');
+      tile.width = LOBE_TILE;
+      tile.height = LOBE_TILE;
+      const c = tile.getContext('2d');
+      if (!c) return tile;
+      const mid = LOBE_TILE / 2;
+      const g = c.createRadialGradient(mid, mid, 0, mid, mid, mid);
+      g.addColorStop(0, `rgba(${rgb}, 1)`);
+      g.addColorStop(0.45, `rgba(${rgb}, 0.32)`);
+      g.addColorStop(1, `rgba(${rgb}, 0)`);
+      c.fillStyle = g;
+      c.fillRect(0, 0, LOBE_TILE, LOBE_TILE);
+      return tile;
+    });
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      const width = parent?.offsetWidth ?? window.innerWidth;
+      const height = parent?.offsetHeight ?? window.innerHeight;
+      const w = Math.max(1, Math.round(width * scale));
+      const h = Math.max(1, Math.round(height * scale));
+      canvas.width = w;
+      canvas.height = h;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      dims.current = { w, h, base: Math.min(w, h) };
     };
 
     resize();
-    raf = requestAnimationFrame(frame);
+
+    // The parent's height depends on its own content, which on this site is
+    // frequently still settling when the canvas first mounts. A ResizeObserver
+    // catches that; a window resize listener alone did not, which is why some
+    // sections showed the pattern only across their top edge.
+    const observer =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(() => resize());
+    if (observer && canvas.parentElement) observer.observe(canvas.parentElement);
     window.addEventListener('resize', resize);
 
     return () => {
-      cancelAnimationFrame(raf);
+      observer?.disconnect();
       window.removeEventListener('resize', resize);
     };
-  }, [enabled, lobes, intensity, speed, theme]);
+  }, [enabled, budget, tint]);
 
   if (!enabled) return null;
 
@@ -134,7 +207,10 @@ export default function CausticsCanvas({
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-0 h-full w-full blur-2xl mix-blend-screen ${className}`}
+      // The blur radius is a tier token: a 40px filter over a section-sized
+      // element, nine times on one page, is one of the heaviest things the
+      // compositor is asked to do here.
+      className={`caustics-veil pointer-events-none absolute inset-0 h-full w-full mix-blend-screen ${className}`}
     />
   );
 }

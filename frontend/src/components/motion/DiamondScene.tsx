@@ -9,6 +9,10 @@ import {
   useTransform,
 } from 'framer-motion';
 
+import { useOnScreen } from '@/hooks/useOnScreen';
+import { onFrame } from '@/lib/frameLoop';
+import { getPerfBudget } from '@/lib/perf';
+
 interface DiamondSceneProps {
   size?: number;
   className?: string;
@@ -56,18 +60,23 @@ export default function DiamondScene({
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
+  const onScreen = useOnScreen(ref, '200px');
+
   // Idle spin — a slow continuous drift, paused while the visitor is dragging
-  // so their input is not fighting an animation.
+  // so their input is not fighting an animation, and paused again whenever the
+  // stone is off screen. The drift feeds a spring, so an unwatched stone was
+  // keeping two animation loops alive rather than one.
   useEffect(() => {
-    if (reduced || dragging) return;
-    let raf = 0;
-    const loop = () => {
-      spinY.set(spinY.get() + 0.16);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [reduced, dragging, spinY]);
+    if (reduced || dragging || !onScreen) return;
+    return onFrame(
+      (dt) => {
+        // Per-millisecond rather than per-frame, so the stone turns at the same
+        // rate whatever frame rate the device is holding.
+        spinY.set(spinY.get() + 0.16 * (dt / 16.667));
+      },
+      { fps: getPerfBudget().fps, order: 110 }
+    );
+  }, [reduced, dragging, onScreen, spinY]);
 
   // Pointer drag → rotation. Pointer capture keeps the gesture alive when the
   // pointer leaves the stone, which is what makes a flick feel right.

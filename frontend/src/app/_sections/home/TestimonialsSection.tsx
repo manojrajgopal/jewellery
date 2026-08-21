@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Quote, Star } from 'lucide-react';
 import SectionHeading from '@/components/ui/SectionHeading';
@@ -8,6 +8,7 @@ import GradientOrb from '@/components/ui/GradientOrb';
 import ParticleField from '@/components/motion/ParticleField';
 import CausticsCanvas from '@/components/motion/CausticsCanvas';
 import { testimonials } from '@/data/testimonials';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 const ROTATE_MS = 7000;
 
@@ -36,6 +37,8 @@ export default function TestimonialsSection() {
   const [paused, setPaused] = useState(false);
   const [direction, setDirection] = useState(1);
 
+  const sectionRef = useRef<HTMLElement>(null);
+
   const go = useCallback(
     (next: number) => {
       setDirection(next > index ? 1 : -1);
@@ -44,20 +47,28 @@ export default function TestimonialsSection() {
     [index, data.length]
   );
 
-  useEffect(() => {
-    if (paused || data.length < 2) return;
-    const timer = setInterval(() => {
+  // Only advances while the section is somewhere the visitor could see it.
+  // Parked at the hero, this carousel was stepping through its quotes for the
+  // whole visit — each step a React render plus a fresh set of entrance
+  // transitions on the quote, the avatar and the four dial buttons. Measured, it
+  // was the single largest source of off-screen work left on the page, and it
+  // also meant a visitor who scrolled down eventually arrived at an arbitrary
+  // quote rather than the first one.
+  useVisibleInterval(
+    sectionRef,
+    () => {
       setDirection(1);
       setIndex((prev) => (prev + 1) % data.length);
-    }, ROTATE_MS);
-    return () => clearInterval(timer);
-  }, [paused, data.length]);
+    },
+    paused || data.length < 2 ? null : ROTATE_MS
+  );
 
   const active = data[index];
   if (!active) return null;
 
   return (
     <section
+      ref={sectionRef}
       id="testimonials"
       className="relative w-full overflow-hidden bg-canvas py-24 md:py-32"
     >

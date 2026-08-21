@@ -309,6 +309,18 @@ const config: Config = {
           "33%": { transform: "translate3d(6%,-8%,0) scale(1.12)" },
           "66%": { transform: "translate3d(-7%,5%,0) scale(0.94)" },
         },
+        /* The gradient orbs' drift, moved off the main thread. It is a literal
+           transcription of the framer-motion keyframes it replaces — the same
+           three waypoints over the same eighteen seconds — because there are
+           fourteen orbs on the site and each one was previously an infinite
+           JavaScript animation ticking every frame for the whole visit. As a CSS
+           animation the compositor owns it and the main thread never hears
+           about it again. */
+        "orb-drift": {
+          "0%, 100%": { transform: "translate3d(0,0,0) scale(1)" },
+          "33%": { transform: "translate3d(14px,-26px,0) scale(1.08)" },
+          "66%": { transform: "translate3d(-10px,8px,0) scale(0.96)" },
+        },
         "gradient-pan": {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
@@ -859,6 +871,7 @@ const config: Config = {
         "glow-pulse": "glow-pulse 3.4s ease-in-out infinite",
         "ken-burns": "ken-burns 24s ease-in-out infinite alternate",
         "aurora-drift": "aurora-drift 26s ease-in-out infinite",
+        "orb-drift": "orb-drift 18s ease-in-out infinite",
         "gradient-pan": "gradient-pan 9s ease infinite",
         "border-flow": "border-flow 6s linear infinite",
         "scale-pulse": "scale-pulse 2.4s ease-out infinite",

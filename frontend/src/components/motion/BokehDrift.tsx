@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { onFrame } from '@/lib/frameLoop';
+import { canvasDpr, getPerfBudget } from '@/lib/perf';
+
 interface BokehDriftProps {
   className?: string;
   /** How many orbs. Cost is linear; 26 is comfortable on a phone. */
@@ -63,11 +66,10 @@ export default function BokehDrift({
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    let raf = 0;
     let last = performance.now();
     let w = 0;
     let h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.75);
+    const dpr = Math.min(canvasDpr(), 1.75);
 
     let bloom = 1;
     let gold = '227, 181, 81';
@@ -162,7 +164,7 @@ export default function BokehDrift({
       ctx.restore();
     };
 
-    const frame = (now: number) => {
+    const frame = (_step: number, now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const t = now / 1000;
@@ -187,10 +189,33 @@ export default function BokehDrift({
       }
 
       ctx.globalCompositeOperation = 'source-over';
-      raf = requestAnimationFrame(frame);
     };
 
-    raf = requestAnimationFrame(frame);
+    // Paints only while in reach of the viewport, on the site's shared frame
+    // loop rather than one of its own. Every one of these scenes previously ran
+    // from mount to unload regardless of whether it could be seen.
+    let stopLoop: (() => void) | null = null;
+    const resume = () => {
+      if (stopLoop) return;
+      // Resync the clock, or the first frame back integrates the whole time
+      // the scene spent suspended and jumps.
+      last = performance.now();
+      stopLoop = onFrame(frame, { fps: getPerfBudget().fps, order: 120 });
+    };
+    const suspend = () => {
+      stopLoop?.();
+      stopLoop = null;
+    };
+
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => (entry.isIntersecting ? resume() : suspend()),
+            { rootMargin: '250px' }
+          );
+    if (io) io.observe(canvas);
+    else resume();
 
     const themeObserver = new MutationObserver(readTokens);
     themeObserver.observe(document.documentElement, {
@@ -199,7 +224,8 @@ export default function BokehDrift({
     });
 
     return () => {
-      cancelAnimationFrame(raf);
+      suspend();
+      io?.disconnect();
       ro.disconnect();
       themeObserver.disconnect();
     };

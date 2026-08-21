@@ -33,10 +33,25 @@ export default function CustomCursor() {
     // mount never leaves the page with no cursor at all.
     document.documentElement.classList.add('has-custom-cursor');
 
+    // A high-polling-rate mouse fires mousemove up to a thousand times a
+    // second. Following the pointer at that rate is free — two motion values —
+    // but hit-testing at that rate is not: `closest()` walks the ancestor chain
+    // on a page eight thousand nodes deep, and the answer cannot change faster
+    // than the pointer can cross an element's edge. Two things keep it cheap:
+    // the same target is never tested twice, and testing is capped well below
+    // frame rate, where nobody can see the difference.
+    let lastTarget: EventTarget | null = null;
+    let lastTest = 0;
+
     const onMove = (e: MouseEvent) => {
       x.set(e.clientX);
       y.set(e.clientY);
       setVisible(true);
+
+      const now = e.timeStamp;
+      if (e.target === lastTarget || now - lastTest < 50) return;
+      lastTarget = e.target;
+      lastTest = now;
 
       const el = (e.target as HTMLElement)?.closest<HTMLElement>(
         'a, button, [role="button"], input, textarea, select, [data-cursor]'

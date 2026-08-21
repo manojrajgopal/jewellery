@@ -45,18 +45,46 @@ export default function SplitText({
     visible: { transition: { staggerChildren: step, delayChildren: delay } },
   };
 
+  // The blur lives only in the `visible` keyframes, never in `hidden`.
+  //
+  // That looks like a stylistic choice and is in fact the largest single
+  // rendering saving on the site. A glyph waiting to animate is at opacity 0, so
+  // its blur cannot be seen — but a `filter` promotes the element to its own
+  // compositing layer whether or not anything is visible through it, and this
+  // component renders one span per character. Measured on the home page, the
+  // hidden state alone accounted for one thousand one hundred and ten live blur
+  // layers: about thirty headings' worth of glyphs, every one of them invisible.
+  // The frame rate at rest tripled when they went away.
+  //
+  // Expressing the blur as a two-stop keyframe gives the identical animation —
+  // it starts at 8px the instant the glyph starts moving and resolves to zero —
+  // while the waiting state carries no filter at all.
   const piece: Variants = {
     hidden: {
       y: '110%',
       opacity: 0,
-      ...(blur ? { filter: 'blur(8px)' } : {}),
     },
     visible: {
       y: '0%',
       opacity: 1,
-      ...(blur ? { filter: 'blur(0px)' } : {}),
+      ...(blur ? { filter: ['blur(8px)', 'blur(0px)'] } : {}),
       transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1] },
     },
+  };
+
+  /**
+   * Once the entrance has finished, `filter: blur(0px)` is left on every glyph:
+   * visually nothing, and still a compositing layer each. Clearing it is one
+   * pass over the heading's own spans, and it is what stops a page full of
+   * already-animated headings from accumulating the same cost the hidden state
+   * used to have.
+   */
+  const dropSettledFilters = () => {
+    const root = ref.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>('[style*="blur"]').forEach((el) => {
+      el.style.filter = '';
+    });
   };
 
   // Indexed, not called. `motion(tag)` builds a brand-new component type on every
@@ -80,6 +108,7 @@ export default function SplitText({
       variants={container}
       initial="hidden"
       animate={inView ? 'visible' : 'hidden'}
+      onAnimationComplete={dropSettledFilters}
       className={className}
       aria-label={text}
     >

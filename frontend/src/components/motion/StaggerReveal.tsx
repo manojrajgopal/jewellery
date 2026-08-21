@@ -43,10 +43,13 @@ const MODES: Record<Mode, (delay: number) => Variants> = {
     },
   }),
   blur: (delay) => ({
-    hidden: { opacity: 0, filter: 'blur(14px)', scale: 1.05 },
+    // See the note in SplitText: the blur belongs in the keyframes, not in the
+    // waiting state. A transparent element's blur cannot be seen and still costs
+    // a layer, and these variants are applied to whole grids of cards.
+    hidden: { opacity: 0, scale: 1.05 },
     visible: {
       opacity: 1,
-      filter: 'blur(0px)',
+      filter: ['blur(14px)', 'blur(0px)'],
       scale: 1,
       transition: { duration: 1.1, delay, ease: [0.22, 1, 0.36, 1] },
     },
@@ -69,12 +72,12 @@ const MODES: Record<Mode, (delay: number) => Variants> = {
     },
   }),
   facet: (delay) => ({
-    hidden: { opacity: 0, scale: 0.86, rotate: -4, filter: 'blur(8px)' },
+    hidden: { opacity: 0, scale: 0.86, rotate: -4 },
     visible: {
       opacity: 1,
       scale: 1,
       rotate: 0,
-      filter: 'blur(0px)',
+      filter: ['blur(8px)', 'blur(0px)'],
       transition: { type: 'spring', stiffness: 150, damping: 18, mass: 0.9, delay },
     },
   }),

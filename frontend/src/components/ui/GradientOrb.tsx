@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
 
 const SIZE_MAP: Record<string, number> = { sm: 220, md: 420, lg: 640, xl: 860, '2xl': 1100 };
 
@@ -17,13 +16,20 @@ const POSITION_MAP: Record<string, React.CSSProperties> = {
   bottom: { bottom: '-18%', left: '50%', transform: 'translateX(-50%)' },
 };
 
+/**
+ * Authored blur radii, now passed to `.fx-bloom` as a token rather than baked
+ * into a class. The class scales them by device tier: a 250px gaussian over an
+ * 1100px square is a very large amount of fill for a layer whose gradient has
+ * already faded to nothing by 68% of its radius, and it is exactly the kind of
+ * cost a 2GB device cannot absorb fourteen times over.
+ */
 const BLUR_MAP: Record<string, string> = {
-  sm: 'blur-[60px]',
-  md: 'blur-[100px]',
-  lg: 'blur-[130px]',
-  xl: 'blur-[170px]',
-  '2xl': 'blur-[210px]',
-  '3xl': 'blur-[250px]',
+  sm: '60px',
+  md: '100px',
+  lg: '130px',
+  xl: '170px',
+  '2xl': '210px',
+  '3xl': '250px',
 };
 
 /** Named colours resolve through CSS variables so orbs follow the theme. */
@@ -55,6 +61,12 @@ interface GradientOrbProps {
 /**
  * A soft bloom of coloured light. Drifts and breathes on a long loop so
  * backgrounds are never completely still.
+ *
+ * The drift is a CSS animation rather than a JavaScript one. Nothing about it
+ * needs to be driven from script — it is a fixed loop with no input — and there
+ * are fourteen of these across the site, so as motion values it was fourteen
+ * infinite animation frames' worth of main-thread work per frame that the
+ * compositor will now do for free.
  */
 export default function GradientOrb({
   color = 'gold',
@@ -67,7 +79,10 @@ export default function GradientOrb({
   const resolvedSize = typeof size === 'string' ? SIZE_MAP[size] ?? 420 : size;
   const resolvedPosition =
     typeof position === 'string' ? POSITION_MAP[position] ?? POSITION_MAP['top-left'] : position;
-  const resolvedBlur = BLUR_MAP[blur] ?? (blur.startsWith('blur') ? blur : BLUR_MAP.lg);
+  // A caller passing a raw `blur-[Npx]` class keeps it; the named sizes go
+  // through the tier-scaled token instead.
+  const rawBlurClass = !BLUR_MAP[blur] && blur.startsWith('blur') ? blur : '';
+  const resolvedBlurRadius = BLUR_MAP[blur] ?? BLUR_MAP.lg;
 
   const rgb = color.startsWith('#')
     ? null
@@ -80,21 +95,16 @@ export default function GradientOrb({
     : `${color}${Math.round(intensity * 255).toString(16).padStart(2, '0')}`;
 
   return (
-    <motion.div
+    <div
       aria-hidden="true"
-      animate={{
-        y: [0, -26, 8, 0],
-        x: [0, 14, -10, 0],
-        scale: [1, 1.08, 0.96, 1],
-      }}
-      transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
       style={{
         ...resolvedPosition,
         width: resolvedSize,
         height: resolvedSize,
         background: `radial-gradient(circle, ${core} 0%, transparent 68%)`,
+        ['--fx-r' as string]: resolvedBlurRadius,
       }}
-      className={`pointer-events-none absolute rounded-full ${resolvedBlur} ${className}`}
+      className={`fx-bloom animate-orb-drift pointer-events-none absolute rounded-full ${rawBlurClass} ${className}`}
     />
   );
 }

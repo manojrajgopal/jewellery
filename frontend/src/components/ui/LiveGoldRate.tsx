@@ -1,8 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react';
+
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
+
+/** Session clock, 24-hour, as the counter would read it. */
+function formatClock() {
+  return new Date().toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
 
 interface Rate {
   id: string;
@@ -44,38 +56,36 @@ export default function LiveGoldRate({ className = '' }: { className?: string })
     Object.fromEntries(METALS.map((m) => [m.id, { price: m.base, delta: 0 }]))
   );
   const [stamp, setStamp] = useState<string>('');
+  const rootRef = useRef<HTMLDivElement>(null);
 
+  // Rendering a timestamp on the server and again on the client is a guaranteed
+  // hydration mismatch, so the first one is written after mount. The recurring
+  // updates are gated on visibility below.
   useEffect(() => {
-    // Rendering a timestamp on the server and again on the client is a
-    // guaranteed hydration mismatch, so the first one is written after mount.
-    const format = () =>
-      new Date().toLocaleTimeString('en-IN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      });
-    setStamp(format());
-
-    const interval = window.setInterval(() => {
-      setTicks((prev) => {
-        const next: Record<string, Tick> = {};
-        for (const metal of METALS) {
-          const current = prev[metal.id]?.price ?? metal.base;
-          // Random walk with a pull back toward the open, so a long session
-          // does not wander somewhere absurd.
-          const drift = (metal.base - current) * 0.06;
-          const noise = (Math.random() - 0.5) * metal.base * metal.volatility;
-          const price = Math.round(current + drift + noise);
-          next[metal.id] = { price, delta: price - metal.base };
-        }
-        return next;
-      });
-      setStamp(format());
-    }, 3600);
-
-    return () => window.clearInterval(interval);
+    setStamp(formatClock());
   }, []);
+
+  // The rate readout ticks every 3.6 seconds, and each tick re-renders ten
+  // digit spans with a transition on each. Off screen that is ten animations
+  // per tick that nobody can read — it was the second largest source of
+  // off-screen work on the home page. The rate is simulated, so there is no
+  // real value to keep in sync either; on return it simply resumes walking.
+  useVisibleInterval(rootRef, () => {
+    setTicks((prev) => {
+      const next: Record<string, Tick> = {};
+      for (const metal of METALS) {
+        const current = prev[metal.id]?.price ?? metal.base;
+        // Random walk with a pull back toward the open, so a long session
+        // does not wander somewhere absurd.
+        const drift = (metal.base - current) * 0.06;
+        const noise = (Math.random() - 0.5) * metal.base * metal.volatility;
+        const price = Math.round(current + drift + noise);
+        next[metal.id] = { price, delta: price - metal.base };
+      }
+      return next;
+    });
+    setStamp(formatClock());
+  }, 3600);
 
   const inr = useMemo(
     () =>
@@ -89,6 +99,7 @@ export default function LiveGoldRate({ className = '' }: { className?: string })
 
   return (
     <div
+      ref={rootRef}
       className={`hud relative overflow-hidden rounded-2xl ${className}`}
       // Rates update on their own, so assistive tech is told about the region
       // but not interrupted every 3.6 seconds.

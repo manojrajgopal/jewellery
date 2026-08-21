@@ -6,11 +6,14 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import ScrollProgress from '@/components/motion/ScrollProgress';
 import Preloader, { introInitScript } from '@/components/motion/Preloader';
+import { perfInitScript } from '@/lib/perf';
 import CustomCursor from '@/components/motion/CustomCursor';
 import SmoothScroll from '@/components/motion/SmoothScroll';
 import BackToTop from '@/components/motion/BackToTop';
 import PageTransition from '@/components/motion/PageTransition';
 import ThemeProvider, { themeInitScript } from '@/components/providers/ThemeProvider';
+import PerfProbe from '@/components/providers/PerfProbe';
+import OffscreenAnimationPause from '@/components/perf/OffscreenAnimationPause';
 import ToastProvider from '@/components/providers/ToastProvider';
 import CinemaProvider, { cinemaInitScript } from '@/components/providers/CinemaProvider';
 import KeyboardLayer from '@/components/providers/KeyboardLayer';
@@ -93,20 +96,18 @@ export const viewport: Viewport = {
 
 // Order must match the order the sections actually appear in app/page.tsx —
 // the navigator reads scroll position against this list, so a stale entry makes
-// the dots jump.
+// the dots jump. An entry for a section that no longer exists is worse than a
+// wrong one: the observer never finds the element, so that dot can never light
+// and every dot after it reads one position behind the page.
 const HOME_SECTIONS = [
   { id: 'hero', label: 'Home' },
   { id: 'trust', label: 'Assurance' },
   { id: 'collections', label: 'Collections' },
   { id: 'coverflow', label: 'Cabinet' },
-  { id: 'pieces', label: 'Signature' },
   { id: 'lookbook', label: 'Lookbook' },
   { id: 'film', label: 'The Film' },
   { id: 'showcase', label: 'The Stone' },
   { id: 'gate', label: 'Four Exposures' },
-  { id: 'light', label: 'Light' },
-  { id: 'stone-school', label: 'The 4Cs' },
-  { id: 'stones', label: 'Stones' },
   { id: 'lighting', label: 'Five Lights' },
   { id: 'lexicon', label: 'Lexicon' },
   { id: 'threshold', label: 'Come Through' },
@@ -117,9 +118,7 @@ const HOME_SECTIONS = [
   { id: 'forge', label: 'The Forge' },
   { id: 'capture', label: 'The Setting' },
   { id: 'strike', label: 'The Strike' },
-  { id: 'clasps', label: 'Fastenings' },
   { id: 'strand', label: 'The Strand' },
-  { id: 'cabinet', label: 'The Hand' },
   { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
   { id: 'provenance', label: 'Provenance' },
@@ -129,20 +128,12 @@ const HOME_SECTIONS = [
   { id: 'tools', label: 'Tools' },
   { id: 'manifesto', label: 'What For' },
   { id: 'journal', label: 'Journal' },
-  { id: 'bespoke', label: 'Bespoke' },
-  { id: 'presentation', label: 'Presentation' },
   { id: 'suite', label: 'The Second Ring' },
   { id: 'testimonials', label: 'Patrons' },
   { id: 'gift-finder', label: 'Gift Finder' },
-  { id: 'styling', label: 'Styling' },
   { id: 'services', label: 'Services' },
-  { id: 'moodboard', label: 'Your Board' },
-  { id: 'helix', label: 'The Helix' },
-  { id: 'private-view', label: 'Private View' },
   { id: 'approach', label: 'The Door' },
   { id: 'experiences', label: 'In Person' },
-  { id: 'boutiques', label: 'Houses' },
-  { id: 'contact', label: 'Visit' },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -166,6 +157,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             has to land before the first paint or the page renders ungraded and
             then visibly darkens. */}
         <script dangerouslySetInnerHTML={{ __html: cinemaInitScript }} />
+        {/* Classify the device before anything is painted. Every expensive
+            declaration on the site — the very large blurs, the backdrop
+            filters, the canvas resolutions — is keyed off data-perf, so doing
+            this from React instead would mean painting one full frame at
+            desktop cost on exactly the hardware that cannot afford it. */}
+        <script dangerouslySetInnerHTML={{ __html: perfInitScript }} />
       </head>
       <body
         className={`${jost.variable} ${playfair.variable} ${marcellus.variable} font-sans antialiased bg-canvas text-primary overflow-x-hidden`}
@@ -218,6 +215,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
               {/* Owns the keyboard shortcuts and the two overlays they open. */}
               <KeyboardLayer />
+
+              {/* Measures real frame intervals once the page is idle and lowers
+                  the tier if the device cannot hold the rate the static
+                  signals promised. */}
+              <PerfProbe />
+
+              {/* The CSS counterpart to the canvas scenes' visibility gating:
+                  animations in sections far from the viewport hold their
+                  position instead of ticking every frame. */}
+              <OffscreenAnimationPause />
             </ToastProvider>
           </CinemaProvider>
         </ThemeProvider>

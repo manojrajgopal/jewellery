@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { onFrame } from '@/lib/frameLoop';
+import { canvasDpr, getPerfBudget } from '@/lib/perf';
+
 interface PrismDispersionProps {
   className?: string;
   /** Where the prism sits, as a fraction of the box. */
@@ -56,11 +59,10 @@ export default function PrismDispersion({
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    let raf = 0;
     let w = 0;
     let h = 0;
     let t = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = canvasDpr();
 
     const resize = () => {
       const r = parent.getBoundingClientRect();
@@ -77,20 +79,36 @@ export default function PrismDispersion({
     const ro = new ResizeObserver(resize);
     ro.observe(parent);
 
+    // Cached: measuring the canvas on every pointer event forces a layout, and
+    // the beam only needs to know where the canvas is, which changes on resize
+    // and on scroll rather than on every mouse move.
+    let box = { top: 0, height: 1 };
+    const measure = () => {
+      const r = canvas.getBoundingClientRect();
+      box = { top: r.top, height: r.height || 1 };
+    };
+    measure();
+
+    let settle = 0;
+    const onScroll = () => {
+      window.clearTimeout(settle);
+      settle = window.setTimeout(measure, 120);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
     const onMove = (e: PointerEvent) => {
       if (!interactive) return;
-      const r = canvas.getBoundingClientRect();
       // Clamped rather than ignored when the pointer is outside: the beam should
       // lean toward wherever the pointer went, not snap back to centre.
-      incidence.current = Math.max(0, Math.min(1, (e.clientY - r.top) / (r.height || 1)));
+      incidence.current = Math.max(0, Math.min(1, (e.clientY - box.top) / box.height));
     };
     window.addEventListener('pointermove', onMove, { passive: true });
 
     /** Hue in degrees per ray, red through violet. */
     const hueOf = (i: number) => 8 + (i / Math.max(1, rays - 1)) * 272;
 
-    const frame = () => {
-      t += 0.008;
+    const frame = (step: number) => {
+      t += 0.008 * step;
       ctx.clearRect(0, 0, w, h);
 
       const px = w * at.x;
@@ -157,14 +175,34 @@ export default function PrismDispersion({
       ctx.strokeStyle = 'rgba(255,255,255,0.42)';
       ctx.stroke();
 
-      raf = requestAnimationFrame(frame);
     };
 
-    raf = requestAnimationFrame(frame);
+    // Paints only while in reach of the viewport, on the shared frame loop.
+    let stopLoop: (() => void) | null = null;
+    const resume = () => {
+      if (!stopLoop) stopLoop = onFrame(frame, { fps: getPerfBudget().fps, order: 120 });
+    };
+    const suspend = () => {
+      stopLoop?.();
+      stopLoop = null;
+    };
+
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => (entry.isIntersecting ? resume() : suspend()),
+            { rootMargin: '250px' }
+          );
+    if (io) io.observe(canvas);
+    else resume();
 
     return () => {
-      cancelAnimationFrame(raf);
+      suspend();
+      io?.disconnect();
+      window.clearTimeout(settle);
       ro.disconnect();
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pointermove', onMove);
     };
   }, [reduced, at.x, at.y, size, rays, interactive]);

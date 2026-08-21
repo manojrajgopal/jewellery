@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, ChevronLeft, ChevronRight } from 'lucide-react';
+
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 export interface CoverflowItem {
   id: string;
@@ -43,6 +45,7 @@ export default function Coverflow3D({
 }: Coverflow3DProps) {
   const [active, setActive] = useState(0);
   const [engaged, setEngaged] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
   const go = useCallback(
@@ -54,11 +57,16 @@ export default function Coverflow3D({
 
   // Autoplay stops for good on the first interaction. Pausing and resuming
   // fights a visitor who is trying to look at one specific piece.
-  useEffect(() => {
-    if (!autoplay || engaged || reduced) return;
-    const t = window.setInterval(() => go(1), autoplayMs);
-    return () => window.clearInterval(t);
-  }, [autoplay, engaged, reduced, autoplayMs, go]);
+  //
+  // It also only advances while the rail is on screen. An unseen carousel that
+  // keeps dealing cards is not autoplay, it is a shuffle — a visitor who scrolls
+  // to it arrives at whichever piece the clock happened to land on rather than
+  // at the first.
+  useVisibleInterval(
+    rootRef,
+    () => go(1),
+    !autoplay || engaged || reduced ? null : autoplayMs
+  );
 
   const engage = useCallback(() => setEngaged(true), []);
 
@@ -74,7 +82,7 @@ export default function Coverflow3D({
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={rootRef} className={`relative ${className}`}>
       <div
         className="perspective-1500 relative h-[26rem] w-full sm:h-[30rem] lg:h-[34rem]"
         role="group"

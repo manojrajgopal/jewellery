@@ -1,6 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { onFrame } from '@/lib/frameLoop';
+import { getPerfBudget } from '@/lib/perf';
 import { motion, useMotionValue, useSpring, type MotionValue } from 'framer-motion';
 
 interface MagneticTextProps {
@@ -52,6 +55,8 @@ export default function MagneticText({
   const words = useMemo(() => text.split(' '), [text]);
   const handles = useRef(new Map<number, GlyphHandle>());
   const pointer = useRef({ x: -9999, y: -9999 });
+  // Set by the effect below; the pointer handlers call it to wake the loop.
+  const starter = useRef<(() => void) | null>(null);
   const [active, setActive] = useState(false);
 
   const register = useCallback((slot: number, handle: GlyphHandle | null) => {
@@ -59,11 +64,22 @@ export default function MagneticText({
     else handles.current.delete(slot);
   }, []);
 
+  // One getBoundingClientRect per glyph, and a heading can be sixty glyphs. It
+  // used to be wired straight to the scroll event, so a single scroll gesture
+  // forced sixty layout reads per event — the kind of cost that shows up as the
+  // page feeling heavy rather than as anything visibly wrong. It is now coalesced
+  // to at most once per frame, which is as often as the answer can change.
+  const measurePending = useRef(false);
   const measure = useCallback(() => {
-    handles.current.forEach((h) => {
-      const r = h.el.getBoundingClientRect();
-      h.cx = r.left + r.width / 2;
-      h.cy = r.top + r.height / 2;
+    if (measurePending.current) return;
+    measurePending.current = true;
+    requestAnimationFrame(() => {
+      measurePending.current = false;
+      handles.current.forEach((h) => {
+        const r = h.el.getBoundingClientRect();
+        h.cx = r.left + r.width / 2;
+        h.cy = r.top + r.height / 2;
+      });
     });
   }, []);
 
@@ -81,7 +97,6 @@ export default function MagneticText({
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, { passive: true });
 
-    let raf = 0;
     const loop = () => {
       const px = pointer.current.x;
       const py = pointer.current.y;
@@ -104,12 +119,36 @@ export default function MagneticText({
           h.scale.set(1);
         }
       });
-      raf = requestAnimationFrame(loop);
+      // Nothing under the pointer and nothing left displaced: the line has
+      // settled, so stop asking for frames until it is touched again.
+      if (pointer.current.x < -1000 && settled()) stopLoop();
     };
-    raf = requestAnimationFrame(loop);
+
+    // The loop used to run for the whole life of the component on any
+    // fine-pointer device, iterating every glyph sixty times a second whether or
+    // not a pointer was anywhere near the heading. It now runs only while there
+    // is something to do.
+    let stop: (() => void) | null = null;
+    const stopLoop = () => {
+      stop?.();
+      stop = null;
+    };
+    const startLoop = () => {
+      if (!stop) stop = onFrame(loop, { fps: getPerfBudget().fps, order: 110 });
+    };
+    const settled = () => {
+      let done = true;
+      handles.current.forEach((h) => {
+        if (h.x.get() !== 0 || h.y.get() !== 0 || h.scale.get() !== 1) done = false;
+      });
+      return done;
+    };
+
+    starter.current = startLoop;
 
     return () => {
-      cancelAnimationFrame(raf);
+      stopLoop();
+      starter.current = null;
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure);
     };
@@ -129,9 +168,12 @@ export default function MagneticText({
       aria-label={text}
       onPointerMove={(e: React.PointerEvent) => {
         pointer.current = { x: e.clientX, y: e.clientY };
+        starter.current?.();
       }}
       onPointerLeave={() => {
         pointer.current = { x: -9999, y: -9999 };
+        // Kept running for the few frames it takes every glyph to spring back.
+        starter.current?.();
       }}
     >
       {words.map((word, wi) => {

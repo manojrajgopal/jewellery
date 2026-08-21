@@ -89,11 +89,18 @@ export default function ScrollProgress({
                 {/* The rail floats over photography as well as over the page,
                     so the label carries its own plate rather than relying on
                     whatever happens to be behind it. */}
+                {/* The blur is attached to the two states that can actually be
+                    seen, not to all forty-nine labels. A backdrop-filter costs
+                    a compositing pass whether or not the element it belongs to
+                    is transparent, so a permanent `backdrop-blur-md` here was
+                    forty-nine live blur layers pinned over the page for the
+                    whole visit — one of the few costs on the site that scrolling
+                    away from did not reduce. */}
                 <span
-                  className={`rounded-full px-2 py-0.5 font-accent text-[10px] uppercase tracking-luxe backdrop-blur-md transition-all duration-300 ${
+                  className={`rounded-full px-2 py-0.5 font-accent text-[10px] uppercase tracking-luxe transition-all duration-300 ${
                     active
-                      ? 'chrome-tint-scrolled text-accent opacity-100'
-                      : 'chrome-tint text-secondary opacity-0 group-hover:opacity-100'
+                      ? 'chrome-tint-scrolled text-accent opacity-100 backdrop-blur-md'
+                      : 'chrome-tint text-secondary opacity-0 group-hover:opacity-100 group-hover:backdrop-blur-md'
                   }`}
                 >
                   {s.label}

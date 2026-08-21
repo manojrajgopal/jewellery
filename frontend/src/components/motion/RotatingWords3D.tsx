@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 
 interface RotatingWords3DProps {
   words: string[];
@@ -28,17 +30,20 @@ export default function RotatingWords3D({
   axis = 'x',
 }: RotatingWords3DProps) {
   const [i, setI] = useState(0);
+  const rootRef = useRef<HTMLSpanElement>(null);
   const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
-  useEffect(() => {
-    if (words.length < 2) return;
-    const id = window.setInterval(() => setI((v) => (v + 1) % words.length), hold);
-    return () => window.clearInterval(id);
-  }, [words.length, hold]);
+  // Rotates only while on screen: a word wheel spinning in a section nobody has
+  // reached is a re-render and an entrance transition per turn, indefinitely.
+  useVisibleInterval(
+    rootRef,
+    () => setI((v) => (v + 1) % words.length),
+    words.length < 2 ? null : hold
+  );
 
   const word = words[i] ?? '';
 
@@ -51,6 +56,7 @@ export default function RotatingWords3D({
 
   return (
     <span
+      ref={rootRef}
       className={`relative inline-grid overflow-hidden align-bottom ${className}`}
       style={{ perspective: '600px' }}
       aria-live="polite"

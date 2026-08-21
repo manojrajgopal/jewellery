@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { onFrame } from '@/lib/frameLoop';
+import { canvasDpr, getPerfBudget } from '@/lib/perf';
+
 interface RippleGridProps {
   className?: string;
   /** Spacing between dots in CSS px. Smaller reads denser but costs more. */
@@ -39,6 +42,14 @@ interface Wave {
  *
  * Decorative, so it is aria-hidden, pointer-events-none, and does not render at
  * all under a reduced-motion preference.
+ *
+ * It is also, at ~1,200 dots each rasterising its own arc, the most fill-heavy
+ * scene on the site, and it appears four times on the home page. Two things keep
+ * that affordable. It paints only while it is on screen — previously all four
+ * ran from page load, so three of them were drawing forty-eight hundred arcs a
+ * frame that nobody could see. And the grid loosens on weaker devices, so the
+ * dot count is bounded rather than being whatever the section's area happens to
+ * imply.
  */
 export default function RippleGrid({
   className = '',
@@ -66,13 +77,22 @@ export default function RippleGrid({
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    let raf = 0;
     let last = performance.now();
     let w = 0;
     let h = 0;
-    // Capped at 2: a 3x field on a high-density phone is four times the fill
-    // rate for a difference nobody can see on a 1px dot.
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Capped at 2 on a capable device, and at 1 on a weak one: a 3x field on a
+    // high-density phone is four times the fill rate for a difference nobody
+    // can see on a 1px dot.
+    const dpr = canvasDpr();
+    const budget = getPerfBudget();
+
+    // The grid opens up rather than thinning out. Spacing is the only knob that
+    // reduces dot count without leaving holes in the field, and a 20% wider
+    // lattice reads as the same lattice — a field with gaps does not.
+    const gap = budget.tier === 'low' ? spacing * 1.7 : budget.tier === 'mid' ? spacing * 1.25 : spacing;
+    // Absolute ceiling, so a very tall section cannot ask for ten thousand dots
+    // on a device that can afford twelve hundred.
+    const MAX_DOTS = budget.tier === 'low' ? 900 : budget.tier === 'mid' ? 2200 : 5000;
 
     // Read once per resize. The accent colour is a CSS variable and reading it
     // per frame is a forced style recalculation 60 times a second.
@@ -82,6 +102,15 @@ export default function RippleGrid({
         .getPropertyValue('--gold-400')
         .trim();
       if (v) rgb = v.replace(/\s+/g, ', ');
+    };
+
+    // The canvas origin is cached rather than measured per event: a pointer
+    // crossing the page fires this hundreds of times a second, and
+    // getBoundingClientRect forces a layout every time it is called.
+    let origin = { left: 0, top: 0 };
+    const measureOrigin = () => {
+      const box = canvas.getBoundingClientRect();
+      origin = { left: box.left, top: box.top };
     };
 
     const resize = () => {
@@ -94,20 +123,30 @@ export default function RippleGrid({
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       readTokens();
+      measureOrigin();
     };
 
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(parent);
 
+    // Scrolling moves the canvas without resizing it. Re-reading after the
+    // scroll settles keeps the pointer maths right without paying for a layout
+    // during the scroll itself.
+    let settle = 0;
+    const onScroll = () => {
+      window.clearTimeout(settle);
+      settle = window.setTimeout(measureOrigin, 120);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
     // Tracked on the window, not the canvas: the canvas is pointer-events-none
     // so it never sees an event of its own, and the field should react to the
     // pointer moving over the content on top of it.
     const onMove = (e: PointerEvent) => {
-      const r = canvas.getBoundingClientRect();
       pointer.current = {
-        x: e.clientX - r.left,
-        y: e.clientY - r.top,
+        x: e.clientX - origin.left,
+        y: e.clientY - origin.top,
         active: true,
       };
     };
@@ -116,9 +155,8 @@ export default function RippleGrid({
     };
     const onDown = (e: PointerEvent) => {
       if (!shockwave) return;
-      const r = canvas.getBoundingClientRect();
-      const x = e.clientX - r.left;
-      const y = e.clientY - r.top;
+      const x = e.clientX - origin.left;
+      const y = e.clientY - origin.top;
       if (x < 0 || y < 0 || x > w || y > h) return;
       // Three concurrent waves is the visual limit; past that the fronts
       // interfere into noise.
@@ -133,7 +171,7 @@ export default function RippleGrid({
     const WAVE_LIFE = 1.5; // seconds
     const WAVE_WIDTH = 60; // px — thickness of the ring
 
-    const frame = (now: number) => {
+    const frame = (_step: number, now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
@@ -147,13 +185,23 @@ export default function RippleGrid({
       }
 
       const p = pointer.current;
-      const cols = Math.ceil(w / spacing) + 1;
-      const rows = Math.ceil(h / spacing) + 1;
+      let cols = Math.ceil(w / gap) + 1;
+      let rows = Math.ceil(h / gap) + 1;
+
+      // Widen the lattice further if the section is large enough that the
+      // authored spacing would blow the ceiling.
+      if (cols * rows > MAX_DOTS) {
+        const relax = Math.sqrt((cols * rows) / MAX_DOTS);
+        cols = Math.max(2, Math.ceil(cols / relax));
+        rows = Math.max(2, Math.ceil(rows / relax));
+      }
+      const stepX = w / Math.max(1, cols - 1);
+      const stepY = h / Math.max(1, rows - 1);
 
       for (let cx = 0; cx < cols; cx++) {
         for (let cy = 0; cy < rows; cy++) {
-          const hx = cx * spacing;
-          const hy = cy * spacing;
+          const hx = cx * stepX;
+          const hy = cy * stepY;
 
           let ox = 0;
           let oy = 0;
@@ -202,11 +250,30 @@ export default function RippleGrid({
           ctx.fill();
         }
       }
-
-      raf = requestAnimationFrame(frame);
     };
 
-    raf = requestAnimationFrame(frame);
+    // Paints only while in reach of the viewport, on the site's single shared
+    // frame loop rather than one of its own.
+    let stopLoop: (() => void) | null = null;
+    const resume = () => {
+      if (stopLoop) return;
+      last = performance.now();
+      stopLoop = onFrame(frame, { fps: budget.fps, order: 120 });
+    };
+    const suspend = () => {
+      stopLoop?.();
+      stopLoop = null;
+    };
+
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => (entry.isIntersecting ? resume() : suspend()),
+            { rootMargin: '250px' }
+          );
+    if (io) io.observe(canvas);
+    else resume();
 
     // Repaint the palette when the theme flips, since the dot colour is a token.
     const themeObserver = new MutationObserver(readTokens);
@@ -216,9 +283,12 @@ export default function RippleGrid({
     });
 
     return () => {
-      cancelAnimationFrame(raf);
+      suspend();
+      io?.disconnect();
+      window.clearTimeout(settle);
       ro.disconnect();
       themeObserver.disconnect();
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerdown', onDown);
       document.removeEventListener('pointerleave', onLeave);

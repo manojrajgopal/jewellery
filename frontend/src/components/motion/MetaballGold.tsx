@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { onFrame } from '@/lib/frameLoop';
+import { canvasDpr, getPerfBudget } from '@/lib/perf';
+
 interface MetaballGoldProps {
   className?: string;
   /** Number of blobs. Cost is O(count) per row, so keep it low. */
@@ -62,13 +65,12 @@ export default function MetaballGold({
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    let raf = 0;
     let last = performance.now();
     let w = 0;
     let h = 0;
     // Deliberately below 1: the field is blurred in CSS, so rendering it at
     // three-quarter scale is free quality-wise and a ~45% saving in fill.
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5) * 0.75;
+    const dpr = Math.min(canvasDpr(), 1.5) * 0.75;
 
     let gold = '212, 160, 58';
     let deep = '150, 104, 31';
@@ -145,7 +147,7 @@ export default function MetaballGold({
 
     const THRESHOLD = 1;
 
-    const frame = (now: number) => {
+    const frame = (_step: number, now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const t = now / 1000;
@@ -212,10 +214,33 @@ export default function MetaballGold({
         if (spanStart >= 0) ctx.fillRect(spanStart, y, w - spanStart, rowStep);
       }
 
-      raf = requestAnimationFrame(frame);
     };
 
-    raf = requestAnimationFrame(frame);
+    // Paints only while in reach of the viewport, on the site's shared frame
+    // loop rather than one of its own. Every one of these scenes previously ran
+    // from mount to unload regardless of whether it could be seen.
+    let stopLoop: (() => void) | null = null;
+    const resume = () => {
+      if (stopLoop) return;
+      // Resync the clock, or the first frame back integrates the whole time
+      // the scene spent suspended and jumps.
+      last = performance.now();
+      stopLoop = onFrame(frame, { fps: getPerfBudget().fps, order: 120 });
+    };
+    const suspend = () => {
+      stopLoop?.();
+      stopLoop = null;
+    };
+
+    const io =
+      typeof IntersectionObserver === 'undefined'
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => (entry.isIntersecting ? resume() : suspend()),
+            { rootMargin: '250px' }
+          );
+    if (io) io.observe(canvas);
+    else resume();
 
     const themeObserver = new MutationObserver(readTokens);
     themeObserver.observe(document.documentElement, {
@@ -224,7 +249,8 @@ export default function MetaballGold({
     });
 
     return () => {
-      cancelAnimationFrame(raf);
+      suspend();
+      io?.disconnect();
       ro.disconnect();
       themeObserver.disconnect();
       if (attract) {

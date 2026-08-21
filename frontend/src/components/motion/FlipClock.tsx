@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
+
 interface FlipClockProps {
   /** ISO date string the clock counts down to. */
   to: string;
@@ -56,15 +58,22 @@ export default function FlipClock({
 }: FlipClockProps) {
   const target = useMemo(() => new Date(to).getTime(), [to]);
   const [state, setState] = useState<ReturnType<typeof remainingFrom> | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (Number.isNaN(target)) return;
     setState(remainingFrom(target));
-    // A one-second interval, not a rAF loop: nothing here changes faster than a
-    // second, and a 60Hz loop to move a digit once a second is 59 wasted frames.
-    const t = window.setInterval(() => setState(remainingFrom(target)), 1000);
-    return () => window.clearInterval(t);
   }, [target]);
+
+  // A one-second interval, not a rAF loop: nothing here changes faster than a
+  // second, and a 60Hz loop to move a digit once a second is 59 wasted frames.
+  // Gated on visibility as well — a countdown is re-read from the clock when it
+  // comes back, so nothing drifts by having stopped.
+  useVisibleInterval(
+    rootRef,
+    () => setState(remainingFrom(target)),
+    Number.isNaN(target) ? null : 1000
+  );
 
   if (Number.isNaN(target)) return null;
 
@@ -86,7 +95,7 @@ export default function FlipClock({
 
   if (state?.expired) {
     return (
-      <div className={`flex items-center gap-3 ${className}`}>
+      <div ref={rootRef} className={`flex items-center gap-3 ${className}`}>
         <span
           aria-hidden="true"
           className="block h-2 w-2 animate-pulse-dot rotate-45 bg-accent shadow-[0_0_12px_2px_rgb(var(--gold-500)/0.6)]"
@@ -100,6 +109,7 @@ export default function FlipClock({
 
   return (
     <div
+      ref={rootRef}
       className={`flex items-start gap-2.5 sm:gap-4 ${className}`}
       role="timer"
       aria-live="off"
