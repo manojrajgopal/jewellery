@@ -38,7 +38,7 @@ export default function ScrollZoomFrame({
     target: ref,
     offset: ['start end', 'center center'],
   });
-  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 26 });
+  const p = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const clip = useTransform(p, (v) => {
     const i = inset * (1 - v);

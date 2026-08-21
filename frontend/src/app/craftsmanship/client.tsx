@@ -38,6 +38,7 @@ import HeatShimmer from '@/components/motion/HeatShimmer';
 import EnamelAtlas from '@/components/ui/EnamelAtlas';
 import SurfaceFinishAtlas from '@/components/ui/SurfaceFinishAtlas';
 import { Reveal } from '@/components/animations/Reveal';
+import LedgerSection from '@/app/_sections/home/LedgerSection';
 
 /** Hotspots along the pan. `at` is a fraction of the strip's full width. */
 const WORKSHOP_STATIONS: PanoramaStation[] = [
@@ -788,6 +789,8 @@ export default function CraftsmanshipClient() {
           </div>
         </section>
       </HeatShimmer>
+
+      <LedgerSection />
 
       <section className="relative overflow-hidden bg-surface-raised/30 px-6 py-32 text-center">
         <LensFlare intensity={0.4} originX={50} originY={20} follow={false} />

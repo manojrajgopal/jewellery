@@ -214,7 +214,7 @@ export default function Navbar() {
 
             <ThemeToggle />
 
-            <CTAButton variant="primary" size="sm" href="/contact" className="ml-1">
+            <CTAButton variant="primary" size="sm" href="/book-appointment" className="ml-1">
               Book Appointment
             </CTAButton>
           </div>
@@ -284,7 +284,11 @@ export default function Navbar() {
               </button>
             </div>
 
-            <nav className="relative flex flex-1 flex-col items-center justify-center gap-1 px-8">
+            {/* Scrollable so every link, the Discover grid and the CTA are always
+                reachable on short screens; the inner min-h-full wrapper keeps the
+                content vertically centred when it does fit. */}
+            <nav className="relative flex-1 overflow-y-auto overscroll-contain">
+              <div className="flex min-h-full flex-col items-center justify-center gap-1 px-8 py-8">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.name}
@@ -351,10 +355,11 @@ export default function Navbar() {
                 transition={{ duration: 0.5, delay: 0.16 + navLinks.length * 0.06 }}
                 className="mt-9"
               >
-                <CTAButton variant="primary" size="lg" href="/contact" showArrow>
+                <CTAButton variant="primary" size="lg" href="/book-appointment" showArrow>
                   Book Appointment
                 </CTAButton>
               </motion.div>
+              </div>
             </nav>
           </motion.div>
         )}

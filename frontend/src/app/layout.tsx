@@ -108,8 +108,6 @@ const HOME_SECTIONS = [
   { id: 'film', label: 'The Film' },
   { id: 'showcase', label: 'The Stone' },
   { id: 'gate', label: 'Four Exposures' },
-  { id: 'lighting', label: 'Five Lights' },
-  { id: 'lexicon', label: 'Lexicon' },
   { id: 'threshold', label: 'Come Through' },
   { id: 'craftsmanship', label: 'Atelier' },
   { id: 'artisans', label: 'The Bench' },
@@ -121,16 +119,9 @@ const HOME_SECTIONS = [
   { id: 'strand', label: 'The Strand' },
   { id: 'vitrine', label: 'Vitrine' },
   { id: 'about', label: 'Heritage' },
-  { id: 'provenance', label: 'Provenance' },
-  { id: 'ledger', label: 'The Ledger' },
-  { id: 'sustainability', label: 'What We Measure' },
-  { id: 'heirloom', label: 'Inherited' },
-  { id: 'tools', label: 'Tools' },
   { id: 'manifesto', label: 'What For' },
   { id: 'journal', label: 'Journal' },
-  { id: 'suite', label: 'The Second Ring' },
   { id: 'testimonials', label: 'Patrons' },
-  { id: 'gift-finder', label: 'Gift Finder' },
   { id: 'services', label: 'Services' },
   { id: 'approach', label: 'The Door' },
   { id: 'experiences', label: 'In Person' },
@@ -140,11 +131,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // data-intro defaults to 'seen' so the curtain stays hidden if scripting is
   // unavailable; introInitScript upgrades it to 'playing' before the first paint.
   return (
+    // data-perf must be declared here even though perfInitScript writes the real
+    // value before first paint. React reconciles <html> on hydration and strips
+    // any attribute it does not own — data-theme/intro/cinema survive precisely
+    // because they are declared, and data-perf was silently being removed, which
+    // disabled the entire performance-tier system (every CSS blur reduction,
+    // canvas DPR cap and SmoothScroll gate keys off this attribute). The literal
+    // 'high' is only the SSR placeholder; suppressHydrationWarning lets the
+    // script's real tier stand, exactly as it does for the theme.
     <html
       lang="en"
       data-theme="light"
       data-intro="seen"
       data-cinema="off"
+      data-perf="high"
       suppressHydrationWarning
     >
       <head>

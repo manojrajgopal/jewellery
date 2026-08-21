@@ -42,6 +42,8 @@ import FacetMosaicReveal from '@/components/motion/FacetMosaicReveal';
 import ElasticRail from '@/components/motion/ElasticRail';
 import GoldLeafGild from '@/components/motion/GoldLeafGild';
 import ArchiveDrawer from '@/components/ui/ArchiveDrawer';
+import SustainabilitySection from '@/app/_sections/home/SustainabilitySection';
+import ProvenanceSection from '@/app/_sections/home/ProvenanceSection';
 
 /**
  * The four portraits, and the one decision each generation is remembered for.
@@ -862,6 +864,10 @@ export default function AboutClient() {
             </div>
           </VertigoZoom>
         </section>
+
+        <ProvenanceSection />
+
+        <SustainabilitySection />
 
         {/* CTA */}
         <section className="px-6 py-32 text-center">

@@ -244,6 +244,16 @@
     scroll-behavior: auto;
   }
 
+  /* Contain horizontal bleed to the screen edge on every page. Decorative blooms,
+     inset background layers and the odd horizontal band can extend a little past
+     the viewport on narrow screens, which showed up as a sliver of sideways
+     scroll and content that did not sit flush to the edge. `clip` (not `hidden`)
+     is deliberate: it removes the overflow without turning <main> into a scroll
+     container, so the pinned/sticky scroll scenes keep working normally. */
+  main#main {
+    overflow-x: clip;
+  }
+
   /* Set only once CustomCursor has mounted, and only on large fine-pointer
      screens — text carets and touch devices keep their native affordances. */
   @media (min-width: 1024px) and (pointer: fine) {
@@ -3468,4 +3478,108 @@ html[data-theme='light'][data-cinema='on'] {
 [data-anim-idle] [style*='position: fixed'],
 [data-anim-idle] [style*='position:fixed'] {
   animation-play-state: running !important;
+}
+
+/* ==========================================================================
+   OFF-SCREEN SECTION SKIPPING (content-visibility)
+   ==========================================================================
+   The home page is ~60,000px tall across thirty-five sections. Even with every
+   canvas gated to the viewport and every far-away animation paused, the browser
+   still spends layout, style and paint on the off-screen sections on every
+   frame that touches them — and on a 2GB phone that is most of the cost that
+   is left.
+
+   content-visibility:auto tells the browser it may skip all rendering work for
+   a section while it is outside the viewport (plus a proximity margin the
+   browser chooses), and resume the instant it approaches. Nothing is removed
+   from the DOM and no JavaScript is deferred, so — unlike per-section hydration,
+   which was tried and abandoned (see the doc comment in app/page.tsx) — a
+   section can never blank or pop in: its server HTML is always present, it is
+   only not *painted* while nobody can see it.
+
+   contain-intrinsic-size gives the skipped section a placeholder height so the
+   scrollbar stays honest. The `auto` keyword is the important half: once a
+   section has been rendered even once, the browser remembers its real measured
+   height and reuses that, so the only approximate value is the very first
+   reveal — the 1800px fallback is a mid-page median chosen to keep that first
+   pass' scroll drift small. Cross-device height differences self-correct after
+   first render for the same reason.
+
+   Scoped to [data-home-sections] (a display:contents wrapper in app/page.tsx)
+   so it only ever touches the home route, and the hero is excluded because it
+   is the above-the-fold LCP and must never be subject to a skip/restore cycle.
+   Sticky and scroll-pinned sections are safe to include: containment is only
+   ever applied while they are off-screen, and by the time one is scrolled into,
+   it has already been rendered at full size. */
+@supports (content-visibility: auto) {
+  [data-home-sections] > section:not(#hero) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1800px;
+  }
+}
+
+/* ==========================================================================
+   HERO — COMPOSITOR-DRIVEN SCROLL PARALLAX (the entry screen)
+   ==========================================================================
+   For eight rounds the hero's scroll-out was driven by framer-motion: a JS
+   `useScroll` read the scroll position and wrote `transform`/`opacity` on the
+   next main-thread frame. With native (compositor) scrolling that is a frame or
+   more behind the gesture — the "the animation only happens after I stop / it
+   catches up" report — and with JS scrolling the gesture itself stutters. That
+   is a genuine either/or, and no amount of spring-tuning escapes it: the scroll
+   runs on the compositor and the parallax runs on the main thread, so they can
+   never be on the same clock.
+
+   A scroll-progress timeline puts them on the same clock. The keyframes below
+   are sampled by the compositor against the scroll offset itself, on the same
+   thread that scrolls the page — so the parallax moves on the exact frame the
+   scroll does (zero lag, no catch-up), costs the main thread nothing, and runs
+   at the display's refresh rate on high-Hz screens. The values are a 1:1
+   transcription of the framer `useTransform` ranges the hero used before, so the
+   motion is visually identical.
+
+   framer-motion still drives the identical motion as a fallback wherever scroll
+   timelines are unavailable (Safari/Firefox at time of writing): the component
+   applies its `useTransform` styles only while `.hero-sdt` is absent, and adds
+   `.hero-sdt` (which switches these rules on) only after confirming support, so
+   exactly one driver is ever live. `animation-range: 0 100svh` matches the old
+   offset `['start start','end start']` on a 100svh-tall hero: progress 0 at the
+   top, 1 once the hero has scrolled its own height past the top, held after
+   (fill: both === framer's clamp). */
+@keyframes hero-bg {
+  from { transform: translateY(0) scale(1); }
+  to   { transform: translateY(24%) scale(1.18); }
+}
+@keyframes hero-veil {
+  from { opacity: 0; }
+  to   { opacity: 0.72; }
+}
+@keyframes hero-content {
+  from { transform: translateY(0); opacity: 1; }
+  65%  { opacity: 0; }
+  to   { transform: translateY(-32%); opacity: 0; }
+}
+@keyframes hero-stats {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-70%); }
+}
+@keyframes hero-fade {
+  from     { opacity: 1; }
+  65%, 100% { opacity: 0; }
+}
+
+@supports (animation-timeline: scroll()) {
+  .hero-sdt [data-hero-layer] {
+    animation-timeline: scroll(root block);
+    animation-range: 0 100svh;
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+  }
+  .hero-sdt [data-hero-layer='bg']      { animation-name: hero-bg; }
+  .hero-sdt [data-hero-layer='veil']    { animation-name: hero-veil; }
+  .hero-sdt [data-hero-layer='content'] { animation-name: hero-content; }
+  .hero-sdt [data-hero-layer='stats']   { animation-name: hero-stats; }
+  .hero-sdt [data-hero-layer='fade']    { animation-name: hero-fade; }
 }

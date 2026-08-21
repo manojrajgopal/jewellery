@@ -24,6 +24,10 @@ export default function AudioAmbience({ className = '' }: { className?: string }
   const masterRef = useRef<GainNode | null>(null);
   const chimeTimer = useRef<number>(0);
   const nodesRef = useRef<OscillatorNode[]>([]);
+  // Throttles for the interaction sounds below.
+  const lastHover = useRef(0);
+  const lastScroll = useRef(0);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     // Reduced motion is a proxy for "no incidental effects, please".
@@ -75,6 +79,39 @@ export default function AudioAmbience({ className = '' }: { className?: string }
       osc.stop(now + 4.8);
     });
   }, []);
+
+  /**
+   * One short enveloped tone for interaction feedback — click, hover and scroll
+   * all share this. Routed through the same master bus as the ambience, so the
+   * one toggle governs everything and there is never a second audio graph.
+   */
+  const voice = useCallback(
+    (
+      freq: number,
+      { type = 'triangle', attack = 0.005, release = 0.18, peak = 0.12 }: {
+        type?: OscillatorType;
+        attack?: number;
+        release?: number;
+        peak?: number;
+      } = {}
+    ) => {
+      const ctx = ctxRef.current;
+      const master = masterRef.current;
+      if (!ctx || !master) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.value = freq;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(peak, now + attack);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + attack + release);
+      osc.connect(g).connect(master);
+      osc.start(now);
+      osc.stop(now + attack + release + 0.05);
+    },
+    []
+  );
 
   const stop = useCallback(() => {
     window.clearTimeout(chimeTimer.current);
@@ -185,6 +222,57 @@ export default function AudioAmbience({ className = '' }: { className?: string }
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [playing, stop]);
+
+  // Interaction sounds: a warm pluck on click, a faint tick on hover, and a
+  // directional tone on scroll (brighter down the page, darker back up). Only
+  // active while the sound layer is on, so they cost nothing when muted.
+  useEffect(() => {
+    if (!playing) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      const control = t?.closest('a,button,[role="button"],input,select,label,textarea');
+      voice(control ? 587.33 : 440, {
+        type: 'triangle',
+        attack: 0.004,
+        release: 0.16,
+        peak: control ? 0.16 : 0.09,
+      });
+    };
+
+    const onOver = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t?.closest('a,button,[role="button"]')) return;
+      const now = performance.now();
+      if (now - lastHover.current < 90) return;
+      lastHover.current = now;
+      voice(1174.66, { type: 'sine', attack: 0.003, release: 0.07, peak: 0.05 });
+    };
+
+    const onScroll = () => {
+      const now = performance.now();
+      if (now - lastScroll.current < 150) return;
+      lastScroll.current = now;
+      const y = window.scrollY;
+      const down = y >= lastScrollY.current;
+      lastScrollY.current = y;
+      voice(down ? 329.63 : 246.94, {
+        type: 'sine',
+        attack: 0.008,
+        release: 0.2,
+        peak: 0.04,
+      });
+    };
+
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointerover', onOver);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerover', onOver);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [playing, voice]);
 
   // Tear the graph down on unmount, or the audio outlives the page.
   useEffect(() => () => stop(), [stop]);

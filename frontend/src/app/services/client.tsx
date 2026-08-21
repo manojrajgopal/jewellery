@@ -31,6 +31,7 @@ import ScrollBlurFocus from '@/components/motion/ScrollBlurFocus';
 import SolderWeldPath from '@/components/motion/SolderWeldPath';
 import WarrantyDecoder from '@/components/ui/WarrantyDecoder';
 import SecureTransitTracker from '@/components/ui/SecureTransitTracker';
+import HeirloomSection from '@/app/_sections/home/HeirloomSection';
 import { Reveal, StaggerContainer, StaggerItem } from '@/components/animations/Reveal';
 
 /**
@@ -622,6 +623,8 @@ export default function ServicesClient() {
         </div>
       </section>
 
+      <HeirloomSection />
+
       <section className="px-6 py-28 text-center">
         <Reveal>
           <SectionHeading
@@ -632,7 +635,7 @@ export default function ServicesClient() {
             align="center"
             className="mb-10"
           />
-          <CTAButton href="/contact" variant="primary" size="lg" showArrow>
+          <CTAButton href="/book-appointment" variant="primary" size="lg" showArrow>
             Book an Appointment
           </CTAButton>
         </Reveal>

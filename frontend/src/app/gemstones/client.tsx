@@ -39,6 +39,9 @@ import ProportionScope from '@/components/ui/ProportionScope';
 import StoneCutYield from '@/components/ui/StoneCutYield';
 import LabGrownLedger from '@/components/ui/LabGrownLedger';
 
+import LexiconSection from '@/app/_sections/home/LexiconSection';
+import LightingRoomSection from '@/app/_sections/home/LightingRoomSection';
+
 /**
  * The stone library — the reference half of the site.
  *
@@ -574,6 +577,10 @@ export default function GemstonesClient() {
             <LabGrownLedger />
           </div>
         </section>
+
+        <LightingRoomSection />
+
+        <LexiconSection />
 
         <section className="relative px-6 py-24 text-center md:py-32">
           <SectionHeading

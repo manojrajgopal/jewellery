@@ -31,8 +31,24 @@ import { isScrollControlled } from '@/lib/scrollControl';
  * it. So low-tier devices keep native scrolling rather than a worse imitation
  * of it.
  */
+/**
+ * Master switch. The JS inertial scroller runs the scroll position on the main
+ * thread, so whenever the main thread is busy — a canvas scene drawing, a run of
+ * scroll-linked transforms recomputing — the scroll itself stutters, and the page
+ * reads as low-framerate even though nothing is broken. Native scrolling runs on
+ * the compositor thread instead: the gesture stays smooth no matter what the main
+ * thread is doing, and only the parallax lags a touch, which is far less visible
+ * than the scroll position itself juddering.
+ *
+ * The site was authored around the weighted JS feel, but smoothness on every
+ * device matters more, so native is the default now. Flip this to true to bring
+ * the inertial easing back; everything below it is preserved and unchanged.
+ */
+const USE_JS_INERTIAL_SCROLL = false;
+
 export default function SmoothScroll({ strength = 0.085 }: { strength?: number }) {
   useEffect(() => {
+    if (!USE_JS_INERTIAL_SCROLL) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const coarse = window.matchMedia('(pointer: coarse)').matches;
     if (reduced || coarse) return;

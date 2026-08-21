@@ -43,7 +43,7 @@ export default function GodRays({
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const smooth = useSpring(scrollYProgress, { stiffness: 60, damping: 30 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   // The whole fan pivots a few degrees across the section — enough to feel like
   // the light source moved, not enough to notice the mechanism.

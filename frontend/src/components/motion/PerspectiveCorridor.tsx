@@ -62,7 +62,7 @@ export default function PerspectiveCorridor({
   const reduced = useReducedMotion();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 70, damping: 24, mass: 0.8 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const progress = reduced ? scrollYProgress : smooth;
 
   // The camera travels a little past the last arch, so the corridor empties

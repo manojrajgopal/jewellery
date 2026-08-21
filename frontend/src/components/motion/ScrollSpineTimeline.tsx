@@ -55,7 +55,7 @@ export default function ScrollSpineTimeline({
     offset: ['start 75%', 'end 55%'],
   });
 
-  const drawn = useSpring(scrollYProgress, { stiffness: 110, damping: 30, mass: 0.5 });
+  const drawn = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const headTop = useTransform(drawn, (v) => `${Math.min(v, 1) * 100}%`);
   const headOpacity = useTransform(drawn, [0, 0.02, 0.96, 1], [0, 1, 1, 0]);
 

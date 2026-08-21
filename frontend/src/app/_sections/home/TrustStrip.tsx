@@ -1,6 +1,6 @@
 'use client';
 
-import ScrollVelocityRow from '@/components/motion/ScrollVelocityRow';
+import Marquee from '@/components/motion/Marquee';
 import { brandData } from '@/data/brand';
 
 const FALLBACK = [
@@ -11,6 +11,17 @@ const FALLBACK = [
   'GIA Certified',
 ];
 
+/**
+ * A thin accolade ticker between the hero and the rest of the page.
+ *
+ * This used to run on `ScrollVelocityRow`, which drives the strip from a
+ * per-frame `useAnimationFrame` loop plus a scroll-velocity spring — a constant
+ * main-thread cost that, right under the hero, made the top of the page feel
+ * heavy. It now uses the plain CSS `Marquee` (a GPU-composited keyframe
+ * translate, no JavaScript per frame), which is exactly how the reference build
+ * keeps its equivalent strip smooth. The former shimmer wash — a continuously
+ * repainting animated background — was removed for the same reason.
+ */
 export default function TrustStrip() {
   const badges = brandData.trustBadges?.length ? brandData.trustBadges : FALLBACK;
 
@@ -19,13 +30,7 @@ export default function TrustStrip() {
       id="trust"
       className="relative overflow-hidden border-y border-gold-700/25 bg-surface-raised/60 py-7"
     >
-      {/* Faint metallic wash behind the ticker */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-gold-sheen bg-size-200 opacity-25 animate-shimmer"
-      />
-
-      <ScrollVelocityRow baseVelocity={2.2} skew>
+      <Marquee speed="slow" pauseOnHover>
         {badges.map((badge, i) => (
           <span key={`${badge}-${i}`} className="flex items-center whitespace-nowrap">
             <span className="px-8 font-accent text-sm uppercase tracking-luxe text-accent">
@@ -37,7 +42,7 @@ export default function TrustStrip() {
             />
           </span>
         ))}
-      </ScrollVelocityRow>
+      </Marquee>
     </section>
   );
 }

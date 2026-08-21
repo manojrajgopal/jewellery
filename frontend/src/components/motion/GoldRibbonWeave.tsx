@@ -45,7 +45,7 @@ export default function GoldRibbonWeave({
     target: ref,
     offset: ['start 0.95', 'center 0.55'],
   });
-  const p = useSpring(scrollYProgress, { stiffness: 70, damping: 22 });
+  const p = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const draw = useTransform(p, [0, 1], [0, 1]);
 
   const w = 1200;

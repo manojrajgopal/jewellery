@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 
 import SectionHeading from '@/components/ui/SectionHeading';
-import RingSizer from '@/components/ui/RingSizer';
 import LiveGoldRate from '@/components/ui/LiveGoldRate';
 import ImageCompare from '@/components/motion/ImageCompare';
 import CountUp from '@/components/motion/CountUp';
@@ -20,12 +19,14 @@ const RESTORATION_STATS = [
 ];
 
 /**
- * The practical half of the page: the two things a visitor most often wants
- * before they walk in — their ring size, and today's rate — plus the
- * restoration bench shown as a before-and-after they can drag.
+ * The practical half of the page: today's rate, what a piece is worth, how a
+ * certificate is verified, and the restoration bench shown as a before-and-after
+ * they can drag.
  *
- * Deliberately placed after the storytelling. Tools this concrete would undercut
- * the film sequence if they came first.
+ * Ring sizing used to sit here too, but it is owned by /care (alongside the rest
+ * of the fit-and-wear tools) and was removed so the same sizer never runs on two
+ * pages. The remaining tools are the ledger-and-assurance kind, which is why this
+ * section now lives on /vault beside the visitor's own records.
  */
 export default function AtelierToolsSection() {
   return (
@@ -39,10 +40,10 @@ export default function AtelierToolsSection() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 md:px-12">
         <SectionHeading
-          eyebrow="Before You Visit"
-          title="Everything you need to hand"
-          subtitle="Find your size, check the day's rate, and see what our restoration bench can do — all before you set foot in the showroom."
-          highlightWords={['size', 'rate']}
+          eyebrow="Everything To Hand"
+          title="Rate it, value it, verify it"
+          subtitle="Check the day's rate, see what a piece is worth, confirm a certificate, and watch what our restoration bench can do — the practical side, all in one place."
+          highlightWords={['value', 'verify']}
           className="mb-16"
         />
 
@@ -58,14 +59,14 @@ export default function AtelierToolsSection() {
         </motion.div>
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* ---- Ring sizer ---- */}
+          {/* ---- Valuation ---- */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-10%' }}
             transition={{ duration: 0.8, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
           >
-            <RingSizer />
+            <ValuationCalculator />
           </motion.div>
 
           {/* ---- Restoration bench ---- */}
@@ -113,26 +114,16 @@ export default function AtelierToolsSection() {
           </motion.div>
         </div>
 
-        {/* ---- Valuation and verification ---- */}
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10%' }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <ValuationCalculator />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-10%' }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <CertificateVerify />
-          </motion.div>
-        </div>
+        {/* ---- Verification ---- */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-10%' }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-8"
+        >
+          <CertificateVerify />
+        </motion.div>
       </div>
 
       {/* ---- Services ticker ---- */}

@@ -21,6 +21,13 @@ interface ParallaxProps {
 /**
  * Scroll-linked depth. Spring-smoothed so the layer settles instead of
  * snapping to each scroll event.
+ *
+ * The positional drift (the `speed`/`offset` translation) is intentionally
+ * disabled: it made the wrapped content travel faster or slower than the page,
+ * which read as sections scrolling at different speeds. Everything now moves 1:1
+ * with the scroll. The API is unchanged so no consumer breaks, and the in-place
+ * effects that do not change scroll speed — an optional scale, rotate or edge
+ * fade — still work; only the translate is pinned to zero.
  */
 export default function Parallax({
   children,
@@ -38,13 +45,13 @@ export default function Parallax({
     offset: ['start end', 'end start'],
   });
 
-  const smooth = useSpring(scrollYProgress, {
-    stiffness: 90,
-    damping: 26,
-    restDelta: 0.001,
-  });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
-  const shift = useTransform(smooth, [0, 1], [offset[0] * speed, offset[1] * speed]);
+  // Translation pinned to zero — see the note above. `speed` and `offset` are
+  // kept in the signature so existing call sites compile unchanged.
+  void speed;
+  void offset;
+  const shift = useTransform(smooth, [0, 1], [0, 0]);
   const scale = useTransform(smooth, [0, 1], scaleRange ?? [1, 1]);
   const rotate = useTransform(smooth, [0, 1], rotateRange ?? [0, 0]);
   const opacity = useTransform(smooth, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);

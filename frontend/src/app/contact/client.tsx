@@ -30,6 +30,7 @@ import TypeSlamHeading from '@/components/motion/TypeSlamHeading';
 import ChromaSplit from '@/components/motion/ChromaSplit';
 import CallbackWindow from '@/components/ui/CallbackWindow';
 import AccessNotes from '@/components/ui/AccessNotes';
+import GiftFinderSection from '@/app/_sections/home/GiftFinderSection';
 import { Reveal } from '@/components/animations/Reveal';
 import { useToast } from '@/components/providers/ToastProvider';
 import { brandData } from '@/data/brand';
@@ -690,6 +691,8 @@ export default function ContactClient() {
           <AccessNotes />
         </div>
       </section>
+
+      <GiftFinderSection />
 
       <section className="px-6 py-24 text-center">
         <Reveal>

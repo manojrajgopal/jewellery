@@ -64,7 +64,7 @@ export default function TimeSliceScrub({
     offset: ['start end', 'end start'],
   });
 
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.6 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const strips = Array.from({ length: columns }, (_, i) => i);
   const vertical = axis === 'y';

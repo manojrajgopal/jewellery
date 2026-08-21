@@ -79,7 +79,7 @@ export default function TypeOnPath({
     offset: ['start 92%', 'end 30%'],
   });
 
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.6 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const draw = useTransform(reduced ? scrollYProgress : smooth, [0, 0.85], [0, 1]);
   // Hoisted out of the JSX: the rule is conditional, and a hook inside a

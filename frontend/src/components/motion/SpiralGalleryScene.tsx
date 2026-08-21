@@ -66,7 +66,7 @@ export default function SpiralGalleryScene({
   const reduced = useReducedMotion();
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 62, damping: 22, mass: 0.9 });
+  const smooth = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const camera = reduced ? scrollYProgress : smooth;
 
   if (reduced) {

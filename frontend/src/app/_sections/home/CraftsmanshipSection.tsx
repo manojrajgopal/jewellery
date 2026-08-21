@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
 import SectionHeading from '@/components/ui/SectionHeading';
-import { useStageStepper } from '@/hooks/useStageStepper';
 
 const STAGES = [
   {
@@ -47,24 +46,26 @@ export default function CraftsmanshipSection() {
   const reduceMotion = useReducedMotion();
 
   /**
-   * The track is driven by the stage index, never by raw scroll progress.
-   * Bound to progress, the panels came to rest wherever the scroll happened to
-   * stop — half a stage across — and one hard flick jumped several stages at
-   * once. The stepper hands over exactly one stage per gesture instead, so a
-   * panel is always fully framed and none is ever skipped past.
+   * A plain vertical run of the five stages.
+   *
+   * This section used to be a pinned, scroll-driven horizontal stepper: it took
+   * over the wheel to advance exactly one stage per gesture. That mechanism
+   * fought the page's scrolling — it could trap the visitor on the last card and
+   * auto-advance on the smallest movement — so it was replaced with an ordinary
+   * stacked layout. Every stage, its plate, number, detail and copy are kept
+   * exactly as before; only the scroll hijacking is gone, so the section now
+   * scrolls at the same 1:1 speed as the rest of the page and each stage simply
+   * fades up as it is reached.
    */
-  const { containerRef, stage: activeStage } = useStageStepper(STAGES.length, {
-    instant: !!reduceMotion,
-  });
-
-  const trackX = `-${activeStage * (100 / STAGES.length)}%`;
-  const railFill = `${(activeStage / (STAGES.length - 1)) * 100}%`;
-
-  // Just past critically damped: the panel arrives quickly and without bounce,
-  // so the time spent between two stages stays short.
-  const settle = reduceMotion
-    ? { duration: 0 }
-    : { type: 'spring' as const, stiffness: 120, damping: 21, mass: 0.7 };
+  const reveal = (delay = 0) =>
+    reduceMotion
+      ? {}
+      : {
+          initial: { opacity: 0, y: 40 },
+          whileInView: { opacity: 1, y: 0 },
+          viewport: { once: true, margin: '-15%' },
+          transition: { duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] as const },
+        };
 
   return (
     <section id="craftsmanship" className="relative bg-canvas">
@@ -78,122 +79,51 @@ export default function CraftsmanshipSection() {
         />
       </div>
 
-      {/* Scroll-driven horizontal gallery */}
-      <div ref={containerRef} className="relative h-[420vh]">
-        <div className="sticky top-0 flex h-[100svh] w-full items-center overflow-hidden">
-          {/* One panel per stage, each exactly one viewport wide. */}
-          <motion.div
-            animate={{ x: trackX }}
-            transition={settle}
-            className="relative z-10 flex h-full items-center"
+      <div className="mx-auto flex max-w-7xl flex-col gap-20 px-6 pb-24 md:gap-28 md:px-12 md:pb-32">
+        {STAGES.map((stage, idx) => (
+          <div
+            key={stage.title}
+            className={`flex flex-col gap-8 md:items-center lg:gap-16 ${
+              idx % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'
+            }`}
           >
-            {STAGES.map((stage, idx) => (
-              <div
-                key={stage.title}
-                className="flex h-full w-screen flex-col items-center justify-center gap-8 p-6 md:flex-row md:p-12 lg:gap-16 lg:p-24"
-              >
-                {/* Plate */}
-                <motion.div
-                  initial={{ opacity: 0.4, scale: 0.94 }}
-                  animate={{
-                    opacity: activeStage === idx ? 1 : 0.45,
-                    scale: activeStage === idx ? 1 : 0.94,
-                  }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative h-[38vh] w-full overflow-hidden rounded-2xl shadow-lift md:h-[62vh] md:w-1/2"
-                >
-                  <Image
-                    src={stage.image}
-                    alt={stage.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                  <div className="pointer-events-none absolute inset-0 rounded-2xl border border-gold-500/25" />
+            {/* Plate */}
+            <motion.div
+              {...reveal()}
+              className="relative h-[42vh] w-full overflow-hidden rounded-2xl shadow-lift md:h-[60vh] md:w-1/2"
+            >
+              <Image
+                src={stage.image}
+                alt={stage.title}
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 rounded-2xl border border-gold-500/25" />
+              <span className="absolute bottom-5 left-5 font-accent text-[10px] uppercase tracking-luxer text-gold-200">
+                {stage.detail}
+              </span>
+            </motion.div>
 
-                  {/* Stage caption on the plate */}
-                  <span className="absolute bottom-5 left-5 font-accent text-[10px] uppercase tracking-luxer text-gold-200">
-                    {stage.detail}
-                  </span>
-                </motion.div>
-
-                {/* Copy */}
-                <motion.div
-                  initial={{ opacity: 0, x: 40 }}
-                  animate={{
-                    opacity: activeStage === idx ? 1 : 0.3,
-                    x: activeStage === idx ? 0 : 30,
-                  }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="w-full max-w-xl md:w-1/2"
-                >
-                  <span className="block font-display text-7xl font-light leading-none text-accent/25 lg:text-8xl">
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
-                  <h3 className="-mt-6 font-display text-4xl text-primary lg:text-5xl">
-                    {stage.title}
-                  </h3>
-                  <span className="my-5 block h-px w-14 bg-accent" />
-                  <p className="font-sans text-base font-light leading-relaxed text-muted lg:text-lg">
-                    {stage.description}
-                  </p>
-                </motion.div>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Progress rail */}
-          <div className="absolute inset-x-12 bottom-10 z-20 md:inset-x-24">
-            <div className="relative h-px bg-line">
-              {/* Inset by half a marker so the fill terminates on the dot
-                  centres rather than the ends of the rail. */}
-              <div className="absolute inset-x-3 top-0 h-full">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-gold-700 via-gold-400 to-gold-300"
-                  animate={{ width: railFill }}
-                  transition={settle}
-                />
-              </div>
-
-              <div className="absolute inset-x-0 -top-3 flex justify-between">
-                {STAGES.map((stage, i) => {
-                  const reached = i <= activeStage;
-                  return (
-                    <span
-                      key={stage.title}
-                      className="group relative flex h-6 w-6 items-center justify-center"
-                      aria-current={i === activeStage ? 'step' : undefined}
-                    >
-                      <span
-                        className={`flex h-6 w-6 items-center justify-center rounded-full border bg-canvas transition-all duration-500 ${
-                          reached ? 'border-gold-400' : 'border-line-strong'
-                        }`}
-                      >
-                        <span
-                          className={`block rounded-full transition-all duration-500 ${
-                            i === activeStage
-                              ? 'h-2.5 w-2.5 bg-gold-300 shadow-[0_0_10px_2px_rgb(var(--gold-400)/0.7)]'
-                              : reached
-                                ? 'h-1.5 w-1.5 bg-gold-500'
-                                : 'h-1.5 w-1.5 bg-line-strong'
-                          }`}
-                        />
-                      </span>
-                      <span
-                        className={`absolute -top-7 whitespace-nowrap font-accent text-[9px] uppercase tracking-luxe transition-opacity duration-300 ${
-                          i === activeStage ? 'text-accent opacity-100' : 'opacity-0'
-                        }`}
-                      >
-                        {stage.title}
-                      </span>
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
+            {/* Copy */}
+            <motion.div
+              {...reveal(0.1)}
+              className="w-full max-w-xl md:w-1/2"
+            >
+              <span className="block font-display text-7xl font-light leading-none text-accent/25 lg:text-8xl">
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              <h3 className="-mt-6 font-display text-4xl text-primary lg:text-5xl">
+                {stage.title}
+              </h3>
+              <span className="my-5 block h-px w-14 bg-accent" />
+              <p className="font-sans text-base font-light leading-relaxed text-muted lg:text-lg">
+                {stage.description}
+              </p>
+            </motion.div>
           </div>
-        </div>
+        ))}
       </div>
     </section>
   );

@@ -53,7 +53,7 @@ export default function CinematicScene({
     target: ref,
     offset: ['start start', 'end end'],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 90, damping: 30, mass: 0.4 });
+  const progress = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   // Overall scene height: one viewport for the pin plus the allotted scrub.
   const heightVh = 100 + shots.length * heightPerShot * 100;

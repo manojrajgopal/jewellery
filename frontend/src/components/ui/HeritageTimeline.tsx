@@ -81,7 +81,7 @@ export default function HeritageTimeline({ className = '' }: { className?: strin
     target: ref,
     offset: ['start 70%', 'end 60%'],
   });
-  const fill = useSpring(scrollYProgress, { stiffness: 60, damping: 26 });
+  const fill = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const glowY = useTransform(fill, [0, 1], ['0%', '100%']);
 
   return (

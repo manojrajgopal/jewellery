@@ -69,24 +69,42 @@ export default function Preloader() {
 
   // Dust motes are generated once. Regenerating them on a re-render would
   // restart every mote's flight mid-intro.
-  const motes = useMemo(
-    () =>
-      Array.from({ length: 34 }, (_, i) => {
-        const angle = (i / 34) * Math.PI * 2 + Math.random() * 0.4;
-        // Start beyond the frame, so they fly in rather than appearing.
-        const distance = 46 + Math.random() * 34;
-        return {
-          id: i,
-          fromX: Math.cos(angle) * distance,
-          fromY: Math.sin(angle) * distance,
-          size: 1.5 + Math.random() * 3.5,
-          delay: 0.35 + Math.random() * 1.1,
-          duration: 1.5 + Math.random() * 1.1,
-          rotate: Math.random() * 360,
-        };
-      }),
-    []
-  );
+  //
+  // The values are drawn from a *deterministic* pseudo-random source, not
+  // Math.random(). The preloader is server-rendered, so Math.random() produced
+  // one set of motes on the server and a different set on the client, and the
+  // mismatch made React throw the whole server tree away and re-render on
+  // hydration (React error #418) on every page — a visible console error and a
+  // real load-time cost. A seeded generator yields identical motes on both
+  // sides, so hydration matches; the field still looks scattered.
+  const motes = useMemo(() => {
+    const rand = (seed: number) => {
+      let t = (seed + 0x6d2b79f5) | 0;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    // Round every value to a fixed precision. The raw doubles serialise into the
+    // motion style string with one digit more on the client than on the server
+    // (Node and the browser stringify the last ULP differently), and that lone
+    // trailing digit was enough to fail hydration — the second, subtler half of
+    // the same #418. Rounded numbers stringify identically everywhere.
+    const r3 = (n: number) => Math.round(n * 1000) / 1000;
+    return Array.from({ length: 34 }, (_, i) => {
+      const angle = (i / 34) * Math.PI * 2 + rand(i * 6) * 0.4;
+      // Start beyond the frame, so they fly in rather than appearing.
+      const distance = 46 + rand(i * 6 + 1) * 34;
+      return {
+        id: i,
+        fromX: r3(Math.cos(angle) * distance),
+        fromY: r3(Math.sin(angle) * distance),
+        size: r3(1.5 + rand(i * 6 + 2) * 3.5),
+        delay: r3(0.35 + rand(i * 6 + 3) * 1.1),
+        duration: r3(1.5 + rand(i * 6 + 4) * 1.1),
+        rotate: r3(rand(i * 6 + 5) * 360),
+      };
+    });
+  }, []);
 
   const status = BEATS.reduce(
     (current, beat) => (progress / 100 >= beat.at ? beat.label : current),

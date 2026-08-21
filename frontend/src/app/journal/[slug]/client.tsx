@@ -66,7 +66,7 @@ export default function ArticleClient({ slug }: { slug: string }) {
     // completes exactly as the last line leaves the viewport.
     offset: ['start start', 'end end'],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 140, damping: 28, mass: 0.4 });
+  const progress = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress: heroScroll } = useScroll({

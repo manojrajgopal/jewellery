@@ -7,24 +7,15 @@ import ShowcaseSection from '@/app/_sections/home/ShowcaseSection';
 import VitrineSection from '@/app/_sections/home/VitrineSection';
 import CraftsmanshipSection from '@/app/_sections/home/CraftsmanshipSection';
 import HeritageSection from '@/app/_sections/home/HeritageSection';
-import AtelierToolsSection from '@/app/_sections/home/AtelierToolsSection';
 import TestimonialsSection from '@/app/_sections/home/TestimonialsSection';
 import ServicesSection from '@/app/_sections/home/ServicesSection';
-import GiftFinderSection from '@/app/_sections/home/GiftFinderSection';
 import CTASection from '@/app/_sections/home/CTASection';
 import LookbookSection from '@/app/_sections/home/LookbookSection';
 import ArtisansSection from '@/app/_sections/home/ArtisansSection';
-import ProvenanceSection from '@/app/_sections/home/ProvenanceSection';
 import JournalSection from '@/app/_sections/home/JournalSection';
 import ExperienceInviteSection from '@/app/_sections/home/ExperienceInviteSection';
-import LexiconSection from '@/app/_sections/home/LexiconSection';
-import LedgerSection from '@/app/_sections/home/LedgerSection';
 import ManifestoSection from '@/app/_sections/home/ManifestoSection';
-import LightingRoomSection from '@/app/_sections/home/LightingRoomSection';
 import ThresholdSection from '@/app/_sections/home/ThresholdSection';
-import HeirloomSection from '@/app/_sections/home/HeirloomSection';
-import SustainabilitySection from '@/app/_sections/home/SustainabilitySection';
-import SuiteSection from '@/app/_sections/home/SuiteSection';
 import GateSection from '@/app/_sections/home/GateSection';
 import BlueprintSection from '@/app/_sections/home/BlueprintSection';
 import AlloySection from '@/app/_sections/home/AlloySection';
@@ -58,14 +49,25 @@ import GoldDivider from '@/components/ui/GoldDivider';
  * What this page deliberately does *not* carry
  * ---------------------------------------------------------------------------
  * Home is a route through the house, not a second copy of it. Fourteen sections
- * that duplicated a dedicated page were taken out, because a visitor who reaches
- * the same tool twice learns nothing the second time and the page pays for it
- * either way. The stone reference belongs to /gemstones, fit and wear to /care,
+ * that duplicated a dedicated page were taken out in the first pass, and a second
+ * pass moved nine more to the page that owns their subject, because a visitor who
+ * reaches the same tool twice learns nothing the second time and the page pays for
+ * it either way. The stone reference belongs to /gemstones, fit and wear to /care,
  * the product grid to /collections, the commission studio to /bespoke, engraving
  * and packaging to /bespoke and /services, the locator and the booking form to
- * /contact. What is kept here is the material that exists nowhere else — the film,
- * the corridor, the vitrine, the turnable stone, the five-step making run — plus
- * the short teasers that send a visitor to the page that owns the subject.
+ * /contact.
+ *
+ * Moved out in the second pass, each to the page that owns it: the lighting room
+ * and the trade lexicon to /gemstones; the sourcing ledger to /craftsmanship; the
+ * wedding-suite builder to /bespoke; the heirloom-redesign tool to /services; the
+ * sustainability ledger and the press/verification wall to /about; the gift-finder
+ * quiz to /contact; and the rate / valuation / certificate tools to /vault. The
+ * ring sizer and the provenance map they travelled with were dropped rather than
+ * moved, because /care and /gemstones already own them.
+ *
+ * What is kept here is the material that exists nowhere else — the film, the
+ * corridor, the vitrine, the turnable stone, the five-step making run — plus the
+ * short teasers that send a visitor to the page that owns the subject.
  *
  * Sections are rendered and hydrated normally. Deferring hydration per section
  * was tried and abandoned: React cannot hydrate a subtree whose render
@@ -75,8 +77,16 @@ import GoldDivider from '@/components/ui/GoldDivider';
  * instead: the scenes themselves no longer run when they are off screen.
  */
 export default function Home() {
+  // display:contents wrapper carries no box of its own — the sections lay out
+  // exactly as they did as bare fragment children — but it gives globals.css a
+  // home-only hook for content-visibility. That CSS lets the browser skip
+  // layout, paint and style for the off-screen sections of this 60,000px page
+  // (everything except the hero), which is the largest rendering saving
+  // available here and, unlike deferring hydration, keeps every section's
+  // server HTML in place so nothing ever blanks or pops in. See the
+  // content-visibility block in globals.css.
   return (
-    <>
+    <div data-home-sections style={{ display: 'contents' }}>
       <HeroSection />
       <TrustStrip />
       <CollectionsSection />
@@ -102,21 +112,12 @@ export default function Home() {
           image and has not yet been told who lit it. */}
       <GateSection />
 
-      {/* The room the stone will actually be looked at in. Placed here because
-          this is the point of maximum faith in paper — a dozen mineral names and
-          four grading dials in, and nobody has yet said that our showroom light
-          is the most flattering light the piece will ever have. */}
-      <LightingRoomSection />
-
-      {/* The words for all of it. Placed here because this is the point of
-          maximum vocabulary debt — four dials and a dozen mineral names in,
-          and nobody has yet said what a girdle is. */}
-      <LexiconSection />
-
-      {/* Tentpole three, and the quietest of them: a walk from the reference
-          material into the workshop. No controls, nothing to read but five lines
-          passed under. A page this long needs a corridor where it changes
-          subject, and a hard cut is exactly what a building never does. */}
+      {/* Tentpole three, and the quietest of them: a walk from the stone into the
+          workshop. No controls, nothing to read but five lines passed under. A
+          page this long needs a corridor where it changes subject, and a hard cut
+          is exactly what a building never does. (The stone reference itself — the
+          lighting room and the trade lexicon — lives on /gemstones, so the page
+          moves straight from looking to making.) */}
       <ThresholdSection />
 
       <CraftsmanshipSection />
@@ -162,27 +163,6 @@ export default function Home() {
 
       <HeritageSection />
 
-      {/* Custody and the outside verification of it, straight after the history —
-          the claim and its evidence belong on the same stretch of page. */}
-      <ProvenanceSection />
-
-      {/* The claims themselves, weighted by what they are worth as evidence —
-          including the two this house cannot make. The custody claim is above;
-          this is the audit of it. */}
-      <LedgerSection />
-
-      {/* The same discipline, applied to what the house can measure rather than
-          to what it can prove. Adjacent to the provenance audit on purpose —
-          apart, each would borrow credibility from the other without earning it. */}
-      <SustainabilitySection />
-
-      {/* And the question asked from the other end: somebody holding an object
-          whose history nobody recorded, deciding what happens to it next. */}
-      <HeirloomSection />
-
-      {/* The practical half: sizer, live rates, restoration bench */}
-      <AtelierToolsSection />
-
       {/* A held breath before the commercial half of the page. No controls, no
           reading — one shot, and the house saying what it is for. */}
       <ManifestoSection />
@@ -191,15 +171,7 @@ export default function Home() {
           sticky stacks never sit back to back. */}
       <JournalSection />
 
-      {/* The band that has to live beside the ring for fifty years. Straight
-          after the commission, because the head height just chosen has already
-          decided which bands are available — a year before anybody finds out. */}
-      <SuiteSection />
-
       <TestimonialsSection />
-
-      {/* Four questions, scored against the catalogue */}
-      <GiftFinderSection />
 
       <ServicesSection />
 
@@ -214,6 +186,6 @@ export default function Home() {
       <ExperienceInviteSection />
 
       <CTASection />
-    </>
+    </div>
   );
 }

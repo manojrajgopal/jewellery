@@ -46,7 +46,7 @@ export default function ScrollTextMask({
     // before it leaves, so the last word lights while the text is still read.
     offset: ['start 0.82', 'end 0.42'],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 110, damping: 30, mass: 0.4 });
+  const progress = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const words = text.split(' ');
   const Tag = as;

@@ -36,6 +36,7 @@ import GoldRibbonWeave from '@/components/motion/GoldRibbonWeave';
 import StoneSourcingBrief from '@/components/ui/StoneSourcingBrief';
 import StoneMatchingBench from '@/components/ui/StoneMatchingBench';
 import SilverpointSketch from '@/components/motion/SilverpointSketch';
+import SuiteSection from '@/app/_sections/home/SuiteSection';
 
 const JOURNEY = [
   {
@@ -606,6 +607,8 @@ export default function BespokeClient() {
           </div>
         </div>
       </section>
+
+      <SuiteSection />
 
       <section className="relative bg-canvas-alt py-24 md:py-32">
         <div className="mx-auto max-w-4xl px-6 md:px-12">

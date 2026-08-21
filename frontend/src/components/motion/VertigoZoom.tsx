@@ -54,7 +54,7 @@ export default function VertigoZoom({
   // Smoothing the progress rather than the outputs keeps the two transforms
   // locked to each other — spring them separately and the subject visibly
   // breathes as one lags the other.
-  const p = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.7 });
+  const p = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const k = Math.max(0.2, Math.min(intensity, 1.8));
   // Frame: scales up as perspective shortens. Both ends of the travel are the

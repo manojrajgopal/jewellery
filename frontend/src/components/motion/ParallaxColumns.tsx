@@ -47,6 +47,9 @@ export default function ParallaxColumns({
     offset: ['start end', 'end start'],
   });
 
+  // Kept in the API for call-site compatibility; drift is disabled (see below).
+  void depth;
+
   // Deal round-robin so reading order survives the column split.
   const cols: ColumnPlate[][] = Array.from({ length: columns }, () => []);
   plates.forEach((plate, i) => cols[i % columns].push(plate));
@@ -70,8 +73,12 @@ export default function ParallaxColumns({
           key={ci}
           plates={col}
           progress={scrollYProgress}
-          // Outer columns travel furthest; direction alternates either side.
-          travel={centre === 0 ? 0 : (Math.abs(ci - centre) / centre) * depth}
+          // Column drift disabled: the differing per-column travel made the grid
+          // scroll at several speeds at once, which read as inconsistent scroll
+          // speed. Pinned to 0 so every column moves 1:1 with the page. The
+          // round-robin dealing, alternating aspect ratios and hover effects are
+          // all unchanged; `depth` is kept in the API so call sites still compile.
+          travel={0}
           direction={ci < centre ? -1 : ci > centre ? 1 : 0}
           reduced={Boolean(reduced)}
           startIndex={ci}

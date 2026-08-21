@@ -50,11 +50,7 @@ export default function ScrollPathDraw({
     target: ref,
     offset: offset as never,
   });
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 70,
-    damping: 28,
-    restDelta: 0.0005,
-  });
+  const progress = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   useEffect(() => {
     setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches);

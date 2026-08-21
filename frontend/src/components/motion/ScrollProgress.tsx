@@ -22,11 +22,7 @@ export default function ScrollProgress({
   const showRail = pathname === railPath && sections.length > 0;
 
   const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
-    restDelta: 0.001,
-  });
+  const scaleX = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
   const headLeft = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const [activeId, setActiveId] = useState<string | null>(null);
 

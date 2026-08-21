@@ -1,21 +1,15 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ChevronDown, Diamond } from 'lucide-react';
 import SplitText from '@/components/motion/SplitText';
-import DiamondSparkles from '@/components/motion/DiamondSparkles';
-import AuroraBackground from '@/components/motion/AuroraBackground';
-import GodRays from '@/components/motion/GodRays';
-import LensFlare from '@/components/motion/LensFlare';
-import ParticleField from '@/components/motion/ParticleField';
 import Typewriter from '@/components/motion/Typewriter';
 import CircularText from '@/components/motion/CircularText';
 import CountUp from '@/components/motion/CountUp';
 import CTAButton from '@/components/ui/CTAButton';
 import GlassPanel from '@/components/ui/GlassPanel';
-import { usePerfBudget } from '@/hooks/useSceneFrame';
 
 const STATS = [
   { label: 'Legacy', value: 130, suffix: '+ Years' },
@@ -25,49 +19,75 @@ const STATS = [
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement>(null);
-  const budget = usePerfBudget();
 
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   });
-  const smooth = useSpring(scrollYProgress, { stiffness: 90, damping: 28 });
 
-  // Foreground text, backdrop and vignette all move at different rates,
-  // so the hero gains depth as it leaves.
-  const bgY = useTransform(smooth, [0, 1], ['0%', '24%']);
-  const bgScale = useTransform(smooth, [0, 1], [1, 1.18]);
-  const contentY = useTransform(smooth, [0, 1], ['0%', '-32%']);
-  const contentOpacity = useTransform(smooth, [0, 0.65], [1, 0]);
-  const statsY = useTransform(smooth, [0, 1], ['0%', '-70%']);
+  // Every scroll-linked layer is driven straight from the raw scroll progress —
+  // no spring. This is the site's entry screen and it must move in perfect
+  // lockstep with the scroll: a spring, however snappy, still trails it by a
+  // frame or two, which read as "the animation only happens after I stop." Using
+  // the value directly means each layer updates on the very frame the scroll
+  // does, and it lands on exactly 0 at the top (a spring could settle on a
+  // fractional value, which puts the text on half-pixels and looks blurry).
+  //
+  // Foreground text, backdrop and vignette all move at different rates, so the
+  // hero gains depth as it leaves.
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '24%']);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.18]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ['0%', '-32%']);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.65], [1, 0]);
+  const statsY = useTransform(scrollYProgress, [0, 1], ['0%', '-70%']);
   // Starts at nothing: .media-veil-hero already carries the copy, so this layer
-  // only deepens as the hero scrolls away. It used to start at 0.45 and double
-  // as the legibility veil, which is why it could not be strong enough for both.
-  const veil = useTransform(smooth, [0, 1], [0, 0.72]);
-  // The light shafts rake further across as the hero leaves, and the whole
-  // frame loses a little focus — a rack-focus pull off the subject.
-  const raysOpacity = useTransform(smooth, [0, 0.7], [1, 0]);
-  // The rack focus is the most expensive thing on the page's first screen. A
-  // `filter: blur()` animated on a full-viewport element cannot be handed to the
-  // compositor — every frame of the scroll re-rasterises the whole subtree,
-  // headline, buttons and stat cards included, at a new radius. On a capable
-  // machine it is worth it. On a weak one it is why the very first scroll of the
-  // visit stutters, which is the worst possible first impression, so those
-  // devices keep the parallax and the fade and lose only the defocus.
-  const blur = useTransform(smooth, [0, 1], [0, 7]);
-  const contentBlur = useTransform(blur, (b) => `blur(${b}px)`);
-  const blurFilter = budget.scrollFilters ? contentBlur : undefined;
+  // only deepens as the hero scrolls away.
+  const veil = useTransform(scrollYProgress, [0, 1], [0, 0.72]);
+  // NB: the old rack-focus `filter: blur()` on the *content* wrapper was removed.
+  // Animating a blur on an element full of text rasterises that text as a texture
+  // and re-does it every scroll frame — so the copy read soft even back at the
+  // top (blur(0px) is still a filter, and the layer never de-promotes), and the
+  // per-frame re-raster is what made the first scroll stutter. The parallax and
+  // fade give the hero its exit; the text now stays perfectly crisp.
+
+  // Compositor-driven scroll parallax. When the browser supports scroll-progress
+  // timelines (Chrome/Edge), the CSS in globals.css drives every layer straight
+  // off the scroll offset on the compositor thread — perfectly in step with a
+  // native scroll, zero main-thread cost, no catch-up. We flip this on only
+  // after confirming support (in an effect, so SSR and the first client render
+  // agree and there is no hydration mismatch), and while it is on we stop
+  // applying the framer values below so there is never a second driver fighting
+  // the CSS. Where timelines are unsupported, `sdt` stays false and framer keeps
+  // driving the identical motion, exactly as before.
+  const [sdt, setSdt] = useState(false);
+  useEffect(() => {
+    if (typeof CSS !== 'undefined' && CSS.supports('animation-timeline: scroll()')) {
+      setSdt(true);
+    }
+  }, []);
+
+  // Each layer's framer style is applied only in the fallback (non-timeline)
+  // path; under the CSS path the property is left to the keyframes.
+  const bgStyle = sdt ? undefined : { y: bgY, scale: bgScale };
+  const veilStyle = sdt
+    ? { backgroundColor: 'rgb(var(--media-veil))' }
+    : { opacity: veil, backgroundColor: 'rgb(var(--media-veil))' };
+  const contentStyle = sdt ? undefined : { y: contentY, opacity: contentOpacity };
+  const statsStyle = sdt ? undefined : { y: statsY };
+  const fadeStyle = sdt ? undefined : { opacity: contentOpacity };
 
   return (
     <section
       ref={ref}
       id="hero"
-      className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-canvas"
+      className={`relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-canvas ${
+        sdt ? 'hero-sdt' : ''
+      }`}
     >
       {/* Backdrop — the veil is drawn in the theme's own base colour, so the
           stage is obsidian in dark and a bright cream wash in light, and the
           type over it flips with it rather than against it. */}
-      <motion.div style={{ y: bgY, scale: bgScale }} className="absolute inset-0 z-0">
+      <motion.div data-hero-layer="bg" style={bgStyle} className="absolute inset-0 z-0">
         <Image
           src="/images/hero/hero-main.jpg"
           alt=""
@@ -82,29 +102,45 @@ export default function HeroSection() {
         <div className="media-veil-hero absolute inset-0" />
         {/* Separate scroll-driven wash that deepens as the hero leaves. */}
         <motion.div
-          style={{ opacity: veil, backgroundColor: 'rgb(var(--media-veil))' }}
+          data-hero-layer="veil"
+          style={veilStyle}
           className="absolute inset-0"
         />
-        {/* Warm colour grade over the photograph */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/25 via-transparent to-amethyst-900/25 opacity-[var(--bloom)] mix-blend-overlay" />
+        {/* Warm colour grade over the photograph. A plain gradient, NOT a
+            mix-blend layer: a blend mode has to be recomputed against its
+            backdrop on every frame the backdrop moves, and the backdrop here is
+            the image that scales as you scroll — a real per-frame cost on weak
+            GPUs. A normal translucent gradient gives almost the same warmth for
+            free. */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-gold-900/15 via-transparent to-amethyst-900/15 opacity-[var(--bloom)]" />
       </motion.div>
 
-      <AuroraBackground intensity="medium" parallax={false} className="z-[1]" />
+      {/* Ambient glow — two soft blurred orbs, the same lightweight approach the
+          reference build uses to stay smooth. This replaced AuroraBackground (a
+          field of four 46vw gaussian blurs that drifted continuously) and GodRays
+          (seven light-shafts, each pulsing forever, under a blur + mix-blend). Two
+          of those effects running behind the entry screen were the last real cost
+          left. These orbs are plain CSS, GPU-composited, tier-scaled via
+          `.fx-bloom`; one drifts gently, the other is still. */}
+      <div
+        aria-hidden="true"
+        className="fx-bloom animate-float pointer-events-none absolute -left-[10%] -top-[8%] z-[1] h-[46vw] w-[46vw] rounded-full bg-gold-500/20"
+        style={{ ['--fx-r' as string]: '110px' }}
+      />
+      <div
+        aria-hidden="true"
+        className="fx-bloom pointer-events-none absolute -bottom-[12%] -right-[8%] z-[1] h-[40vw] w-[40vw] rounded-full bg-amethyst-700/20"
+        style={{ ['--fx-r' as string]: '120px' }}
+      />
 
-      {/* Shafts of light falling across the plate, fading out as the hero
-          scrolls away so they never sit over the section below. */}
-      <motion.div style={{ opacity: raysOpacity }} className="absolute inset-0 z-[1]">
-        <GodRays intensity="medium" originX={14} originY={-14} parallax={false} />
-      </motion.div>
-
-      {/* The flare tracks the pointer, so the hero has a light source the
-          visitor can move rather than a fixed painted highlight. */}
-      <motion.div style={{ opacity: raysOpacity }} className="absolute inset-0 z-[1]">
-        <LensFlare intensity={0.55} />
-      </motion.div>
-
-      <ParticleField count={54} rise repel={150} className="z-[2]" />
-      <DiamondSparkles density={46} shape="mixed" className="z-[2]" />
+      {/* No per-frame canvas on the entry screen. The hero used to run two
+          particle canvases (a 54-mote rising field and a 46-facet sparkle field)
+          plus a pointer-tracking lens flare all at once here, which is what made
+          the first screen lag on anything but a fast machine. All three were
+          removed. The hero's atmosphere now comes entirely from the ambient glow
+          and light shafts above, which are pure CSS (GPU-composited and
+          essentially free), plus the slow ken-burns on the photograph — so the
+          entry point is rich but buttery smooth on every device. */}
 
       {/* Corner rules */}
       {(
@@ -125,9 +161,12 @@ export default function HeroSection() {
         />
       ))}
 
-      {/* Content */}
+      {/* Content — no scroll-linked filter here, so the copy is always crisp.
+          transform: translateZ(0) keeps it on its own layer for smooth parallax
+          without ever rasterising the text through a filter. */}
       <motion.div
-        style={{ y: contentY, opacity: contentOpacity, filter: blurFilter }}
+        data-hero-layer="content"
+        style={contentStyle}
         className="relative z-20 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col justify-center px-6 pb-40 pt-28 md:px-12"
       >
         <div className="max-w-4xl text-center md:text-left">
@@ -209,23 +248,31 @@ export default function HeroSection() {
       </motion.div>
 
       {/* Maker's seal, in the open space beside the subject. Hidden below xl,
-          where the copy column reaches across the full frame. */}
+          where the copy column reaches across the full frame. The scroll-out
+          fade lives on the outer layer (CSS hero-fade / framer fallback); the
+          inner element keeps its scale entrance, so the two never contend for
+          the same `opacity` on one node. */}
       <motion.div
-        style={{ opacity: contentOpacity }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.4, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
+        data-hero-layer="fade"
+        style={fadeStyle}
         aria-hidden="true"
         className="pointer-events-none absolute right-[6%] top-1/2 z-20 hidden -translate-y-1/2 xl:block"
       >
-        <CircularText text="Aurum · Est. 1892 · Mumbai" size={210} duration={60}>
-          <span className="font-display text-3xl font-light text-gradient-static">A</span>
-        </CircularText>
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.4, delay: 1.8, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <CircularText text="Aurum · Est. 1892 · Mumbai" size={210} duration={60}>
+            <span className="font-display text-3xl font-light text-gradient-static">A</span>
+          </CircularText>
+        </motion.div>
       </motion.div>
 
       {/* Floating stat cards */}
       <motion.div
-        style={{ y: statsY }}
+        data-hero-layer="stats"
+        style={statsStyle}
         className="absolute inset-x-0 bottom-16 z-20 hidden px-6 md:block"
       >
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-3">
@@ -257,33 +304,37 @@ export default function HeroSection() {
         </div>
       </motion.div>
 
-      {/* Scroll cue */}
-      <motion.a
-        href="#trust"
-        aria-label="Scroll to next section"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 2 }}
-        style={{ opacity: contentOpacity }}
-        className="group absolute bottom-5 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2"
+      {/* Scroll cue. Same split as the seal: the outer layer owns the
+          scroll-out fade (CSS hero-fade / framer fallback), the inner anchor
+          carries the link and its two looping child animations. */}
+      <motion.div
+        data-hero-layer="fade"
+        style={fadeStyle}
+        className="absolute bottom-5 left-1/2 z-20 -translate-x-1/2"
       >
-        <span className="font-accent text-[9px] uppercase tracking-luxer text-on-media-muted transition-colors group-hover:text-accent">
-          Scroll
-        </span>
-        <span className="relative flex h-10 w-px overflow-hidden bg-on-media-wash">
-          <motion.span
-            animate={{ y: ['-100%', '100%'] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-x-0 h-1/2 bg-gradient-to-b from-transparent via-gold-300 to-transparent"
-          />
-        </span>
-        <motion.span
-          animate={{ y: [0, 6, 0] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+        <a
+          href="#trust"
+          aria-label="Scroll to next section"
+          className="group flex flex-col items-center gap-2"
         >
-          <ChevronDown className="h-4 w-4 text-gold-400" />
-        </motion.span>
-      </motion.a>
+          <span className="font-accent text-[9px] uppercase tracking-luxer text-on-media-muted transition-colors group-hover:text-accent">
+            Scroll
+          </span>
+          <span className="relative flex h-10 w-px overflow-hidden bg-on-media-wash">
+            <motion.span
+              animate={{ y: ['-100%', '100%'] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+              className="absolute inset-x-0 h-1/2 bg-gradient-to-b from-transparent via-gold-300 to-transparent"
+            />
+          </span>
+          <motion.span
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <ChevronDown className="h-4 w-4 text-gold-400" />
+          </motion.span>
+        </a>
+      </motion.div>
     </section>
   );
 }

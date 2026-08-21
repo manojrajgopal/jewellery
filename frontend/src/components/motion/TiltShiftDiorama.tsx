@@ -57,7 +57,7 @@ export default function TiltShiftDiorama({
     target: ref,
     offset: ['start end', 'end start'],
   });
-  const eased = useSpring(scrollYProgress, { stiffness: 90, damping: 26 });
+  const eased = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   // The band travels through the frame across the pass. It starts high and ends
   // low, so a reader scrolling down is always looking at the sharp part.

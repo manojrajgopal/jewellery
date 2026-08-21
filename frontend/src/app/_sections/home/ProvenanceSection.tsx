@@ -2,18 +2,18 @@
 
 import SectionHeading from '@/components/ui/SectionHeading';
 import CTAButton from '@/components/ui/CTAButton';
-import ProvenanceMap from '@/components/ui/ProvenanceMap';
 import PressWall from '@/components/ui/PressWall';
-import GoldDivider from '@/components/ui/GoldDivider';
 import RippleGrid from '@/components/motion/RippleGrid';
 
 /**
- * Provenance and the press, in one section.
+ * The press, as the outside verification of the house's claims.
  *
- * Paired on purpose. A claim about custody is worth exactly as much as the willingness
- * of someone outside the house to verify it, so the chain and the third-party audits sit
- * on the same screen — the awards are the evidence for the diagram above them, not a
- * separate boast.
+ * This section once paired a provenance custody map with the third-party press wall.
+ * The custody map is owned by /gemstones (the stone library, where the provenance chain
+ * belongs alongside the stones it certifies), so it was removed here to avoid running the
+ * same tool on two pages. What is unique to this section — the third-party audits and
+ * awards, the evidence that a claim is worth what someone outside the house will put their
+ * name to — was kept, and the section now lives on /about beside the rest of the history.
  */
 export default function ProvenanceSection() {
   return (
@@ -25,35 +25,22 @@ export default function ProvenanceSection() {
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 md:px-12">
         <SectionHeading
-          eyebrow="Where It Came From"
-          title="Five stops, and a check at every one"
-          highlightWords={['check']}
-          subtitle="Custody rather than geography. Each stop names what is verified there, and the passport shipped with the piece reproduces the whole chain."
+          eyebrow="Verified From Outside"
+          title="A claim is worth what someone will put their name to"
+          highlightWords={['name']}
+          subtitle="Custody and craft are only as good as the willingness of people outside the house to audit them. These are the third parties that have — the certifications, the memberships and the awards that stand behind everything above."
           align="center"
           className="mb-16"
         />
 
-        <ProvenanceMap />
-
-        <GoldDivider variant="jewel" className="my-20" />
-
-        <div className="mb-14 text-center">
-          <p className="mb-4 font-accent text-[10px] uppercase tracking-luxest text-accent">
-            Verified From Outside
-          </p>
-          <h3 className="mx-auto max-w-2xl font-display text-2xl font-light leading-snug text-primary md:text-3xl">
-            A claim is worth what someone outside the house will put their name to
-          </h3>
-        </div>
-
         <PressWall />
 
         <div className="mt-14 flex flex-wrap justify-center gap-4">
-          <CTAButton variant="primary" size="md" href="/about" showArrow>
-            The whole history
+          <CTAButton variant="primary" size="md" href="/gemstones" showArrow>
+            The provenance chain
           </CTAButton>
-          <CTAButton variant="secondary" size="md" href="/gemstones">
-            The stone library
+          <CTAButton variant="secondary" size="md" href="/craftsmanship">
+            Inside the atelier
           </CTAButton>
         </div>
       </div>

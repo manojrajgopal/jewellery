@@ -28,6 +28,7 @@ import ScrollAssembleText from '@/components/motion/ScrollAssembleText';
 import PortfolioBalance from '@/components/ui/PortfolioBalance';
 import MetalRateHistory from '@/components/ui/MetalRateHistory';
 import CoverageGap from '@/components/ui/CoverageGap';
+import AtelierToolsSection from '@/app/_sections/home/AtelierToolsSection';
 
 /**
  * What the house does with a piece over a lifetime, as the sequence it actually
@@ -427,6 +428,8 @@ export default function VaultClient() {
             <CoverageGap />
           </div>
         </section>
+
+        <AtelierToolsSection />
 
         <section className="relative px-6 py-20 text-center md:py-28">
           <div className="mx-auto flex max-w-4xl flex-col items-center">

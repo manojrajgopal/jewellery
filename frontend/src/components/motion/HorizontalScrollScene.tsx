@@ -43,7 +43,7 @@ export default function HorizontalScrollScene({
     target: sectionRef,
     offset: ['start start', 'end end'],
   });
-  const progress = useSpring(scrollYProgress, { stiffness: 80, damping: 28, mass: 0.5 });
+  const progress = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   // Measured on every frame of the transform rather than stored in state: the
   // rail's width changes with the viewport, and a resize listener writing to

@@ -70,7 +70,7 @@ export default function ScrollCameraRig({
   // Smoothed, because a camera is carried by a person and a raw scroll value is
   // carried by a mouse wheel. The spring is stiff enough not to lag visibly and
   // soft enough to round off the notches of a wheel.
-  const eased = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.6 });
+  const eased = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const z = useTransform(eased, [0, 1], [0, dolly]);
   const x = useTransform(eased, [0, 1], [-pan, pan]);

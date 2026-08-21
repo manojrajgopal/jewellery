@@ -53,7 +53,7 @@ export default function VaultDoorReveal({
 
   // Smoothed, because the leaves are large and any scroll jitter is legible as
   // a shudder across a surface that wide.
-  const p = useSpring(scrollYProgress, { stiffness: 90, damping: 26, mass: 0.7 });
+  const p = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   const leftX = useTransform(p, [0, 1], ['0%', '-102%']);
   const rightX = useTransform(p, [0, 1], ['0%', '102%']);

@@ -50,7 +50,7 @@ export default function MoltenPour({
     target: ref,
     offset: ['start 0.9', 'center 0.42'],
   });
-  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 24 });
+  const p = useSpring(scrollYProgress, { stiffness: 400, damping: 38, mass: 0.3 });
 
   // The metal surface climbs from below the baseline to above the cap height.
   const fillY = useTransform(p, [0, 1], [104, -4]);

@@ -90,6 +90,17 @@ export default function ScrollVelocitySkew({ max = 4 }: { max?: number }) {
 
     const onScroll = () => {
       if (stopLoop) return;
+      // Writing --scroll-skew on the root invalidates the computed style of every
+      // node that could inherit it — the whole document — on every frame the
+      // value changes, which during a scroll is every frame. That is only worth
+      // paying if something actually reads the variable: the `.velocity-skew`
+      // utility is opt-in and, as it happens, nothing on the site currently opts
+      // in, so this loop was costing ~10ms per scroll frame for no visible effect.
+      // Re-checked at the start of each gesture (not per frame, and cheap because
+      // the guard above short-circuits while the loop is already running) so the
+      // effect still switches on the instant an element adopts the class, and so
+      // it re-evaluates correctly after a client-side route change.
+      if (!document.querySelector('.velocity-skew')) return;
       last = window.scrollY;
       settled = 0;
       // order: 10 — ahead of the decorative scenes, so any element reading the
